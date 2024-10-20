@@ -1,39 +1,34 @@
-import { Metadata } from 'next';
-import Footer from '@/components/ui/Footer';
-import Navbar from '@/components/ui/Navbar';
-import { Toaster } from '@/components/ui/Toasts/toaster';
-import { PropsWithChildren, Suspense } from 'react';
-import { getURL } from '@/utils/helpers';
-import 'styles/main.css';
+import Footer from "@/components/Footer";
+import Navbar from "@/components/Navbar";
+import { Toaster } from "@/components/ui/toaster";
+import "./globals.css";
+import { Suspense } from "react";
+import { Analytics } from "@vercel/analytics/react";
 
-const title = 'Next.js Subscription Starter';
-const description = 'Brought to you by Vercel, Stripe, and Supabase.';
-
-export const metadata: Metadata = {
-  metadataBase: new URL(getURL()),
-  title: title,
-  description: description,
-  openGraph: {
-    title: title,
-    description: description
-  }
+export const metadata = {
+  title: "Headshots AI",
+  description: "Generate awesome headshots in minutes using AI",
 };
 
-export default async function RootLayout({ children }: PropsWithChildren) {
+export default function RootLayout({ children }: any) {
   return (
     <html lang="en">
-      <body className="bg-black">
-        <Navbar />
-        <main
-          id="skip"
-          className="min-h-[calc(100dvh-4rem)] md:min-h[calc(100dvh-5rem)]"
-        >
+      <body className="min-h-screen flex flex-col">
+        <section>
+          <Suspense
+            fallback={
+              <div className="flex w-full px-4 lg:px-40 py-4 items-center border-b text-center gap-8 justify-between h-[69px]" />
+            }
+          >
+            <Navbar />
+          </Suspense>
+        </section>
+        <main className="flex flex-1 flex-col items-center py-16">
           {children}
         </main>
         <Footer />
-        <Suspense>
-          <Toaster />
-        </Suspense>
+        <Toaster />
+        <Analytics />
       </body>
     </html>
   );

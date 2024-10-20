@@ -1,259 +1,259 @@
-# Next.js Subscription Payments Starter
+# 👨‍💼 [Headshot AI](https://headshots-starter.vercel.app/) - Professional Headshots with AI (powered by Astria.ai)
 
-The all-in-one starter kit for high-performance SaaS applications.
+Introducing Headshot AI, an open-source project from [Astria](https://www.astria.ai/) that generates Professional AI Headshots in minutes.
 
-## Features
+This project was built to give developers & makers a great starting point into building AI applications. This is your launch pad - fork the code, modify it, and make it your own to build a popular AI SaaS app.
 
-- Secure user management and authentication with [Supabase](https://supabase.io/docs/guides/auth)
-- Powerful data access & management tooling on top of PostgreSQL with [Supabase](https://supabase.io/docs/guides/database)
-- Integration with [Stripe Checkout](https://stripe.com/docs/payments/checkout) and the [Stripe customer portal](https://stripe.com/docs/billing/subscriptions/customer-portal)
-- Automatic syncing of pricing plans and subscription statuses via [Stripe webhooks](https://stripe.com/docs/webhooks)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fleap-ai%2Fheadshots-starter%2Ftree%2Fmain&env=ASTRIA_API_KEY,APP_WEBHOOK_SECRET&envDescription=Set%20up%20environment%20variables%20for%20Leap%20AI%20and%20redirect%20URL%20in%20Supabase%20Auth%20dashboard.%20See%20.env.local.example%20for%20full%20config%20with%20Resend%20and%20Stripe.&envLink=https%3A%2F%2Fgithub.com%2Fleap-ai%2Fheadshots-starter%2Fblob%2Fmain%2F.env.local.example&project-name=headshots-starter-clone&repository-name=headshots-starter-clone&demo-title=AI%20Headshot%20Generator&demo-description=A%20Professional%20AI%20headshot%20generator%20starter%20kit%20powered%20by%20Next.js%2C%20Leap%20AI%2C%20and%20Vercel&demo-url=https%3A%2F%2Fwww.getheadshots.ai%2F&demo-image=https%3A%2F%2Fimages.ctfassets.net%2Fe5382hct74si%2F1CEDfTwO5vPEiNMgN2Y1t6%2F245d1e0c11c4d8e734fbe345b9ecdc7c%2Fdemo.png&integration-ids=oac_VqOgBHqhEoFTPzGkPd7L0iH6&external-id=https%3A%2F%2Fgithub.com%2Fleap-ai%2Fheadshots-starter%2Ftree%2Fmain)
 
-## Demo
+[![Headshot AI Demo](/public/demo.png)](https://headshots-starter.vercel.app/)
 
-- https://subscription-payments.vercel.app/
+## Incoming changes
 
-[![Screenshot of demo](./public/demo.png)](https://subscription-payments.vercel.app/)
+Incoming [PR]((https://github.com/astriaai/headshots-starter/pull/121)) has been merged to allow usage of  Astria's packs API which helps you avoid hardcoding prompts in your code as well as offering different packs of prompts, and switching to the new Flux model fine-tuning easily.
+Read more on advantage of using packs [Astria's documentation](https://docs.astria.ai/docs/api/pack/pack//).
 
-## Architecture
-
-![Architecture diagram](./public/architecture_diagram.png)
-
-## Step-by-step setup
-
-When deploying this template, the sequence of steps is important. Follow the steps below in order to get up and running.
-
-### Initiate Deployment
-
-#### Vercel Deploy Button
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fnextjs-subscription-payments&env=NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,STRIPE_SECRET_KEY&envDescription=Enter%20your%20Stripe%20API%20keys.&envLink=https%3A%2F%2Fdashboard.stripe.com%2Fapikeys&project-name=nextjs-subscription-payments&repository-name=nextjs-subscription-payments&integration-ids=oac_VqOgBHqhEoFTPzGkPd7L0iH6&external-id=https%3A%2F%2Fgithub.com%2Fvercel%2Fnextjs-subscription-payments%2Ftree%2Fmain)
-
-The Vercel Deployment will create a new repository with this template on your GitHub account and guide you through a new Supabase project creation. The [Supabase Vercel Deploy Integration](https://vercel.com/integrations/supabase) will set up the necessary Supabase environment variables and run the [SQL migrations](./supabase/migrations/20230530034630_init.sql) to set up the Database schema on your account. You can inspect the created tables in your project's [Table editor](https://app.supabase.com/project/_/editor).
-
-Should the automatic setup fail, please [create a Supabase account](https://app.supabase.com/projects), and a new project if needed. In your project, navigate to the [SQL editor](https://app.supabase.com/project/_/sql) and select the "Stripe Subscriptions" starter template from the Quick start section.
-
-### Configure Auth
-
-Follow [this guide](https://supabase.com/docs/guides/auth/social-login/auth-github) to set up an OAuth app with GitHub and configure Supabase to use it as an auth provider.
-
-In your Supabase project, navigate to [auth > URL configuration](https://app.supabase.com/project/_/auth/url-configuration) and set your main production URL (e.g. https://your-deployment-url.vercel.app) as the site url.
-
-Next, in your Vercel deployment settings, add a new **Production** environment variable called `NEXT_PUBLIC_SITE_URL` and set it to the same URL. Make sure to deselect preview and development environments to make sure that preview branches and local development work correctly.
-
-#### [Optional] - Set up redirect wildcards for deploy previews (not needed if you installed via the Deploy Button)
-
-If you've deployed this template via the "Deploy to Vercel" button above, you can skip this step. The Supabase Vercel Integration will have set redirect wildcards for you. You can check this by going to your Supabase [auth settings](https://app.supabase.com/project/_/auth/url-configuration) and you should see a list of redirects under "Redirect URLs".
-
-Otherwise, for auth redirects (email confirmations, magic links, OAuth providers) to work correctly in deploy previews, navigate to the [auth settings](https://app.supabase.com/project/_/auth/url-configuration) and add the following wildcard URL to "Redirect URLs": `https://*-username.vercel.app/**`. You can read more about redirect wildcard patterns in the [docs](https://supabase.com/docs/guides/auth#redirect-urls-and-wildcards).
-
-If you've deployed this template via the "Deploy to Vercel" button above, you can skip this step. The Supabase Vercel Integration will have run database migrations for you. You can check this by going to [the Table Editor for your Supabase project](https://supabase.com/dashboard/project/_/editor), and confirming there are tables with seed data.
-
-Otherwise, navigate to the [SQL Editor](https://supabase.com/dashboard/project/_/sql/new), paste the contents of [the Supabase `schema.sql` file](./schema.sql), and click RUN to initialize the database.
-
-#### [Maybe Optional] - Set up Supabase environment variables (not needed if you installed via the Deploy Button)
-
-If you've deployed this template via the "Deploy to Vercel" button above, you can skip this step. The Supabase Vercel Integration will have set your environment variables for you. You can check this by going to your Vercel project settings, and clicking on 'Environment variables', there will be a list of environment variables with the Supabase icon displayed next to them.
-
-Otherwise navigate to the [API settings](https://app.supabase.com/project/_/settings/api) and paste them into the Vercel deployment interface. Copy project API keys and paste into the `NEXT_PUBLIC_SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY` fields, and copy the project URL and paste to Vercel as `NEXT_PUBLIC_SUPABASE_URL`.
-
-Congrats, this completes the Supabase setup, almost there!
-
-### Configure Stripe
-
-Next, we'll need to configure [Stripe](https://stripe.com/) to handle test payments. If you don't already have a Stripe account, create one now.
-
-For the following steps, make sure you have the ["Test Mode" toggle](https://stripe.com/docs/testing) switched on.
-
-#### Create a Webhook
-
-We need to create a webhook in the `Developers` section of Stripe. Pictured in the architecture diagram above, this webhook is the piece that connects Stripe to your Vercel Serverless Functions.
-
-1. Click the "Add Endpoint" button on the [test Endpoints page](https://dashboard.stripe.com/test/webhooks).
-1. Enter your production deployment URL followed by `/api/webhooks` for the endpoint URL. (e.g. `https://your-deployment-url.vercel.app/api/webhooks`)
-1. Click `Select events` under the `Select events to listen to` heading.
-1. Click `Select all events` in the `Select events to send` section.
-1. Copy `Signing secret` as we'll need that in the next step (e.g `whsec_xxx`) (/!\ be careful not to copy the webook id we_xxxx).
-1. In addition to the `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` and the `STRIPE_SECRET_KEY` we've set earlier during deployment, we need to add the webhook secret as `STRIPE_WEBHOOK_SECRET` env var.
-
-#### Redeploy with new env vars
-
-For the newly set environment variables to take effect and everything to work together correctly, we need to redeploy our app in Vercel. In your Vercel Dashboard, navigate to deployments, click the overflow menu button and select "Redeploy" (do NOT enable the "Use existing Build Cache" option). Once Vercel has rebuilt and redeployed your app, you're ready to set up your products and prices.
-
-#### Create product and pricing information
-
-Your application's webhook listens for product updates on Stripe and automatically propagates them to your Supabase database. So with your webhook listener running, you can now create your product and pricing information in the [Stripe Dashboard](https://dashboard.stripe.com/test/products).
-
-Stripe Checkout currently supports pricing that bills a predefined amount at a specific interval. More complex plans (e.g., different pricing tiers or seats) are not yet supported.
-
-For example, you can create business models with different pricing tiers, e.g.:
-
-- Product 1: Hobby
-  - Price 1: 10 USD per month
-  - Price 2: 100 USD per year
-- Product 2: Freelancer
-  - Price 1: 20 USD per month
-  - Price 2: 200 USD per year
-
-Optionally, to speed up the setup, we have added a [fixtures file](fixtures/stripe-fixtures.json) to bootstrap test product and pricing data in your Stripe account. The [Stripe CLI](https://stripe.com/docs/stripe-cli#install) `fixtures` command executes a series of API requests defined in this JSON file. Simply run `stripe fixtures fixtures/stripe-fixtures.json`.
-
-**Important:** Make sure that you've configured your Stripe webhook correctly and redeployed with all needed environment variables.
-
-#### Configure the Stripe customer portal
-
-1. Set your custom branding in the [settings](https://dashboard.stripe.com/settings/branding)
-1. Configure the Customer Portal [settings](https://dashboard.stripe.com/test/settings/billing/portal)
-1. Toggle on "Allow customers to update their payment methods"
-1. Toggle on "Allow customers to update subscriptions"
-1. Toggle on "Allow customers to cancel subscriptions"
-1. Add the products and prices that you want
-1. Set up the required business information and links
-
-### That's it
-
-I know, that was quite a lot to get through, but it's worth it. You're now ready to earn recurring revenue from your customers. 🥳
-
-## Develop locally
-
-If you haven't already done so, clone your Github repository to your local machine.
-
-### Install dependencies
-
-Ensure you have [pnpm](https://pnpm.io/installation) installed and run:
-
-```bash
-pnpm install
+When migrating to the new packs api, add to your vercel environment:
+```text
+NEXT_PUBLIC_TUNE_TYPE=packs
+PACK_QUERY_TYPE=both
 ```
 
-Next, use the [Vercel CLI](https://vercel.com/docs/cli) to link your project:
+![Headshot AI Packs](assets/headshots-packs.png)
+Here is how it looks
 
-```bash
-pnpm dlx vercel login
-pnpm dlx vercel link
+## How It Works
+
+Live demo **[here](https://getheadshots.ai)**.
+
+The app is powered by:
+
+- 🚀 [Astria](https://www.astria.ai/) for AI model training & inference
+- ▲ [Next.js](https://nextjs.org/) for app and landing page
+- 🔋 [Supabase](https://supabase.com/) for DB & Auth
+- 📩 [Resend](https://resend.com/) (optional) to email user when headshots are ready
+- ⭐️ [Shadcn](https://ui.shadcn.com/) with [Tailwind CSS](https://tailwindcss.com/) for styles
+- ▲ [Vercel](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fleap-ai%2Fheadshots-starter%2Ftree%2Fmain&env=ASTRIA_API_KEY,APP_WEBHOOK_SECRET&envDescription=Set%20up%20environment%20variables%20for%20Leap%20AI%20and%20redirect%20URL%20in%20Supabase%20Auth%20dashboard.%20See%20.env.local.example%20for%20full%20config%20with%20Resend%20and%20Stripe.&envLink=https%3A%2F%2Fgithub.com%2Fleap-ai%2Fheadshots-starter%2Fblob%2Fmain%2F.env.local.example&project-name=headshots-starter-clone&repository-name=headshots-starter-clone&demo-title=AI%20Headshot%20Generator&demo-description=A%20Professional%20AI%20headshot%20generator%20starter%20kit%20powered%20by%20Next.js%2C%20Leap%20AI%2C%20and%20Vercel&demo-url=https%3A%2F%2Fwww.getheadshots.ai%2F&demo-image=https%3A%2F%2Fimages.ctfassets.net%2Fe5382hct74si%2F1CEDfTwO5vPEiNMgN2Y1t6%2F245d1e0c11c4d8e734fbe345b9ecdc7c%2Fdemo.png&integration-ids=oac_VqOgBHqhEoFTPzGkPd7L0iH6&external-id=https%3A%2F%2Fgithub.com%2Fleap-ai%2Fheadshots-starter%2Ftree%2Fmain) for deployments
+- 💳 [Stripe](https://stripe.com/) for billing
+
+[![Headshot AI Explainer](/public/explainer.png)](https://www.astria.ai/)
+
+## Running Locally
+
+To create your own Headshot AI app, follow these steps:
+
+**Note**
+Training models is only available on paid plans. You'll need an active [Astria API Key](<[url](https://www.astria.ai/pricing)>) to train models.
+
+### 1. Vercel template
+
+To setup Supabase/Vercel and your github repo, click on the Vercel Deploy Button and follow the steps.
+
+IMPORTANT: In the Supabase integration step: Make sure you leave the Create sample tables option checked. This might take a few minutes to complete.
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fleap-ai%2Fheadshots-starter%2Ftree%2Fmain&env=ASTRIA_API_KEY,APP_WEBHOOK_SECRET&envDescription=Set%20up%20environment%20variables%20for%20Leap%20AI%20and%20redirect%20URL%20in%20Supabase%20Auth%20dashboard.%20See%20.env.local.example%20for%20full%20config%20with%20Resend%20and%20Stripe.&envLink=https%3A%2F%2Fgithub.com%2Fleap-ai%2Fheadshots-starter%2Fblob%2Fmain%2F.env.local.example&project-name=headshots-starter-clone&repository-name=headshots-starter-clone&demo-title=AI%20Headshot%20Generator&demo-description=A%20Professional%20AI%20headshot%20generator%20starter%20kit%20powered%20by%20Next.js%2C%20Leap%20AI%2C%20and%20Vercel&demo-url=https%3A%2F%2Fwww.getheadshots.ai%2F&demo-image=https%3A%2F%2Fimages.ctfassets.net%2Fe5382hct74si%2F1CEDfTwO5vPEiNMgN2Y1t6%2F245d1e0c11c4d8e734fbe345b9ecdc7c%2Fdemo.png&integration-ids=oac_VqOgBHqhEoFTPzGkPd7L0iH6&external-id=https%3A%2F%2Fgithub.com%2Fleap-ai%2Fheadshots-starter%2Ftree%2Fmain)
+
+The Vercel Deployment will create a new repository with this template on your GitHub account and guide you through a new Supabase project creation. The Supabase Vercel Deploy Integration will set up the necessary Supabase environment variables and run the SQL migrations to set up the Database schema on your account. You can inspect the created tables in your project's Table editor.
+
+This will create the tables with their respective columns and RLS policies:
+
+- credits
+- images
+- models
+- samples
+
+### 2. Clone your newly created repo:
+
+```
+git clone {{your-repo-name}}
 ```
 
-`pnpm dlx` runs a package from the registry, without installing it as a dependency. Alternatively, you can install these packages globally, and drop the `pnpm dlx` part.
+### 3. Enter your newly created repo's directory:
 
-If you don't intend to use a local Supabase instance for development and testing, you can use the Vercel CLI to download the development env vars:
-
-```bash
-pnpm dlx vercel env pull .env.local
+```
+cd {{your-repo-name}}
 ```
 
-Running this command will create a new `.env.local` file in your project folder. For security purposes, you will need to set the `SUPABASE_SERVICE_ROLE_KEY` manually from your [Supabase dashboard](https://app.supabase.io/) (`Settings > API`). If you are not using a local Supabase instance, you should also change the `--local` flag to `--linked' or '--project-id <string>' in the `supabase:generate-types` script in `package.json`.(see -> [https://supabase.com/docs/reference/cli/supabase-gen-types-typescript])
+### 4. Install dependencies:
 
-### Local development with Supabase
-
-It's highly recommended to use a local Supabase instance for development and testing. We have provided a set of custom commands for this in `package.json`.
-
-First, you will need to install [Docker](https://www.docker.com/get-started/). You should also copy or rename:
-
-- `.env.local.example` -> `.env.local`
-- `.env.example` -> `.env`
-
-Next, run the following command to start a local Supabase instance and run the migrations to set up the database schema:
+For npm:
 
 ```bash
-pnpm supabase:start
+npm install
 ```
 
-The terminal output will provide you with URLs to access the different services within the Supabase stack. The Supabase Studio is where you can make changes to your local database instance.
-
-Copy the value for the `service_role_key` and paste it as the value for the `SUPABASE_SERVICE_ROLE_KEY` in your `.env.local` file.
-
-You can print out these URLs at any time with the following command:
+For yarn:
 
 ```bash
-pnpm supabase:status
+yarn
 ```
 
-To link your local Supabase instance to your project, run the following command, navigate to the Supabase project you created above, and enter your database password.
+### 5. Magic Link Auth (Supabase)
+
+In your supabase [dashboard](https://supabase.com/dashboard/), select newly created project, go to Authentication -> Email Templates -> Magic Link and paste the following template:
+
+```
+<h2>Magic Link</h2>
+<p>Follow this link to login:</p>
+<p><a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email">Log In</a></p>
+```
+
+Then, make sure to setup your site URL and redirect urls in the supabase dashboard under Authentication -> URL Configuration.
+
+For example:
+
+Site URL: https://headshots-starter.vercel.app
+
+Redirect URL: https://headshots-starter.vercel.app/**
+
+### 6. Create a [Astria](https://www.astria.ai/) account
+
+In your `.env.local` file:
+
+- Fill in `your_api_key` with your [Astria API key](https://www.astria.ai/users/edit#api)
+- Fill in `your-webhook-secret` with any arbitrary URL friendly string eg.`shadf892yr398hq23h`
+- Fill in `your-vercel-url` with a url to catch webhooks from Astria. This will be your vercel deployment url or Ngrok tunnel locally (eg. https://{your-hosted-url}/astria/train-webhook)
+- Fill in `your-blob-read-write-token` with your Vercel Blob token (steps below)
+
+If your production webhook callbacks do not seem to be working, make sure the callback URL is not of a Vercel dedicated branch deployment which requires authentication, in which case you will not see the callback in the logs.
+
+### 7. Configure [Vercel Blob](https://vercel.com/docs/storage/vercel-blob/quickstart#client-uploads) for image uploads
+
+In your Vercel project, create a [Blob store](https://vercel.com/docs/storage/vercel-blob/quickstart#create-a-blob-store)
+
+- In your Vercel dashboard, select the Storage tab, then select the Connect Database button.
+- Under the Create New tab, select Blob and then the Continue button.
+
+Then to configure in your .env:
+
+- In your Vercel dashboard, select the Settings tab, then select the Environment Variables tab.
+- Copy your `BLOB_READ_WRITE_TOKEN` to your .env
+
+### 8. Create a [Resend](https://resend.com/) account (Optional)
+
+- Fill in `your-resend-api-key` with your Resend API Key if you wish to use Resend to email users when their model has finished training.
+
+### 9. Configure [Stripe](https://stripe.com) to bill users on a credit basis. (Optional)
+
+The current setup is for a credit based system. 1 credit = 1 model train.
+
+To enable Stripe billing, you will need to fill out the following fields in your `.env.local` file:
+
+- STRIPE_SECRET_KEY=your-stripe-secret-key
+- STRIPE_WEBHOOK_SECRET=your-stripe-webhook-secret
+- STRIPE_PRICE_ID_ONE_CREDIT=your-stripe-price-id-one-credit
+- STRIPE_PRICE_ID_THREE_CREDITS=your-stripe-price-id-three-credit
+- STRIPE_PRICE_ID_FIVE_CREDITS=your-stripe-price-id-five-credit
+- NEXT_PUBLIC_STRIPE_IS_ENABLED=false # set to true to enable Stripe payments
+
+You need to do multiple things to get Stripe working:
+
+- Get your Stripe API secret key from the [Stripe Dashboard](https://dashboard.stripe.com/test/apikeys)
+- Create a [Stripe Webhook](https://dashboard.stripe.com/test/webhooks) that will point to your hosted URL. The webhook should be listening for the `checkout.session.completed` event. The webhook should point to `your-hosted-url/stripe/subscription-webhook`.
+- Create a [Stripe Price](https://dashboard.stripe.com/test/products) for each credit package you want to offer.
+- Create a [Stripe Pricing Table](https://dashboard.stripe.com/test/pricing-tables) and replace the script @/components/stripe/StripeTable.tsx with your own values. It should look like this:
+
+```js
+<stripe-pricing-table
+  pricing-table-id="your-stripe-pricing-table-id"
+  publishable-key="your-stripe-publishable-key"
+  client-reference-id={user.id}
+  customer-email={user.email}
+></stripe-pricing-table>
+```
+
+Here are the products you need to create to get Stripe working with our example, checkout the images [Here](/public/Stripe/)
+
+To create them go on the Stripe dashboard, search for Product Catalog and then click on the add product button on the top right of the screen. You will need to create 3 products, one for each credit package as shown in the images before. We set them to One time payments, but you can change that if you want to and you can set the price too. After creating the products make sure to update the variables in the .env.local [your-stripe-price-id-one-credit, your-stripe-price-id-three-credit, your-stripe-price-id-five-credit] with their respective price ids, each price id is found in the product page at the bottom.
+
+### 10. Start the development server:
+
+For npm:
 
 ```bash
-pnpm supabase:link
+npm run dev
 ```
 
-If you need to reset your database password, head over to [your database settings](https://supabase.com/dashboard/project/_/settings/database) and click "Reset database password", and this time copy it across to a password manager! 😄
-
-🚧 Warning: This links our Local Development instance to the project we are using for `production`. Currently, it only has test records, but once it has customer data, we recommend using [Branching](https://supabase.com/docs/guides/platform/branching) or manually creating a separate `preview` or `staging` environment, to ensure your customer's data is not used locally, and schema changes/migrations can be thoroughly tested before shipping to `production`.
-
-Once you've linked your project, you can pull down any schema changes you made in your remote database with:
+For yarn:
 
 ```bash
-pnpm supabase:pull
+yarn dev
 ```
 
-You can seed your local database with any data you added in your remote database with:
+### 11. Visit `http://localhost:3000` in your browser to see the running app.
 
-```bash
-pnpm supabase:generate-seed
-pnpm supabase:reset
-```
+## One-Click Deploy
 
-🚧 Warning: this is seeding data from the `production` database. Currently, this only contains test data, but we recommend using [Branching](https://supabase.com/docs/guides/platform/branching) or manually setting up a `preview` or `staging` environment once this contains real customer data.
+Default deploy using Vercel:
 
-You can make changes to the database schema in your local Supabase Studio and run the following command to generate TypeScript types to match your schema:
+[![Deploy with Vercel](https://vercel.com/new/burgalons-projects/clone?repository-url=https%3A%2F%2Fgithub.com%2Fastria-ai%2Fheadshots-starter%2Ftree%2Fmain&env=ASTRIA_API_KEY%2CAPP_WEBHOOK_SECRET&envDescription=Set%20up%20environment%20variables%20for%20Astria%20AI%20and%20redirect%20URL%20in%20Supabase%20Auth%20dashboard.%20See%20.env.local.example%20for%20full%20config%20with%20Resend%20and%20Stripe.&envLink=https%3A%2F%2Fgithub.com%2Fleap-ai%2Fheadshots-starter%2Fblob%2Fmain%2F.env.local.example&project-name=headshots-starter-clone&repository-name=headshots-starter-clone&demo-title=AI%20Headshot%20Generator&demo-description=A%20Professional%20AI%20headshot%20generator%20starter%20kit%20powered%20by%20Next.js%2C%20Leap%20AI%2C%20and%20Vercel&demo-url=https%3A%2F%2Fwww.getheadshots.ai%2F&demo-image=https%3A%2F%2Fimages.ctfassets.net%2Fe5382hct74si%2F1CEDfTwO5vPEiNMgN2Y1t6%2F245d1e0c11c4d8e734fbe345b9ecdc7c%2Fdemo.png&integration-ids=oac_VqOgBHqhEoFTPzGkPd7L0iH6&external-id=https%3A%2F%2Fgithub.com%2Fleap-ai%2Fheadshots-starter%2Ftree%2Fmain)
 
-```bash
-pnpm supabase:generate-types
-```
 
-You can also automatically generate a migration file with all the changes you've made to your local database schema with the following command:
+## How To Get Good Results
 
-```bash
-pnpm supabase:generate-migration
-```
+[![Good results Demo](/public/good_results.png)](https://blog.tryleap.ai/create-an-ai-headshot-generator-fine-tune-stable-diffusion-with-leap-api/#step-1-gather-your-image-samples-%F0%9F%93%B8)
 
-And push those changes to your remote database with:
+The image samples used to teach the model what your face looks like are critical. Garbage in = garbage out.
 
-```bash
-pnpm supabase:push
-```
+- Enforce close-ups of faces and consider cropping so that the face is centered.
+- Enforce images with only one person in the frame.
+- Avoid accessories in samples like sunglasses and hats.
+- Ensure the face is clearly visible. (For face detection, consider using tools like [Cloudinary API](https://cloudinary.com/documentation/face_detection_based_transformations?ref=blog.tryleap.ai)).
 
-Remember to test your changes thoroughly in your `local` and `staging` or `preview` environments before deploying them to `production`!
+[![Avoid multiple faces](/public/multiple_faces.png)](https://blog.tryleap.ai/create-an-ai-headshot-generator-fine-tune-stable-diffusion-with-leap-api/#how-to-avoid-multiple-faces-in-results-%E2%9D%8C)
 
-### Use the Stripe CLI to test webhooks
+If you get distorted results with multiple faces, repeated subjects, multiple limbs, etc, make sure to follow these steps and minimize the chance of this happening:
 
-Use the [Stripe CLI](https://stripe.com/docs/stripe-cli) to [login to your Stripe account](https://stripe.com/docs/stripe-cli#login-account):
+- Make sure any samples uploaded are the same 1:1 height / width aspect ratio, for example 512x512, 1024x1024, etc.
+- Avoid multiple people in the samples uploaded.
+- Add "double torso, totem pole" to the negative prompt when generating.
+- Make sure your dimensions when generating are also 1:1 with the same height / width ratios of the samples.
 
-```bash
-pnpm stripe:login
-```
+For more information on how to improve quality, read the blog [here](https://blog.tryleap.ai/create-an-ai-headshot-generator-fine-tune-stable-diffusion-with-leap-api/#step-1-gather-your-image-samples-%F0%9F%93%B8).
 
-This will print a URL to navigate to in your browser and provide access to your Stripe account.
+### All Thanks To Our Contributors:
 
-Next, start local webhook forwarding:
+<a href="https://github.com/leap-ai/headshots-starter/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=leap-ai/headshots-starter" />
+</a>
 
-```bash
-pnpm stripe:listen
-```
+## Additional Use-Cases
 
-Running this Stripe command will print a webhook secret (such as, `whsec_***`) to the console. Set `STRIPE_WEBHOOK_SECRET` to this value in your `.env.local` file. If you haven't already, you should also set `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` and `STRIPE_SECRET_KEY` in your `.env.local` file using the **test mode**(!) keys from your Stripe dashboard.
+Headshot AI can be easily adapted to support many other use-cases of [Astria](https://www.astria.ai/) including:
 
-### Run the Next.js client
+- AI Avatars
+  - [Anime](https://blog.tryleap.ai/transforming-images-into-anime-with-leap-ai/)
+  - [Portraits](https://blog.tryleap.ai/ai-time-machine-images-a-glimpse-into-the-future-with-leap-ai/)
+  - [Story Illustrations](https://blog.tryleap.ai/novel-ai-image-generator-using-leap-ai-a-comprehensive-guide/)
 
-In a separate terminal, run the following command to start the development server:
+[![Anime AI Demo](/public/anime.png)](https://www.astria.ai/gallery/packs)
 
-```bash
-pnpm dev
-```
+- Pet Portraits
 
-Note that webhook forwarding and the development server must be running concurrently in two separate terminals for the application to work correctly.
+[![Pet AI Demo](/public/pet.png)](https://www.astria.ai/gallery/packs)
 
-Finally, navigate to [http://localhost:3000](http://localhost:3000) in your browser to see the application rendered.
+- Product Shots
+- Food Photography
 
-## Going live
+[![Product AI Demo](/public/products.png)](https://www.astria.ai/)
 
-### Archive testing products
+- Icons
+- [Style-Consistent Assets](https://blog.tryleap.ai/how-to-generate-style-consistent-assets-finetuning-on-leap/)
 
-Archive all test mode Stripe products before going live. Before creating your live mode products, make sure to follow the steps below to set up your live mode env vars and webhooks.
+[![Icons AI Demo](/public/icons.png)](https://www.astria.ai/)
 
-### Configure production environment variables
+& more!
 
-To run the project in live mode and process payments with Stripe, switch Stripe from "test mode" to "production mode." Your Stripe API keys will be different in production mode, and you will have to create a separate production mode webhook. Copy these values and paste them into Vercel, replacing the test mode values.
+## Contributing
 
-### Redeploy
+We welcome collaboration and appreciate your contribution to Headshot AI. If you have suggestions for improvement or significant changes in mind, feel free to open an issue!
 
-Afterward, you will need to rebuild your production deployment for the changes to take effect. Within your project Dashboard, navigate to the "Deployments" tab, select the most recent deployment, click the overflow menu button (next to the "Visit" button) and select "Redeploy" (do NOT enable the "Use existing Build Cache" option).
+If you want to contribute to the codebase make sure you create a new branch and open a pull request that points to `dev`.
 
-To verify you are running in production mode, test checking out with the [Stripe test card](https://stripe.com/docs/testing). The test card should not work.
+## Resources and Support
+
+- Help Email: support@astria.ai
+
+## License
+
+Headshot AI is released under the [MIT License](https://choosealicense.com/licenses/mit/).
