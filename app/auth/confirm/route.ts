@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
 
   try {
     const { data, error } = await supabase.auth.verifyOtp({
-      token: tokenHash,
+      token_hash: tokenHash,
       type: type as "magiclink" | "signup" | "recovery" | "invite",
       options: {
         redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}${next}`,
