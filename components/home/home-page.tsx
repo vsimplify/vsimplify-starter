@@ -81,38 +81,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-gray-900 text-white">
       <div className="container mx-auto px-4 py-6 flex flex-col h-screen">
-        <div className="flex justify-between items-center mb-4">
-          <motion.h1 
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight flex items-center"
-          >
-            <Image src="/QuickForAnswer_Logo.svg" alt="QuickForAnswer Logo" width={40} height={40} className="mr-2" />
-            Quick<span className="text-blue-400">ForAnswer</span> <sup className="text-blue-400 text-xl">α</sup>
-          </motion.h1>
-          <div className="relative">
-            <button
-              onClick={() => setShowUserMenu(!showUserMenu)}
-              className="text-gray-300 hover:text-white focus:outline-none focus:text-white"
-              aria-label="User menu"
-            >
-              <User className="h-6 w-6" />
-            </button>
-            {showUserMenu && (
-              <div ref={userMenuRef} className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
-                <Link href="/login" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                  <LogIn className="inline-block w-4 h-4 mr-2" />
-                  Login
-                </Link>
-                <Link href="/register" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                  <UserPlus className="inline-block w-4 h-4 mr-2" />
-                  Register
-                </Link>
-              </div>
-            )}
-          </div>
-        </div>
+
         <motion.p 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

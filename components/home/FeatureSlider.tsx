@@ -48,8 +48,8 @@ const FeatureSlider: React.FC = () => {
   }, [isPaused, nextSlide]);
 
   return (
-    <div className="relative w-full h-full bg-gray-100 p-6 sm:p-10 overflow-hidden">
-      <div className="max-w-5xl mx-auto h-full flex items-center justify-center">
+    <div className="relative w-full h-[calc(100vh-6rem)] bg-gray-100 overflow-hidden">
+      <div className="relative w-full h-full">
         <AnimatePresence initial={false} mode="wait">
           {FEATURES.map((feature, index) => (
             currentSlide === index && (
@@ -59,21 +59,21 @@ const FeatureSlider: React.FC = () => {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.5 }}
-                className="absolute top-0 left-0 w-full h-full"
+                className="absolute inset-0"
               >
                 <Image
                   src={feature.image}
                   alt={feature.title}
                   layout="fill"
                   objectFit="cover"
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  sizes="100vw"
                   priority={index === 0}
                   loading={index === 0 ? "eager" : "lazy"}
                   className="transition-transform duration-300 ease-in-out transform hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/30 to-black/70 flex flex-col items-center justify-end text-white p-6 sm:p-8">
-                  <h2 className="text-3xl sm:text-4xl font-bold mb-3 text-center">{feature.title}</h2>
-                  <p className="text-base sm:text-lg mb-6 text-center max-w-2xl">{feature.description}</p>
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/30 to-black/70 flex flex-col items-center justify-end p-4 sm:p-6 lg:p-8">
+                  <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2 sm:mb-3 text-center text-white">{feature.title}</h2>
+                  <p className="text-sm sm:text-base lg:text-lg mb-4 sm:mb-6 text-center max-w-2xl text-white">{feature.description}</p>
                   {feature.theme === 'empowerment' && (
                     <div className="flex items-center space-x-3 mb-4">
                       <svg className="w-8 h-8 sm:w-10 sm:h-10" fill="currentColor" viewBox="0 0 20 20">
@@ -109,32 +109,34 @@ const FeatureSlider: React.FC = () => {
             )
           ))}
         </AnimatePresence>
-      </div>
-      <div className="absolute bottom-4 right-4 sm:bottom-6 sm:right-6 flex items-center space-x-3 sm:space-x-5 bg-gradient-to-r from-blue-500 to-purple-500 px-3 sm:px-5 py-2 sm:py-3 rounded-full">
-        <button
-          onClick={prevSlide}
-          className="p-2 rounded-full hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 text-white" 
-          aria-label="Previous slide"
-        >
-          <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
-        </button>
-        <button
-          onClick={togglePause}
-          className="p-2 rounded-full hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 text-white" 
-          aria-label="Toggle pause"
-        >
-          {isPaused ? <Play className="w-5 h-5 sm:w-6 sm:h-6" /> : <Pause className="w-5 h-5 sm:w-6 sm:h-6" />}
-        </button>
-        <button
-          onClick={nextSlide}
-          className="p-2 rounded-full hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 text-white" 
-          aria-label="Next slide"
-        >
-          <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
-        </button>
-        <span className="text-sm sm:text-base font-semibold text-white"> 
-          {currentSlide + 1} / {FEATURES.length}
-        </span>
+
+        {/* Controls - Positioned absolutely at the bottom */}
+        <div className="absolute bottom-4 right-4 z-10 flex items-center space-x-2 sm:space-x-3 bg-gradient-to-r from-blue-500 to-purple-500 px-2 sm:px-4 py-1 sm:py-2 rounded-full">
+          <button
+            onClick={prevSlide}
+            className="p-1 sm:p-2 rounded-full hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 text-white"
+            aria-label="Previous slide"
+          >
+            <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+          </button>
+          <button
+            onClick={togglePause}
+            className="p-1 sm:p-2 rounded-full hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 text-white"
+            aria-label="Toggle pause"
+          >
+            {isPaused ? <Play className="w-4 h-4 sm:w-5 sm:h-5" /> : <Pause className="w-4 h-4 sm:w-5 sm:h-5" />}
+          </button>
+          <button
+            onClick={nextSlide}
+            className="p-1 sm:p-2 rounded-full hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 text-white"
+            aria-label="Next slide"
+          >
+            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
+          </button>
+          <span className="text-xs sm:text-sm font-semibold text-white">
+            {currentSlide + 1} / {FEATURES.length}
+          </span>
+        </div>
       </div>
     </div>
   );
