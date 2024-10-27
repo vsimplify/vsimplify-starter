@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
   const requestUrl = new URL(req.url);
   const tokenHash = requestUrl.searchParams.get("token_hash");
   const type = requestUrl.searchParams.get("type");
-  const next = requestUrl.searchParams.get("next") || "/dashboard";
+  const next = requestUrl.searchParams.get("next") || "/overview";
 
   if (!tokenHash || !type) {
     console.error("Missing token_hash or type in Magic Link.");
