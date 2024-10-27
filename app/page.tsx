@@ -5,7 +5,8 @@ import Link from "next/link";
 import hero from "/public/hero.png";
 
 import { Button } from "@/components/ui/button";
-import Home from "@/components/home/home-page";; // Adjust the import path if necessary
+import Home from "@/components/home/home-page";
+import { redirect } from "next/navigation";
 import PlatformOverview from "@/components/home/platform-overview";
 
 export const dynamic = "force-dynamic";
