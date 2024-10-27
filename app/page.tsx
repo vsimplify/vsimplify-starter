@@ -1,13 +1,14 @@
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
 import hero from "/public/hero.png";
 
 import { Button } from "@/components/ui/button";
 import ExplainerSection from "@/components/ExplainerSection";
 import PricingSection from "@/components/PricingSection";
+
+import PlatformOverview from "@/components/home/platform-overview";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +24,7 @@ export default async function Index() {
   }
 
   return (
-    <div className="flex flex-col items-center pt-16">
+    <div className="flex flex-col items-center pt-16 bg-background text-text">
       <div className="flex flex-col lg:flex-row items-center gap-8 p-8 max-w-6xl w-full">
         <div className="flex flex-col space-y-4 lg:w-1/2 w-full">
           <h1 className="text-5xl font-bold">
@@ -35,7 +36,9 @@ export default async function Index() {
           </p>
           <div className="flex flex-col space-y-2">
             <Link href="/login">
-              <Button className="w-full lg:w-1/2">Get Your Headshots</Button>
+              <Button className="w-full lg:w-1/2 bg-primary hover:bg-secondary">
+                Get Your Headshots
+              </Button>
             </Link>
             <p className="text-sm text-gray-500 italic">
               Trusted by professionals worldwide. Quick and efficient.
@@ -43,7 +46,7 @@ export default async function Index() {
           </div>
           <div className="mt-4 text-gray-500">
             <span>Already a member? </span>
-            <Link className="text-blue-600 hover:underline" href="/login">
+            <Link className="text-secondary hover:underline" href="/login">
               Sign In
             </Link>
           </div>
@@ -58,6 +61,7 @@ export default async function Index() {
       </div>
       <ExplainerSection />
       <PricingSection />
+      <PlatformOverview />
     </div>
   );
 }
