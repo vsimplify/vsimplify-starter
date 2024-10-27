@@ -295,7 +295,7 @@ export default function PlatformOverview() {
                       <LogIn className="inline-block w-4 h-4 mr-2" />
                       Login
                     </Link>
-                    <Link href="/register" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                    <Link href="/login" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                       <UserPlus className="inline-block w-4 h-4 mr-2" />
                       Register
                     </Link>
