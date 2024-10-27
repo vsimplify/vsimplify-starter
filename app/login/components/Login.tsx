@@ -6,100 +6,71 @@ import { useToast } from "@/components/ui/use-toast";
 import { Database } from "@/types/supabase";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import disposableDomains from "disposable-email-domains";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { AiOutlineGoogle } from "react-icons/ai";
+import { 
+  AiOutlineGoogle, 
+  AiOutlineGithub,
+  AiOutlineApple,
+  AiFillFacebook 
+} from "react-icons/ai";
 import { WaitingForMagicLink } from "./WaitingForMagicLink";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 type Inputs = {
   email: string;
 };
 
-const Login = ({
-  host,
-  searchParams,
-}: {
-  host: string | null;
-  searchParams?: { [key: string]: string | string[] | undefined };
-}) => {
-  const supabase = createClientComponentClient<Database>();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+export default function Login({ host }: { host: string | null }) {
   const [isMagicLinkSent, setIsMagicLinkSent] = useState(false);
+  const supabase = createClientComponentClient<Database>();
   const { toast } = useToast();
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitted },
+    formState: { errors },
   } = useForm<Inputs>();
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
-    setIsSubmitting(true);
-    try {
-      await signInWithMagicLink(data.email);
-      setTimeout(() => {
-        setIsSubmitting(false);
-        toast({
-          title: "Email sent",
-          description: "Check your inbox for a magic link to sign in.",
-          duration: 5000,
-        });
-        setIsMagicLinkSent(true);
-      }, 1000);
-    } catch (error) {
-      setIsSubmitting(false);
-      toast({
-        title: "Something went wrong",
-        variant: "destructive",
-        description: "Please try again, if the problem persists, contact us at hello@tryleap.ai",
-        duration: 5000,
-      });
-    }
-  };
-
-  useEffect(() => {
-    if (searchParams?.err) {
-      toast({
-        title: "Login Failed",
-        description: searchParams.message || "An error occurred during login.",
-        variant: "destructive",
-        duration: 5000,
-      });
-    }
-  }, [searchParams, toast]);
-
-  let inviteToken = null;
-  if (searchParams && "inviteToken" in searchParams) {
-    inviteToken = searchParams["inviteToken"];
-  }
-
-  const protocol = host?.includes("localhost") ? "http" : "https";
-  const redirectUrl = `${protocol}://${host}/auth/callback`;
-
-  console.log({ redirectUrl });
-
-  const signInWithGoogle = async () => {
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: redirectUrl,
-      },
-    });
-
-    console.log(data, error);
-  };
-
-  const signInWithMagicLink = async (email: string) => {
     const { error } = await supabase.auth.signInWithOtp({
-      email,
+      email: data.email,
       options: {
-        emailRedirectTo: redirectUrl,
+        emailRedirectTo: `${location.origin}/auth/callback`,
       },
     });
 
     if (error) {
-      console.log(`Error: ${error.message}`);
-      throw error;
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsMagicLinkSent(true);
+  };
+
+  const handleSocialLogin = async (provider: 'google' | 'github' | 'apple' | 'facebook') => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: `${location.origin}/auth/callback`,
+      },
+    });
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
     }
   };
 
@@ -108,63 +79,80 @@ const Login = ({
   }
 
   return (
-    <div className="flex items-center justify-center p-8">
-      <div className="flex flex-col gap-4 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 p-4 rounded-xl max-w-sm w-full">
-        <h1 className="text-xl">Welcome</h1>
-        <p className="text-xs opacity-60">
-          Sign in or create an account to get started.
+    <div className="flex flex-col gap-6 animate-fadeIn">
+      <div className="text-center">
+        <h1 className="text-3xl font-bold mb-2">Welcome Back</h1>
+        <p className="text-sm text-neutral-600 dark:text-neutral-400">
+          Sign in to continue to your account
         </p>
-        {/* <Button
-          onClick={signInWithGoogle}
-          variant={"outline"}
-          className="font-semibold"
-        >
-          <AiOutlineGoogle size={20} />
-          Continue with Google
-        </Button>
-        <OR /> */}
+      </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-2">
-          <div className="flex flex-col gap-4">
-            <div className="flex flex-col gap-2">
+      <Accordion type="single" collapsible className="w-full">
+        <AccordionItem value="email">
+          <AccordionTrigger className="text-lg">Email Login</AccordionTrigger>
+          <AccordionContent>
+            <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
               <Input
                 type="email"
-                placeholder="Email"
+                placeholder="Enter your email"
                 {...register("email", {
                   required: "Email is required",
-                  validate: {
-                    emailIsValid: (value: string) =>
-                      /^[A-Z0-9._%-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(value) ||
-                      "Please enter a valid email",
-                    emailDoesntHavePlus: (value: string) =>
-                      !/\+/.test(value) || "Email addresses with a '+' are not allowed",
-                    emailIsntDisposable: (value: string) =>
-                      !disposableDomains.includes(value.split("@")[1]) ||
-                      "Please use a permanent email address",
+                  pattern: {
+                    value: /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/,
+                    message: "Invalid email address",
                   },
+                  validate: (value) =>
+                    !disposableDomains.includes(value.split("@")[1]) ||
+                    "Disposable email addresses are not allowed",
                 })}
+                className="bg-white dark:bg-neutral-800"
               />
-              {isSubmitted && errors.email && (
-                <span className="text-xs text-red-400">
-                  {errors.email.message || "Email is required to sign in"}
-                </span>
+              {errors.email && (
+                <span className="text-red-500 text-sm">{errors.email.message}</span>
               )}
-            </div>
-          </div>
+              <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">
+                Send Magic Link
+              </Button>
+            </form>
+          </AccordionContent>
+        </AccordionItem>
 
-          <Button
-            isLoading={isSubmitting}
-            disabled={isSubmitting}
-            variant="outline"
-            className="w-full"
-            type="submit"
-          >
-            Continue with Email
-          </Button>
-        </form>
-      </div>
+        <AccordionItem value="social">
+          <AccordionTrigger className="text-lg">Social Login</AccordionTrigger>
+          <AccordionContent>
+            <div className="grid grid-cols-2 gap-4">
+              <Button
+                variant="outline"
+                onClick={() => handleSocialLogin('google')}
+                className="flex items-center justify-center gap-2"
+              >
+                <AiOutlineGoogle className="h-5 w-5" /> Google
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => handleSocialLogin('github')}
+                className="flex items-center justify-center gap-2"
+              >
+                <AiOutlineGithub className="h-5 w-5" /> GitHub
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => handleSocialLogin('apple')}
+                className="flex items-center justify-center gap-2"
+              >
+                <AiOutlineApple className="h-5 w-5" /> Apple
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => handleSocialLogin('facebook')}
+                className="flex items-center justify-center gap-2"
+              >
+                <AiFillFacebook className="h-5 w-5" /> Facebook
+              </Button>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
     </div>
   );
-};
-
-export default Login;
+}
