@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Pause, Play, Maximize2, Minimize2 } from 'lucide-react';
 
 const FEATURES = [
   { 
@@ -28,6 +28,7 @@ const FEATURES = [
 const FeatureSlider: React.FC = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const nextSlide = useCallback(() => {
     setCurrentSlide((prev) => (prev + 1) % FEATURES.length);
@@ -47,98 +48,158 @@ const FeatureSlider: React.FC = () => {
     return () => clearInterval(timer);
   }, [isPaused, nextSlide]);
 
+  const slideVariants = {
+    enter: {
+      opacity: 0,
+      scale: 0.9,
+      y: 20
+    },
+    center: {
+      opacity: 1,
+      scale: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+        type: "spring",
+        stiffness: 300,
+        damping: 25
+      }
+    },
+    exit: {
+      opacity: 0,
+      scale: 0.9,
+      y: -20,
+      transition: {
+        duration: 0.3
+      }
+    }
+  };
+
+  const containerVariants = {
+    compact: {
+      height: "calc(100vh - 16rem)",
+      transition: {
+        type: "spring",
+        stiffness: 400,
+        damping: 30
+      }
+    },
+    expanded: {
+      height: "calc(100vh - 6rem)",
+      transition: {
+        type: "spring",
+        stiffness: 400,
+        damping: 30
+      }
+    }
+  };
+
   return (
-    <div className="relative w-full h-[calc(100vh-6rem)] bg-gray-100 overflow-hidden">
+    <motion.div 
+      className="relative w-full bg-gray-900 overflow-hidden rounded-lg mx-auto my-4"
+      variants={containerVariants}
+      initial="compact"
+      animate={isExpanded ? "expanded" : "compact"}
+    >
       <div className="relative w-full h-full">
         <AnimatePresence initial={false} mode="wait">
           {FEATURES.map((feature, index) => (
             currentSlide === index && (
               <motion.div
                 key={index}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.5 }}
-                className="absolute inset-0"
+                variants={slideVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                className="absolute inset-0 flex flex-col"
               >
-                <Image
-                  src={feature.image}
-                  alt={feature.title}
-                  layout="fill"
-                  objectFit="cover"
-                  sizes="100vw"
-                  priority={index === 0}
-                  loading={index === 0 ? "eager" : "lazy"}
-                  className="transition-transform duration-300 ease-in-out transform hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/30 to-black/70 flex flex-col items-center justify-end p-4 sm:p-6 lg:p-8">
-                  <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2 sm:mb-3 text-center text-white">{feature.title}</h2>
-                  <p className="text-sm sm:text-base lg:text-lg mb-4 sm:mb-6 text-center max-w-2xl text-white">{feature.description}</p>
-                  {feature.theme === 'empowerment' && (
-                    <div className="flex items-center space-x-3 mb-4">
-                      <svg className="w-8 h-8 sm:w-10 sm:h-10" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clipRule="evenodd" />
-                      </svg>
-                      <span className="text-xl sm:text-2xl font-semibold">Boost Your Productivity</span>
-                    </div>
-                  )}
-                  {feature.theme === 'applications' && (
-                    <div className="grid grid-cols-3 gap-4 mb-4">
-                      <div className="flex flex-col items-center">
-                        <svg className="w-12 h-12 mb-2" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M10 3.5a1.5 1.5 0 013 0V4a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-.5a1.5 1.5 0 000 3h.5a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-.5a1.5 1.5 0 00-3 0v.5a1 1 0 01-1 1H6a1 1 0 01-1-1v-3a1 1 0 00-1-1h-.5a1.5 1.5 0 010-3H4a1 1 0 001-1V6a1 1 0 011-1h3a1 1 0 001-1v-.5z" />
-                        </svg>
-                        <span>Healthcare</span>
-                      </div>
-                      <div className="flex flex-col items-center">
-                        <svg className="w-12 h-12 mb-2" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                        </svg>
-                        <span>Finance</span>
-                      </div>
-                      <div className="flex flex-col items-center">
-                        <svg className="w-12 h-12 mb-2" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
-                        </svg>
-                        <span>Education</span>
-                      </div>
-                    </div>
-                  )}
+                <div className="relative flex-1 overflow-hidden rounded-t-lg">
+                  <Image
+                    src={feature.image}
+                    alt={feature.title}
+                    layout="fill"
+                    objectFit="contain"
+                    className="transition-transform duration-300 ease-in-out"
+                    priority={index === 0}
+                  />
                 </div>
+
+                <motion.div 
+                  className="bg-gradient-to-t from-gray-900 via-gray-900/90 to-transparent p-4 sm:p-6"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-2 text-white">
+                    {feature.title}
+                  </h2>
+                  <p className="text-sm sm:text-base text-gray-200 max-w-2xl">
+                    {feature.description}
+                  </p>
+                </motion.div>
               </motion.div>
             )
           ))}
         </AnimatePresence>
 
-        {/* Controls - Positioned absolutely at the bottom */}
-        <div className="absolute bottom-4 right-4 z-10 flex items-center space-x-2 sm:space-x-3 bg-gradient-to-r from-blue-500 to-purple-500 px-2 sm:px-4 py-1 sm:py-2 rounded-full">
-          <button
-            onClick={prevSlide}
-            className="p-1 sm:p-2 rounded-full hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 text-white"
-            aria-label="Previous slide"
+        {/* Floating Controls */}
+        <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="p-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg"
+            aria-label={isExpanded ? "Minimize" : "Maximize"}
           >
-            <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
-          </button>
-          <button
-            onClick={togglePause}
-            className="p-1 sm:p-2 rounded-full hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 text-white"
-            aria-label="Toggle pause"
-          >
-            {isPaused ? <Play className="w-4 h-4 sm:w-5 sm:h-5" /> : <Pause className="w-4 h-4 sm:w-5 sm:h-5" />}
-          </button>
-          <button
-            onClick={nextSlide}
-            className="p-1 sm:p-2 rounded-full hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 text-white"
-            aria-label="Next slide"
-          >
-            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
-          </button>
-          <span className="text-xs sm:text-sm font-semibold text-white">
-            {currentSlide + 1} / {FEATURES.length}
-          </span>
+            {isExpanded ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
+          </motion.button>
         </div>
+
+        {/* Bottom Controls Bar */}
+        <motion.div 
+          className="absolute bottom-0 inset-x-0 z-10 p-4 flex justify-between items-center bg-gradient-to-t from-gray-900 to-transparent"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <div className="flex items-center gap-3">
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={prevSlide}
+              className="p-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white"
+              aria-label="Previous slide"
+            >
+              <ChevronLeft size={20} />
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={togglePause}
+              className="p-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white"
+              aria-label="Toggle pause"
+            >
+              {isPaused ? <Play size={20} /> : <Pause size={20} />}
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={nextSlide}
+              className="p-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white"
+              aria-label="Next slide"
+            >
+              <ChevronRight size={20} />
+            </motion.button>
+          </div>
+
+          <motion.div 
+            className="bg-blue-600 px-3 py-1 rounded-full text-white text-sm font-medium"
+            whileHover={{ scale: 1.05 }}
+          >
+            {currentSlide + 1} / {FEATURES.length}
+          </motion.div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
