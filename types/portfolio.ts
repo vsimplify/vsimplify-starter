@@ -17,7 +17,7 @@ export interface Activity {
 }
 
 export interface Agent {
-  id: string;
+  id: number;
   name: string;
   // ... other agent properties ...
 }
