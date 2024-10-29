@@ -5,7 +5,7 @@ import { useEffect } from 'react'
 import { Accordion } from '@/components/ui/accordion'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll'
-import { PortfolioCard } from './PortfolioCard'
+import PortfolioItemCard from './PortfolioItemCard'
 import { Spinner } from '@/components/ui/spinner'
 import type { Portfolio } from '@/types/portfolio'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
@@ -65,7 +65,7 @@ export default function PortfolioList({ userId }: PortfolioListProps) {
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.2 }}
           >
-            <PortfolioCard portfolio={portfolio} />
+            <PortfolioItemCard portfolio={portfolio} />
           </motion.div>
         ))}
       </AnimatePresence>

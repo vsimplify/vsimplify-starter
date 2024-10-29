@@ -1,21 +1,15 @@
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
-import PortfolioDashboard from "@/components/portfolio/PortfolioDashboard";
+'use client'
 
-export const dynamic = "force-dynamic";
+import React from 'react';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
-export default async function PortfolioPage() {
-  const supabase = createServerComponentClient({ cookies });
+// ... existing imports ...
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return redirect("/login");
-  }
-
-  return <PortfolioDashboard userId={user.id} />;
+export default function PortfolioPage() {
+  return (
+    <ErrorBoundary>
+      {/* Page content */}
+    </ErrorBoundary>
+  );
 }
 

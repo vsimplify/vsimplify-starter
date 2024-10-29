@@ -10,8 +10,9 @@ INSERT INTO public.portfolios (
 )
 
 VALUES
-  (  'f5cb0287-d141-4f8b-9632-98be8d7bcbe7', 'AI Productivity Tools', 'Automate all task by using AI through forAnswer platform', 50, 'active', NOW(),103.01),
-  ( 'f5cb0287-d141-4f8b-9632-98be8d7bcbe7', 'AI Healthcare Solutions', 'Revolutionizing healthcare with advanced AI models.', 30, 'active', NOW(),100.01);
+  (  'f5cb0287-d141-4f8b-9632-98be8d7bcbe7', 'AI Productivity Suite', 'Streamline all business operations using AI-driven tools, through forAnswer platform', 50, 'active', NOW(),103.01),
+  ('f5cb0287-d141-4f8b-9632-98be8d7bcbe7', 'AI Healthcare Innovations', 'Enhancing healthcare services with cutting-edge AI technologies.', 60, 'active', NOW(), 100.01),
+  ('f5cb0287-d141-4f8b-9632-98be8d7bcbe7', 'AI Financial Analytics', 'Revolutionize financial analysis with advanced AI models.', 45, 'active', NOW(), 105.01);
 --SELECT * FROM "Domain" WHERE "ForUse"='Work 💼';
 -- SELECT id FROM auth.users WHERE email = 'karan.tandon@gmail.com'; 
 -- Insert dummy projects
@@ -21,13 +22,13 @@ INSERT INTO public."Project"(
 VALUES
   (
     1,
-    'Develop an AI-driven scheduling algorithm.',
-    'Create an efficient scheduling application using AI.',
+    'Develop AI-driven Schedule with Task Automation',
+    'Create an efficient scheduling application using AI & automates routine business activities.',
     '2024-12-31',
-    'AI Scheduler',
-    'Seamless scheduling for users.',
-    'An AI-driven scheduling application to optimize user calendars.',
-    'entrepreneur@aiapp.com',
+    'Schedule & Task Automator',
+    'Automated task management system implemented.',
+    'An AI-powered tool to handle repetitive tasks, improving efficiency and reducing manual workload.',
+    'karan.tandon@gmail.com',
     NOW(),
     NOW(),
     103.01,
@@ -35,16 +36,16 @@ VALUES
   ),
   (
     2,
-    'Implement an AI content generator.',
-    'Generate high-quality content using LLMs.',
+    'AI Financial Forecasting Tool',
+    'Create an AI tool for accurate financial forecasting and risk assessment.',
     '2024-11-30',
-    'Content Generator',
-    'Automated content creation for various platforms.',
-    'A content generation tool leveraging large language models for diverse content needs.',
-    'entrepreneur@aiapp.com',
+    'FinForecast',
+    'Advanced financial forecasting capabilities integrated.',
+    'An AI-driven analytics tool designed to provide precise financial forecasts and comprehensive risk assessments.',
+    'karan.tandon@gmail.com',
     NOW(),
     NOW(),
-    103.01,
+    105.01,
     'f5cb0287-d141-4f8b-9632-98be8d7bcbe7'
   ),
   (
@@ -55,7 +56,7 @@ VALUES
     'Health Monitor',
     'Real-time patient monitoring dashboard.',
     'An AI-based system for tracking and analyzing patient vitals in real-time.',
-    'entrepreneur@aiapp.com',
+    'karan.tandon@gmail.com',
     NOW(),
     NOW(),
     100.01,
@@ -118,7 +119,58 @@ VALUES
     'Health Monitor',
     103.01,
     'f5cb0287-d141-4f8b-9632-98be8d7bcbe7'
-  );
+  )
+    (
+    'AI Task Manager',
+    'Automate and manage routine business tasks efficiently.',
+    'An AI specialist focused on optimizing business operations through automation.',
+    '{DUCK_DUCK_GO_SEARCH}',
+    false,
+    true,
+    'https://cdn.pixabay.com/photo/2021/08/04/13/06/software-developer-6521720_1280.jpg',
+    NOW(),
+    NOW(),
+    false,
+    'Me',
+    'aitaskmanager@aiproductivity.com',
+    'Task Manager Pro',
+    103.01,
+    'f5cb0287-d141-4f8b-9632-98be8d7bcbe7'
+  ),
+  (
+    'AI Healthcare Analyst',
+    'Analyze patient data to improve healthcare outcomes.',
+    'Expert in healthcare data analysis and AI integration for better patient care.',
+    '{SEMANTIC_SCHOLAR, WIKIPEDIA}',
+    false,
+    true,
+    'https://cdn.pixabay.com/photo/2021/08/04/13/06/software-developer-6521720_1280.jpg',
+    NOW(),
+    NOW(),
+    false,
+    'Me',
+    'aihealthcare@aihealthcare.com',
+    'Healthcare Analyst',
+    100.01,
+    'f5cb0287-d141-4f8b-9632-98be8d7bcbe7'
+  ),
+  (
+    'AI Financial Advisor',
+    'Provide accurate financial forecasts and risk assessments.',
+    'Specialist in financial modeling and AI-driven analytics for financial markets.',
+    '{PUBMED, YAHOO_FINANCE}',
+    false,
+    true,
+    'https://cdn.pixabay.com/photo/2021/08/04/13/06/software-developer-6521720_1280.jpg',
+    NOW(),
+    NOW(),
+    false,
+    'Me',
+    'aifinancial@aifinanalytics.com',
+    'Financial Advisor',
+    105.01,
+    'f5cb0287-d141-4f8b-9632-98be8d7bcbe7'
+  );;
   -- Insert dummy missions (activities) linked to projects with tasks embedded as JSON arrays
 INSERT INTO public."Mission" (
   name,
@@ -149,7 +201,7 @@ VALUES
     NULL,
     NULL,
     '{
-      "{\"name\": \"Algorithm Development\", \"description\": \"Develop the core scheduling algorithm.\", \"expected_output\": \"Fully functional scheduling algorithm.\", \"agent_id\": 69, \"async_execution\": true}",
+      "{\"name\": \"Algorithm Development\", \"description\": \"Develop the core scheduling algorithm to automate routine tasks.\", \"expected_output\": \"Fully functional scheduling algorithm.\", \"agent_id\": 69, \"async_execution\": true}",
       "{\"name\": \"Testing\", \"description\": \"Test the algorithm for bugs.\", \"expected_output\": \"Bug-free scheduling algorithm.\", \"agent_id\": 70, \"async_execution\": true}"
     }',
     'f5cb0287-d141-4f8b-9632-98be8d7bcbe7'
@@ -194,3 +246,11 @@ VALUES
     }',
     'f5cb0287-d141-4f8b-9632-98be8d7bcbe7'
   );
+  -- Create indexes for performance optimization
+CREATE INDEX idx_project_user_id ON public."Project" (user_id);
+CREATE INDEX idx_mission_project_id ON public."Mission" ("projectId");
+CREATE INDEX idx_agent_domain_id ON public."Agent" ("domainId");
+CREATE INDEX idx_portfolio_domain_id ON public.portfolios ("domainId");
+CREATE INDEX idx_project_domain_id ON public."Project" ("domainId");
+CREATE INDEX idx_agent_user_id ON public."Agent" (user_id);
+CREATE INDEX idx_portfolio_user_id ON public.portfolios (user_id);

@@ -1,107 +1,167 @@
-import React from "react";
-import { agents } from "@/data/data";
-import Select from "react-select";
-import { domainData } from "@/data/domainData";
-import { ChevronDownIcon } from "@heroicons/react/solid";
+import React, { useState, useMemo, useEffect } from 'react';
+import Select, { SingleValue } from 'react-select';
+import { domainData, Domain } from '../data/domainData';
+import styles from './BrowseAIAgents.module.css';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import supabase from '@/utils/supabaseClient';
+import { Spinner } from '@/components/ui/spinner';
+import { PortfolioCard } from '@/components/portfolio/PortfolioCard';
+import { Agent } from '@/types/portfolio';
+
+interface Option {
+  value: string;
+  label: string;
+}
+
+const fetchAgents = async (): Promise<Agent[]> => {
+  const { data, error } = await supabase
+    .from('Agent')
+    .select('*');
+  
+  if (error) throw error;
+  return data as Agent[];
+};
 
 const BrowseAIAgents: React.FC = () => {
-  const [filters, setFilters] = React.useState({
-    forUse: "",
-    audience: "",
-    domain: "",
-    area: "",
-  });
+  const queryClient = useQueryClient();
+  
+  // State for each dropdown
+  const [selectedFocusArea, setSelectedFocusArea] = useState<SingleValue<Option>>(null);
+  const [selectedAudience, setSelectedAudience] = useState<SingleValue<Option>>(null);
+  const [selectedDomain, setSelectedDomain] = useState<SingleValue<Option>>(null);
+  const [selectedArea, setSelectedArea] = useState<SingleValue<Option>>(null);
 
-  const handleFilterChange = (field: keyof typeof filters, value: string) => {
-    setFilters((prev) => ({ ...prev, [field]: value }));
+  // Generate options for Focus Area
+  const focusAreaOptions: Option[] = useMemo(() => {
+    const uniqueFocusAreas = Array.from(new Set(domainData.map(item => item.ForUse)));
+    return uniqueFocusAreas.map(area => ({ value: area, label: area }));
+  }, []);
+
+  // Generate options for Audience based on selected Focus Area
+  const audienceOptions: Option[] = useMemo(() => {
+    if (!selectedFocusArea) return [];
+    const filtered = domainData.filter(item => item.ForUse === selectedFocusArea.value);
+    const uniqueAudiences = Array.from(new Set(filtered.map(item => item.Audience)));
+    return uniqueAudiences.map(audience => ({ value: audience, label: audience }));
+  }, [selectedFocusArea]);
+
+  // Generate options for Domain based on selected Audience
+  const domainOptions: Option[] = useMemo(() => {
+    if (!selectedAudience) return [];
+    const filtered = domainData.filter(
+      item =>
+        item.ForUse === selectedFocusArea?.value &&
+        item.Audience === selectedAudience.value
+    );
+    const uniqueDomains = Array.from(new Set(filtered.map(item => item.Domain)));
+    return uniqueDomains.map(domain => ({ value: domain, label: domain }));
+  }, [selectedFocusArea, selectedAudience]);
+
+  // Generate options for Area based on selected Domain
+  const areaOptions: Option[] = useMemo(() => {
+    if (!selectedDomain) return [];
+    const filtered = domainData.filter(
+      item =>
+        item.ForUse === selectedFocusArea?.value &&
+        item.Audience === selectedAudience?.value &&
+        item.Domain === selectedDomain.value
+    );
+    const uniqueAreas = Array.from(new Set(filtered.map(item => item.Area)));
+    return uniqueAreas.map(area => ({ value: area, label: area }));
+  }, [selectedFocusArea, selectedAudience, selectedDomain]);
+
+  // Handlers for each dropdown
+  const handleFocusAreaChange = (option: SingleValue<Option>) => {
+    setSelectedFocusArea(option);
+    setSelectedAudience(null);
+    setSelectedDomain(null);
+    setSelectedArea(null);
   };
 
-  const filteredAgents = agents.filter((agent) => {
-    const domain = domainData.find((d) => d.Id === agent.domainId);
-    if (!domain) return false;
-    return (
-      (filters.forUse ? domain.ForUse === filters.forUse : true) &&
-      (filters.audience ? domain.Audience === filters.audience : true) &&
-      (filters.domain ? domain.Domain === filters.domain : true) &&
-      (filters.area ? domain.Area === filters.area : true)
-    );
+  const handleAudienceChange = (option: SingleValue<Option>) => {
+    setSelectedAudience(option);
+    setSelectedDomain(null);
+    setSelectedArea(null);
+  };
+
+  const handleDomainChange = (option: SingleValue<Option>) => {
+    setSelectedDomain(option);
+    setSelectedArea(null);
+  };
+
+  const handleAreaChange = (option: SingleValue<Option>) => {
+    setSelectedArea(option);
+  };
+
+  // React Query hook for fetching agents
+  const { data: agents, isLoading, isError } = useQuery({
+    queryKey: ['agents'],
+    queryFn: fetchAgents,
   });
 
+  // Supabase real-time subscription setup
+  useEffect(() => {
+    const channel = supabase.channel('public:Agent')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'Agent' }, payload => {
+        // Refetch agents on any change
+        queryClient.invalidateQueries({ queryKey: ['agents'] });
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+
   return (
-    <div className="mt-4">
-      <div className="flex space-x-4 mb-4">
+    <div className={styles.container}>
+      <h2 className={styles.heading}>Browse AI Agents</h2>
+      <div className={styles.dropdownContainer}>
         <Select
-          options={[...new Set(domainData.map((d) => d.ForUse))].map((forUse) => ({
-            label: forUse,
-            value: forUse,
-          }))}
-          placeholder="Filter by Focus Area"
-          onChange={(option) => handleFilterChange("forUse", option?.value || "")}
-          className="w-1/4"
-          components={{ DropdownIndicator: () => <ChevronDownIcon className="h-5 w-5 text-gray-400" /> }}
+          className={styles.select}
+          placeholder="Select Focus Area"
+          options={focusAreaOptions}
+          value={selectedFocusArea}
+          onChange={handleFocusAreaChange}
+          isClearable
         />
         <Select
-          options={[
-            ...new Set(
-              domainData
-                .filter((d) => !filters.forUse || d.ForUse === filters.forUse)
-                .map((d) => d.Audience)
-            ),
-          ].map((audience) => ({ label: audience, value: audience }))}
-          placeholder="Filter by Audience"
-          onChange={(option) => handleFilterChange("audience", option?.value || "")}
-          className="w-1/4"
-          isDisabled={!filters.forUse}
-          components={{ DropdownIndicator: () => <ChevronDownIcon className="h-5 w-5 text-gray-400" /> }}
+          className={styles.select}
+          placeholder="Select Audience"
+          options={audienceOptions}
+          value={selectedAudience}
+          onChange={handleAudienceChange}
+          isClearable
+          isDisabled={!selectedFocusArea}
         />
         <Select
-          options={[
-            ...new Set(
-              domainData
-                .filter(
-                  (d) =>
-                    (!filters.forUse || d.ForUse === filters.forUse) &&
-                    (!filters.audience || d.Audience === filters.audience)
-                )
-                .map((d) => d.Domain)
-            ),
-          ].map((domain) => ({ label: domain, value: domain }))}
-          placeholder="Filter by Domain"
-          onChange={(option) => handleFilterChange("domain", option?.value || "")}
-          className="w-1/4"
-          isDisabled={!filters.audience}
-          components={{ DropdownIndicator: () => <ChevronDownIcon className="h-5 w-5 text-gray-400" /> }}
+          className={styles.select}
+          placeholder="Select Domain"
+          options={domainOptions}
+          value={selectedDomain}
+          onChange={handleDomainChange}
+          isClearable
+          isDisabled={!selectedAudience}
         />
         <Select
-          options={[
-            ...new Set(
-              domainData
-                .filter(
-                  (d) =>
-                    (!filters.forUse || d.ForUse === filters.forUse) &&
-                    (!filters.audience || d.Audience === filters.audience) &&
-                    (!filters.domain || d.Domain === filters.domain)
-                )
-                .map((d) => d.Area)
-            ),
-          ].map((area) => ({ label: area, value: area }))}
-          placeholder="Filter by Area"
-          onChange={(option) => handleFilterChange("area", option?.value || "")}
-          className="w-1/4"
-          isDisabled={!filters.domain}
-          components={{ DropdownIndicator: () => <ChevronDownIcon className="h-5 w-5 text-gray-400" /> }}
+          className={styles.select}
+          placeholder="Select Area"
+          options={areaOptions}
+          value={selectedArea}
+          onChange={handleAreaChange}
+          isClearable
+          isDisabled={!selectedDomain}
         />
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {filteredAgents.map((agent) => (
-          <div key={agent.email} className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-            <img src={agent.image} alt={agent.title} className="w-full h-32 object-cover rounded-t-lg" />
-            <h2 className="mt-2 text-xl font-semibold">{agent.title}</h2>
-            <p className="text-gray-600 dark:text-gray-300">{agent.role}</p>
-            <p className="mt-2 text-sm">{agent.backstory}</p>
-          </div>
-        ))}
-      </div>
+      {isLoading && <Spinner />}
+      {isError && <div>Error loading agents.</div>}
+      {!isLoading && !isError && agents && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          {agents.map((agent: Agent) => (
+            <PortfolioCard key={agent.id} agent={agent} />
+          ))}
+        </div>
+      )}
     </div>
   );
 };

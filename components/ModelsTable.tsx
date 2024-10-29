@@ -15,6 +15,7 @@ import { Database } from "@/types/supabase";
 import { Icons } from "./icons";
 import { useRouter } from "next/navigation";
 import { modelRowWithSamples } from "@/types/utils";
+import { Sample } from '@/types/portfolio';
 
 type ModelsTableProps = {
   models: modelRowWithSamples[];
@@ -63,7 +64,7 @@ export default async function ModelsTable({ models }: ModelsTableProps) {
               <TableCell>{model.type}</TableCell>
               <TableCell>
                 <div className="flex gap-2 flex-shrink-0 items-center">
-                  {model.samples.slice(0, 3).map((sample) => (
+                  {model.samples.slice(0, 3).map((sample: Sample) => (
                     <Avatar key={sample.id}>
                       <AvatarImage src={sample.uri} className="object-cover" />
                     </Avatar>
