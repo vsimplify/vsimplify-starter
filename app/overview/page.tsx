@@ -75,6 +75,7 @@ export default function OverviewPage() {
     return (
       <div className="flex justify-center items-center h-screen">
         <div className="text-red-500">Failed to load projects.</div>
+        {error.message}
       </div>
     );
   }
