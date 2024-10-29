@@ -312,8 +312,8 @@ export default function PlatformOverview() {
             <Image
               src="/hero-background.jpg"
               alt="Hero background"
-              layout="fill"
-              objectFit="cover"
+              fill
+              style={{ objectFit: 'cover' }}
               quality={100}
               priority
             />

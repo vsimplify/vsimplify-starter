@@ -117,7 +117,7 @@ const FeatureSlider: React.FC = () => {
                   <Image
                     src={feature.image}
                     alt={feature.title}
-                    layout="fill"
+                    fill
                     objectFit="contain"
                     className="transition-transform duration-300 ease-in-out"
                     priority={index === 0}
