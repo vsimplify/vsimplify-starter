@@ -10,16 +10,30 @@ export interface CategoryFilter {
   area: Area
 }
 
-export interface Activity {
-  id: number;
-  name: string;
-  // Add other necessary properties based on your database schema
-}
-
 export interface Agent {
   id: number;
   name: string;
   // ... other agent properties ...
+}
+
+export interface Mission {
+  id: number;
+  abandonedForTokens: boolean;
+  createdAt: string;
+  domainId: number;
+  email: string;
+  inTokens: number;
+  name: string;
+  outTokens: number;
+  process: string;
+  projectId: number;
+  result: string | null;
+  taskResult: string | null;
+  tasks: JSON[] | null;
+  updatedAt: string | null;
+  user_id: string;
+  verbose: boolean;
+  // ... other mission properties based on your database schema ...
 }
 
 export interface Project {
@@ -29,7 +43,6 @@ export interface Project {
   progress: number;
   status: string;
 
-  // Added properties to align with fetched data
   createdAt: string;
   domainId: number;
   dueOn: string;
@@ -40,7 +53,7 @@ export interface Project {
   outcome: string;
   updatedAt: string | null;
   user_id: string;
-  activities: Activity[];
+  missions: Mission[];
   agents: Agent[];
 }
 

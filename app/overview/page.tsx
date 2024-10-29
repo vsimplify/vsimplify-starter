@@ -34,7 +34,7 @@ export default function OverviewPage() {
       if (!user) return [];
       const { data, error } = await supabase
         .from("Project")
-        .select(`*, activities ( * ), agents ( * )`)
+        .select(`*, missions ( * ), agents ( * )`)
         .eq("user_id", user.id);
       if (error) throw error;
       
@@ -54,7 +54,7 @@ export default function OverviewPage() {
         outcome: project.outcome,
         updatedAt: project.updated_at,
         user_id: project.user_id,
-        activities: project.activities,
+        missions: project.missions,
         agents: project.agents,
       })) as Project[];
     },
