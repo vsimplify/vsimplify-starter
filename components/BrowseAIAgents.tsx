@@ -14,24 +14,32 @@ interface Option {
 }
 
 const fetchAgents = async (): Promise<Agent[]> => {
-  // First check if we have a valid session
-  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-  
-  if (sessionError || !session) {
-    console.error('Auth session error:', sessionError);
-    throw new Error('No valid authentication session');
-  }
+  try {
+    // First check if we have a valid session
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    
+    if (sessionError) {
+      console.error('Auth session error:', sessionError);
+      throw sessionError;
+    }
 
-  const { data, error } = await supabase
-    .from('Agent')
-    .select('*');
-  
-  if (error) {
-    console.error('Agent fetch error:', error);
-    throw error;
-  }
+    // Even without a session, try to fetch agents (RLS is disabled for MVP)
+    const { data, error } = await supabase
+      .from('Agent')
+      .select('*');
+    
+    if (error) {
+      console.error('Agent fetch error:', error);
+      throw error;
+    }
 
-  return data as Agent[];
+    if (!data) return [];
+
+    return data as Agent[];
+  } catch (error) {
+    console.error('Fetch agents error:', error);
+    return []; // Return empty array instead of throwing
+  }
 };
 
 const BrowseAIAgents: React.FC = () => {
@@ -109,7 +117,9 @@ const BrowseAIAgents: React.FC = () => {
   const { data: agents, isLoading, isError, error } = useQuery({
     queryKey: ['agents'],
     queryFn: fetchAgents,
-    retry: 1, // Only retry once if failed
+    retry: 1,
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    refetchOnWindowFocus: false // Don't refetch on window focus
   });
 
   // Handle error logging using useEffect
@@ -175,10 +185,15 @@ const BrowseAIAgents: React.FC = () => {
       {isLoading && <Spinner />}
       {isError && (
         <div className="text-red-500">
-          Error loading agents: {error instanceof Error ? error.message : 'Unknown error'}
+          Error loading agents. Please try again later.
         </div>
       )}
-      {!isLoading && !isError && agents && (
+      {!isLoading && !isError && agents && agents.length === 0 && (
+        <div className="text-gray-500">
+          No agents found.
+        </div>
+      )}
+      {!isLoading && !isError && agents && agents.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {agents.map((agent: Agent) => (
             <PortfolioCard key={agent.id} agent={agent} />
