@@ -14,11 +14,23 @@ interface Option {
 }
 
 const fetchAgents = async (): Promise<Agent[]> => {
+  // First check if we have a valid session
+  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+  
+  if (sessionError || !session) {
+    console.error('Auth session error:', sessionError);
+    throw new Error('No valid authentication session');
+  }
+
   const { data, error } = await supabase
     .from('Agent')
     .select('*');
   
-  if (error) throw error;
+  if (error) {
+    console.error('Agent fetch error:', error);
+    throw error;
+  }
+
   return data as Agent[];
 };
 
@@ -94,16 +106,23 @@ const BrowseAIAgents: React.FC = () => {
   };
 
   // React Query hook for fetching agents
-  const { data: agents, isLoading, isError } = useQuery({
+  const { data: agents, isLoading, isError, error } = useQuery({
     queryKey: ['agents'],
     queryFn: fetchAgents,
+    retry: 1, // Only retry once if failed
   });
+
+  // Handle error logging using useEffect
+  useEffect(() => {
+    if (error) {
+      console.error('Agent query error:', error);
+    }
+  }, [error]);
 
   // Supabase real-time subscription setup
   useEffect(() => {
     const channel = supabase.channel('public:Agent')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'Agent' }, payload => {
-        // Refetch agents on any change
         queryClient.invalidateQueries({ queryKey: ['agents'] });
       })
       .subscribe();
@@ -154,7 +173,11 @@ const BrowseAIAgents: React.FC = () => {
         />
       </div>
       {isLoading && <Spinner />}
-      {isError && <div>Error loading agents.</div>}
+      {isError && (
+        <div className="text-red-500">
+          Error loading agents: {error instanceof Error ? error.message : 'Unknown error'}
+        </div>
+      )}
       {!isLoading && !isError && agents && (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {agents.map((agent: Agent) => (

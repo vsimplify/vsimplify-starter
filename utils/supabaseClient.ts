@@ -26,4 +26,12 @@ const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   }
 });
 
+// Add session refresh on client init
+supabase.auth.onAuthStateChange((event, session) => {
+  if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+    // You can also store the session in localStorage if needed
+    console.log('Auth state changed:', event, session?.user?.id);
+  }
+});
+
 export default supabase; 
