@@ -31,6 +31,11 @@ export interface Agent {
   verbose: boolean;
 }
 
+interface AgentToMission {
+  A: number;  // Agent ID
+  B: number;  // Mission ID
+}
+
 export interface Mission {
   id: number;
   abandonedForTokens: boolean;
@@ -48,7 +53,7 @@ export interface Mission {
   updatedAt: string | null;
   user_id: string;
   verbose: boolean;
-  // ... other mission properties based on your database schema ...
+  _AgentToMission?: AgentToMission[];
 }
 
 export interface Project {

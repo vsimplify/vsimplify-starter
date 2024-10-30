@@ -7,7 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import PortfolioDashboard from "@/components/portfolio/PortfolioDashboard";
 import BrowseAIAgents from "@/components/BrowseAIAgents";
 import { ChevronDownIcon } from "@heroicons/react/24/solid";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@material-tailwind/react";
 import NavigationMenu from '@/components/NavigationMenu';
 import { User } from '@supabase/supabase-js';
@@ -27,6 +27,8 @@ export default function OverviewPage() {
   const supabase = createClientComponentClient<Database>();
   const router = useRouter();
   const [showBrowseAgents, setShowBrowseAgents] = useState(false);
+  const [selectedAgentId, setSelectedAgentId] = useState<number | null>(null);
+  const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
 
   // Query for user data
   const { data: user, isLoading: userLoading } = useQuery({
@@ -35,113 +37,90 @@ export default function OverviewPage() {
       const { data: { user }, error } = await supabase.auth.getUser();
       if (error) {
         console.error('Auth error:', error);
-        router.push('/login'); // Redirect to login if not authenticated
+        router.push('/login');
         return null;
       }
       return user;
     }
   });
 
-  // Add this effect to check auth state
-  useEffect(() => {
-    const checkAuthState = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      console.log('Auth Debug:', {
-        hasSession: !!session,
-        sessionUser: session?.user?.id,
-        currentUser: user?.id,
-        error: error?.message,
-        accessToken: session?.access_token?.slice(0, 10) + '...',
-      });
-    };
-    
-    checkAuthState();
-  }, []);
-
-  // Query for projects data
+  // Query for projects data with agent relationships
   const { data: projects, isLoading: projectsLoading, error } = useQuery({
-    queryKey: ["projects", user?.id],
+    queryKey: ["projects", user?.id, selectedAgentId],
     queryFn: async () => {
-      if (!user?.id) {
-        console.log('No user ID available');
-        return [];
-      }
+      if (!user?.id) return [];
       
       try {
-        console.log('Fetching projects for user:', user.id);
-        
-        console.log('Auth check:', {
-          authUid: user.id,
-          format: typeof user.id
-        });
-
+        // First fetch projects
         const { data: projectData, error: projectError } = await supabase
           .from("Project")
           .select("*")
           .eq("user_id", user.id)
           .throwOnError();
 
-        console.log('Project query:', {
-          userId: user.id,
-          error: projectError,
-          count: projectData?.length,
-          firstProject: projectData?.[0]
-        });
-
-        if (projectError) {
-          console.error('Project fetch error:', {
-            error: projectError,
-            message: projectError.message,
-            details: projectError.details,
-            hint: projectError.hint
-          });
-          throw projectError;
-        }
-
-        console.log('Projects fetched:', projectData?.length);
-
+        if (projectError) throw projectError;
         if (!projectData) return [];
 
+        // Fetch missions for these projects
         const { data: missionData, error: missionError } = await supabase
           .from("Mission")
-          .select("*")
+          .select(`
+            *,
+            _AgentToMission!inner(
+              A,
+              B
+            )
+          `)
           .in(
             "projectId",
             projectData.map((project) => project.id)
           );
 
-        if (missionError) {
-          console.error('Mission fetch error:', {
-            error: missionError,
-            details: getErrorDetails(missionError),
-            code: missionError.code
-          });
-          throw missionError;
-        }
+        if (missionError) throw missionError;
 
-        console.log('Missions fetched:', missionData?.length || 0);
+        // If an agent is selected, filter missions by agent
+        const filteredMissions = selectedAgentId 
+          ? missionData?.filter(mission => 
+              mission._AgentToMission.some(relation => relation.A === selectedAgentId)
+            )
+          : missionData;
 
+        // Map projects with their filtered missions
         return projectData.map((project: Database['public']['Tables']['Project']['Row']) => ({
           ...project,
-          missions: missionData?.filter((mission) => mission.projectId === project.id) || [],
+          missions: filteredMissions?.filter((mission) => mission.projectId === project.id) || [],
           agents: [],
         })) as Project[];
       } catch (error) {
-        console.error('Data fetch error:', {
-          error,
-          details: getErrorDetails(error),
-          user: user.id,
-          stack: error instanceof Error ? error.stack : undefined
-        });
+        console.error('Data fetch error:', error);
         throw error;
       }
     },
     enabled: !!user?.id
   });
 
-  // Handle loading states
+  // Handle agent selection
+  const handleAgentSelect = (agentId: number) => {
+    setSelectedAgentId(agentId);
+  };
+
+  // Update filtered projects when projects or selectedAgentId changes
+  useEffect(() => {
+    if (!projects) return;
+    
+    if (selectedAgentId) {
+      const filtered = projects.filter(project => 
+        project.missions?.some(mission => 
+          Array.isArray(mission._AgentToMission) && 
+          mission._AgentToMission.some(relation => relation.A === selectedAgentId)
+        ) ?? false
+      );
+      setFilteredProjects(filtered);
+    } else {
+      setFilteredProjects(projects);
+    }
+  }, [projects, selectedAgentId]);
+
   if (userLoading || projectsLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -152,32 +131,17 @@ export default function OverviewPage() {
     );
   }
 
-  // Handle error state with more details
   if (error) {
-    console.error('Render error:', {
-      error,
-      details: getErrorDetails(error),
-      user: user?.id
-    });
-    
     return (
       <div className="flex justify-center items-center h-screen">
         <div className="text-red-500 max-w-md p-4">
           <p className="font-bold">Failed to load projects.</p>
-          <p className="text-sm mt-2 whitespace-pre-wrap">
-            {getErrorDetails(error)}
-          </p>
-          {process.env.NODE_ENV === 'development' && (
-            <pre className="text-xs mt-4 bg-gray-100 p-2 rounded overflow-auto">
-              {JSON.stringify(error, null, 2)}
-            </pre>
-          )}
+          <p className="text-sm mt-2">{getErrorDetails(error)}</p>
         </div>
       </div>
     );
   }
 
-  // If no user, redirect to login
   if (!user) {
     router.push('/login');
     return null;
@@ -193,31 +157,49 @@ export default function OverviewPage() {
         transition={{ duration: 0.5 }}
       >
         <h1 className="text-3xl font-bold">AI Product Dashboard</h1>
-        <button
-          onClick={() => setShowBrowseAgents(!showBrowseAgents)}
-          className="flex items-center px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
-        >
-          <span className="mr-2">Browse AI Agents</span>
-          <ChevronDownIcon
-            className={`h-5 w-5 transition-transform ${
-              showBrowseAgents ? "transform rotate-180" : ""
-            }`}
-          />
-        </button>
+        <div className="flex items-center gap-4">
+          {selectedAgentId && (
+            <Button
+              color="gray"
+              size="sm"
+              onClick={() => setSelectedAgentId(null)}
+            >
+              Clear Filter
+            </Button>
+          )}
+          <button
+            onClick={() => setShowBrowseAgents(!showBrowseAgents)}
+            className="flex items-center px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+          >
+            <span className="mr-2">Browse AI Agents</span>
+            <ChevronDownIcon
+              className={`h-5 w-5 transition-transform ${
+                showBrowseAgents ? "transform rotate-180" : ""
+              }`}
+            />
+          </button>
+        </div>
       </motion.div>
 
-      {showBrowseAgents && user && (
-        <motion.div
-          initial={{ height: 0, opacity: 0 }}
-          animate={{ height: "auto", opacity: 1 }}
-          transition={{ duration: 0.5 }}
-          className="mb-4"
-        >
-          <BrowseAIAgents userId={user.id} />
-        </motion.div>
-      )}
+      <AnimatePresence>
+        {showBrowseAgents && user && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="mb-4 overflow-hidden"
+          >
+            <BrowseAIAgents 
+              userId={user.id} 
+              onAgentSelect={handleAgentSelect}
+              selectedAgentId={selectedAgentId}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      <PortfolioDashboard projects={projects || []} />
+      <PortfolioDashboard projects={filteredProjects} />
     </div>
   );
 }

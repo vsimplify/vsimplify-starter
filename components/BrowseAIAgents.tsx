@@ -14,9 +14,11 @@ interface Option {
   label: string;
 }
 
-interface BrowseAIAgentsProps {
+type BrowseAIAgentsProps = {
   userId: string;
-}
+  onAgentSelect: (agentId: number) => void;
+  selectedAgentId: number | null;
+};
 
 const fetchAgents = async (userId: string): Promise<Agent[]> => {
   try {
@@ -37,7 +39,7 @@ const fetchAgents = async (userId: string): Promise<Agent[]> => {
   }
 };
 
-const BrowseAIAgents: React.FC<BrowseAIAgentsProps> = ({ userId }) => {
+const BrowseAIAgents: React.FC<BrowseAIAgentsProps> = ({ userId, onAgentSelect, selectedAgentId }) => {
   const queryClient = useQueryClient();
   
   // State for each dropdown
@@ -138,40 +140,101 @@ const BrowseAIAgents: React.FC<BrowseAIAgentsProps> = ({ userId }) => {
     };
   }, [queryClient, userId]);
 
-  // Filter agents based on selected options
+  // Add debug logging for domain data
+  useEffect(() => {
+    console.log('Domain Data:', domainData);
+  }, []);
+
+  // Updated filter logic
   const filteredAgents = useMemo(() => {
+    console.log('Filtering agents:', {
+      agents,
+      selectedFocusArea: selectedFocusArea?.value,
+      selectedAudience: selectedAudience?.value,
+      selectedDomain: selectedDomain?.value,
+      selectedArea: selectedArea?.value
+    });
+
     let filtered = agents;
 
     if (selectedFocusArea) {
       filtered = filtered.filter(agent => {
-        const domain = domainData.find(d => d.Id === agent.domainId);
+        const domain = domainData.find(d => Number(d.Id) === agent.domainId);
+        console.log('ForUse filter:', { 
+          agentDomainId: agent.domainId, 
+          domain, 
+          match: domain?.ForUse === selectedFocusArea.value 
+        });
         return domain?.ForUse === selectedFocusArea.value;
       });
     }
 
     if (selectedAudience) {
       filtered = filtered.filter(agent => {
-        const domain = domainData.find(d => d.Id === agent.domainId);
+        const domain = domainData.find(d => Number(d.Id) === agent.domainId);
+        console.log('Audience filter:', { 
+          agentDomainId: agent.domainId, 
+          domain, 
+          match: domain?.Audience === selectedAudience.value 
+        });
         return domain?.Audience === selectedAudience.value;
       });
     }
 
     if (selectedDomain) {
       filtered = filtered.filter(agent => {
-        const domain = domainData.find(d => d.Id === agent.domainId);
+        const domain = domainData.find(d => Number(d.Id) === agent.domainId);
+        console.log('Domain filter:', { 
+          agentDomainId: agent.domainId, 
+          domain, 
+          match: domain?.Domain === selectedDomain.value 
+        });
         return domain?.Domain === selectedDomain.value;
       });
     }
 
     if (selectedArea) {
       filtered = filtered.filter(agent => {
-        const domain = domainData.find(d => d.Id === agent.domainId);
+        const domain = domainData.find(d => Number(d.Id) === agent.domainId);
+        console.log('Area filter:', { 
+          agentDomainId: agent.domainId, 
+          domain, 
+          match: domain?.Area === selectedArea.value 
+        });
         return domain?.Area === selectedArea.value;
       });
     }
 
+    console.log('Filtered results:', filtered);
     return filtered;
   }, [agents, selectedFocusArea, selectedAudience, selectedDomain, selectedArea]);
+
+  // Add debug information in the UI
+  const renderDebugInfo = () => {
+    if (process.env.NODE_ENV !== 'development') return null;
+
+    return (
+      <div className="mt-4 p-4 bg-gray-100 rounded text-xs">
+        <pre>
+          {JSON.stringify({
+            totalAgents: agents?.length || 0,
+            filteredAgents: filteredAgents?.length || 0,
+            selectedFilters: {
+              focusArea: selectedFocusArea?.value,
+              audience: selectedAudience?.value,
+              domain: selectedDomain?.value,
+              area: selectedArea?.value,
+            },
+            agentDomains: agents?.map(a => ({
+              id: a.id,
+              domainId: a.domainId,
+              domain: domainData.find(d => Number(d.Id) === a.domainId)
+            })),
+          }, null, 2)}
+        </pre>
+      </div>
+    );
+  };
 
   return (
     <div className={styles.container}>
@@ -232,27 +295,7 @@ const BrowseAIAgents: React.FC<BrowseAIAgentsProps> = ({ userId }) => {
           </div>
         )
       )}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="mt-4 p-4 bg-gray-100 rounded text-xs">
-          <pre>
-            {JSON.stringify(
-              {
-                totalAgents: agents.length,
-                filteredAgents: filteredAgents.length,
-                selectedFilters: {
-                  focusArea: selectedFocusArea?.value,
-                  audience: selectedAudience?.value,
-                  domain: selectedDomain?.value,
-                  area: selectedArea?.value,
-                },
-                agentDomains: agents.map(a => a.domainId),
-              },
-              null,
-              2
-            )}
-          </pre>
-        </div>
-      )}
+      {renderDebugInfo()}
     </div>
   );
 };
