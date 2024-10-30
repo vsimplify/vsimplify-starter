@@ -14,20 +14,16 @@ interface Option {
   label: string;
 }
 
-const fetchAgents = async (): Promise<Agent[]> => {
-  try {
-    // Get the current session
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    // If no session, return empty array instead of throwing error
-    if (!session) {
-      console.log('No active session, returning empty agents list');
-      return [];
-    }
+interface BrowseAIAgentsProps {
+  userId: string;
+}
 
+const fetchAgents = async (userId: string): Promise<Agent[]> => {
+  try {
     const { data, error } = await supabase
       .from('Agent')
-      .select('*');
+      .select('*')
+      .eq('user_id', userId);
     
     if (error) {
       console.error('Agent fetch error:', error);
@@ -41,9 +37,8 @@ const fetchAgents = async (): Promise<Agent[]> => {
   }
 };
 
-const BrowseAIAgents: React.FC = () => {
+const BrowseAIAgents: React.FC<BrowseAIAgentsProps> = ({ userId }) => {
   const queryClient = useQueryClient();
-  const router = useRouter();
   
   // State for each dropdown
   const [selectedFocusArea, setSelectedFocusArea] = useState<SingleValue<Option>>(null);
@@ -51,22 +46,10 @@ const BrowseAIAgents: React.FC = () => {
   const [selectedDomain, setSelectedDomain] = useState<SingleValue<Option>>(null);
   const [selectedArea, setSelectedArea] = useState<SingleValue<Option>>(null);
 
-  // Check auth status
-  useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        console.log('No session found, redirecting to login');
-        router.push('/login');
-      }
-    };
-    checkAuth();
-  }, [router]);
-
   // React Query hook for fetching agents
   const { data: agents = [], isLoading, isError, error } = useQuery({
-    queryKey: ['agents'],
-    queryFn: fetchAgents,
+    queryKey: ['agents', userId],
+    queryFn: () => fetchAgents(userId),
     retry: 1,
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
     refetchOnWindowFocus: false,
@@ -137,15 +120,23 @@ const BrowseAIAgents: React.FC = () => {
   // Supabase real-time subscription setup
   useEffect(() => {
     const channel = supabase.channel('public:Agent')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'Agent' }, payload => {
-        queryClient.invalidateQueries({ queryKey: ['agents'] });
-      })
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'Agent',
+          filter: `user_id=eq.${userId}`
+        }, 
+        payload => {
+          queryClient.invalidateQueries({ queryKey: ['agents', userId] });
+        }
+      )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [queryClient]);
+  }, [queryClient, userId]);
 
   return (
     <div className={styles.container}>

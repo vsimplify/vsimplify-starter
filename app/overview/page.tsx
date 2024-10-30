@@ -213,7 +213,7 @@ export default function OverviewPage() {
           transition={{ duration: 0.5 }}
           className="mb-4"
         >
-          <BrowseAIAgents />
+          <BrowseAIAgents userId={user.id} />
         </motion.div>
       )}
 
