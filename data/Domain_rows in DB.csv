@@ -1,0 +1,93 @@
+ForUse,Audience,Domain,id,Agents,Missions,Area,agentAbsent,identifier
+Placeholder,Placeholder,Placeholder,0,[],[],Placeholder,false,-24
+Home 🏠,🎁 Parents 👫,🏠 Home Management 🏕,1.01,[],[],Plan and Organize Weekly Family Meals 🍽️,false,-23
+Home 🏠,🎁 Parents 👫,🏫 Education 🏫,1.02,[],[],Manage Household Chores 🧘‍♂️,false,-22
+Home 🏠,🎁 Parents 👫,🏸 Budgeting 💶,1.03,[],[],Help with Homework and Study Scheduling 📚👨‍🏫,false,-21
+Home 🏠,🎁 Parents 👫,🤦‍♂️ Other 🤷‍♀️,1.04,[],[],🤦‍♂️ Other 🤷‍♀️,false,-20
+Home 🏠,🧒‍🎓 High or Middle Schoolers 👨‍💻,🏫 Education 🏫,2.01,[],[],Help with Homework and Study Scheduling 📚👨‍🏫🕒,false,-19
+Home 🏠,🧒‍🎓 High or Middle Schoolers 👨‍💻,🤿 Fitness 🌋,2.02,[],[],Monitor and Guide Fitness and Wellness Routines 👩‍⚕️,false,-18
+Home 🏠,🧒‍🎓 High or Middle Schoolers 👨‍💻,🎥 Digital Management ⌨️,2.03,[],[],Organize Digital Photos and Family Memories 💽️,false,-17
+Home 🏠,🧒‍🎓 High or Middle Schoolers 👨‍💻,🤦‍♂️ Other 🤷‍♀️,2.04,[],[],🤦‍♂️ Other 🤷‍♀️,false,-16
+Home 🏠,👔 Bachelors 🎉,🏸 Budgeting 💶,3.01,[],[],Budget and Track Household Expenses 💰,false,-15
+Home 🏠,👔 Bachelors 🎉,💵 Travel ✈️,3.02,[],[],Plan and Organize Weekend Getaways ✈️,false,-14
+Home 🏠,👔 Bachelors 🎉,🏠 Home Management 🏕,3.03,[],[],Manage Household Chores and Cleaning Schedule 🧘‍♂️,false,-13
+Home 🏠,👔 Bachelors 🎉,🤦‍♂️ Other 🤷‍♀️,3.04,[],[],🤦‍♂️ Other 🤷‍♀️,false,-12
+Home 🏠,🏠 Newly Married Couples 💞,🏠 Home Management 🏕,4.01,[],[],Plan and Organize Weekly Meals 🍽️,false,-11
+Home 🏠,🏠 Newly Married Couples 💞,🏠 Home Management 🏕,4.02,[],[],Manage Household Chores 👨‍🏫,false,-10
+Home 🏠,🏠 Newly Married Couples 💞,🏸 Budgeting 💶,4.03,[],[],Budget and Track Household Expenses 💰💰,false,-9
+Home 🏠,🏠 Newly Married Couples 💞,🧘‍🎨 Activities 👩‍🎨,4.04,[],[],Plan and Coordinate Family Activities and Outings 🌄😊,false,-8
+Home 🏠,🏠 Newly Married Couples 💞,🤦‍♂️ Other 🤷‍♀️,4.05,[],[],🤦‍♂️ Other 🤷‍♀️,false,-7
+Home 🏠,College Students 🎓👨‍🎓,🏫 Education 🏫,5.01,[],[],Help with Managing Study Schedules and Assignments 📚👨‍🏫,false,-6
+Home 🏠,College Students 🎓👨‍🎓,📚 Research 🔬,5.02,[],[],Assist with Research and Sourcing Academic Materials 📝🔍,false,-5
+Home 🏠,College Students 🎓👨‍🎓,🏸 Budgeting 💶,5.03,[],[],Budget and Track Personal Expenses 💰💰💰💰,false,-4
+Home 🏠,College Students 🎓👨‍🎓,🤝 Social Gatherings 🤝,5.04,[],[],Plan and Coordinate Social Activities and Events 😊,false,-3
+Home 🏠,College Students 🎓👨‍🎓,💪 Fitness 🤾‍♀️,5.05,[],[],Provide Healthy Meal Plans and Quick Recipes 🍽️,false,-2
+Home 🏠,College Students 🎓👨‍🎓,🤝 Social Service 🤝,5.06,[],[],"🍽️ Provide Meal and financial support 💰 ",false,-1
+Home 🏠,College Students 🎓👨‍🎓,🎯 Career 💼,5.07,[],[],Assist with Internship and Job Applications 📝✈️👨‍💼,false,0
+Home 🏠,College Students 🎓👨‍🎓,🤝 Collaboration 💡,5.08,[],[],Help Organize Study Groups and Collaborative Work 💻👨‍🏫,false,1
+Home 🏠,College Students 🎓👨‍🎓,👉 Mental Health ❤️‍🔧,5.09,[],[],🧘 Meditate 💫,false,2
+Home 🏠,College Students 🎓👨‍🎓,🎥 Digital Management ⌨️,5.1,[],[],Manage Digital Notes and Class Materials 💾📚👨‍🏫,false,3
+Home 🏠,College Students 🎓👨‍🎓,🤝 Language Learning🔍,5.11,[],[],Provide Language Learning Support 💬,false,4
+Home 🏠,College Students 🎓👨‍🎓,💵 Travel ✈️,5.12,[],[],Assist with Travel Planning for Holidays and Breaks ✈️🌄,false,5
+Home 🏠,College Students 🎓👨‍🎓,⏳ Reminders 🕰,5.13,[],[],Track and Remind about Important Academic Deadlines 🕒📚👨‍🏫,false,6
+Home 🏠,College Students 🎓👨‍🎓,🏠 Home Management 🏕,5.14,[],[],Help with Grocery Shopping and Inventory 🛒,false,7
+Home 🏠,College Students 🎓👨‍🎓,🤣 Hobbies 😆,5.15,[],[],Guide and Support Hobbies and Extracurricular Activities ⚽️🎶,false,8
+Home 🏠,College Students 🎓👨‍🎓,🤦‍♂️ Other 🤷‍♀️,5.16,[],[],🤦‍♂️ Other 🤷‍♀️,false,9
+Work 💼,🏥️ Healthcare 💼,Patient monitoring ﮩ٨ـﮩﮩ٨ـ♡ﮩ٨ـﮩ,100.01,[],[],🤦‍♂️ Define below 🤷‍♀️,false,10
+Work 💼,🏥️ Healthcare 💼,🤔 Diagnostic Assistance🔬,100.02,[],[],🤦‍♂️ Define below 🤷‍♀️,false,11
+Work 💼,🏥️ Healthcare 💼,🤦‍♂️ Other 🤷‍♀️,100.03,[],[],🤦‍♂️ Other 🤷‍♀️,false,12
+Work 💼,🔬 Medical 🏥️,💡 Drug Discovery 🔬,101.01,[],[],🤦‍♂️ Define below 🤷‍♀️,false,13
+Work 💼,🔬 Medical 🏥️,🏥️ Clinical Trial Management 💊,101.02,[],[],🤦‍♂️ Define below 🤷‍♀️,false,14
+Work 💼,🔬 Medical 🏥️,🔬 Medical Imaging Analysis 💉,101.03,[],[],🤦‍♂️ Define below 🤷‍♀️,false,15
+Work 💼,🔬 Medical 🏥️,🤦‍♂️ Other 🤷‍♀️,101.04,[],[],🤦‍♂️ Other 🤷‍♀️,false,16
+Work 💼,💵 Insurance 🔑,⚠️ Risk Assessment  🔑,102.01,[],[],🤦‍♂️ Define below 🤷‍♀️,false,17
+Work 💼,💵 Insurance 🔑,💰 Claims Processing 📈,102.02,[],[],🤦‍♂️ Define below 🤷‍♀️,false,18
+Work 💼,💵 Insurance 🔑,❌ Fraud Detection 🔍,102.03,[],[],🤦‍♂️ Define below 🤷‍♀️,false,19
+Work 💼,💵 Insurance 🔑,🤦‍♂️ Other 🤷‍♀️,102.04,[],[],🤦‍♂️ Other 🤷‍♀️,false,20
+Work 💼,Individual 👤,Digital Services 🌐,103.01,[],[],Productivity ⚡,false,21
+Work 💼,🖱 Technology ⌨️,🚨 Cybersecurity 🔒,103.02,[],[],🤦‍♂️ Define below 🤷‍♀️,false,22
+Work 💼,🖱 Technology ⌨️,🤝 IT Support 📞,103.03,[],[],🤦‍♂️ Define below 🤷‍♀️,false,23
+Work 💼,🖱 Technology ⌨️,🤦‍♂️ Other 🤷‍♀️,103.04,[],[],🤦‍♂️ Other 🤷‍♀️,false,24
+Work 💼,🖱 Technology ⌨️,📱 Software Development 💻,103.05,[],[],🤦‍♂️ Define below 🤷‍♀️,false,-999
+Work 💼,🖱 Technology ⌨️,📸 Creation 📹,104.01,[],[],🤦‍♂️ Define below 🤷‍♀️,false,25
+Work 💼,🎥 Media 📺,▶️ Distribution 🔗,104.02,[],[],🤦‍♂️ Define below 🤷‍♀️,false,26
+Work 💼,🎥 Media 📺,🤦‍♂️ Other 🤷‍♀️,104.03,[],[],🤦‍♂️ Other 🤷‍♀️,false,27
+Work 💼,💰 Finance 💸,💰 Financial Forecasting 🔮,105.01,[],[],🤦‍♂️ Define below 🤷‍♀️,false,28
+Work 💼,💰 Finance 💸,Customer Service 👥,105.02,[],[],🤦‍♂️ Define below 🤷‍♀️,false,29
+Work 💼,💰 Finance 💸,🤦‍♂️ Other 🤷‍♀️,105.03,[],[],🤦‍♂️ Other 🤷‍♀️,false,30
+Work 💼,👚 Retail ⛺,Inventory Management 📚,106.01,[],[],🤦‍♂️ Define below 🤷‍♀️,false,31
+Work 💼,👚 Retail ⛺,Customer Behavior Analysis 🧐,106.02,[],[],🤦‍♂️ Define below 🤷‍♀️,false,32
+Work 💼,👚 Retail ⛺,Personalized Shopping 🛍️,106.03,[],[],🤦‍♂️ Define below 🤷‍♀️,false,33
+Work 💼,👚 Retail ⛺,🤦‍♂️ Other 🤷‍♀️,106.04,[],[],🤦‍♂️ Other 🤷‍♀️,false,34
+Work 💼,🔧 Manufacturing ⛣,Predictive Maintenance 🔮,107.01,[],[],🤦‍♂️ Define below 🤷‍♀️,false,35
+Work 💼,🔧 Manufacturing ⛣,Supply Chain Optimization 🔧,107.02,[],[],🤦‍♂️ Define below 🤷‍♀️,false,36
+Work 💼,🔧 Manufacturing ⛣,Quality Control 👍,107.03,[],[],🤦‍♂️ Define below 🤷‍♀️,false,37
+Work 💼,🔧 Manufacturing ⛣,🤦‍♂️ Other 🤷‍♀️,107.04,[],[],🤦‍♂️ Other 🤷‍♀️,false,38
+Work 💼,👨‍💻 Education 🏫,Personalized Learning 💡️,108.01,[],[],🤦‍♂️ Define below 🤷‍♀️,false,39
+Work 💼,👨‍💻 Education 🏫,Administrative Automation ⚙️,108.02,[],[],🤦‍♂️ Define below 🤷‍♀️,false,40
+Work 💼,👨‍💻 Education 🏫,Student Performance Tracking ⚖️,108.03,[],[],🤦‍♂️ Define below 🤷‍♀️,false,41
+Work 💼,👨‍💻 Education 🏫,🤦‍♂️ Other 🤷‍♀️,108.04,[],[],🤦‍♂️ Other 🤷‍♀️,false,42
+Work 💼,⛵ Logistics 🚢,Route Optimization 🗺️,109.01,[],[],🤦‍♂️ Define below 🤷‍♀️,false,43
+Work 💼,⛵ Logistics 🚢,Inventory Tracking 💼,109.02,[],[],🤦‍♂️ Define below 🤷‍♀️,false,44
+Work 💼,⛵ Logistics 🚢,Demand Forecasting 🔮,109.03,[],[],🤦‍♂️ Define below 🤷‍♀️,false,45
+Work 💼,⛵ Logistics 🚢,🤦‍♂️ Other 🤷‍♀️,109.04,[],[],🤦‍♂️ Other 🤷‍♀️,false,46
+Work 💼,🏡 Real Estate 🏘️,Property Valuation 💰,110.01,[],[],🤦‍♂️ Define below 🤷‍♀️,false,47
+Work 💼,🏡 Real Estate 🏘️,Market Analysis 📊,110.02,[],[],🤦‍♂️ Define below 🤷‍♀️,false,48
+Work 💼,🏡 Real Estate 🏘️,Virtual Tours 🌄,110.03,[],[],🤦‍♂️ Define below 🤷‍♀️,false,49
+Work 💼,🏡 Real Estate 🏘️,🤦‍♂️ Other 🤷‍♀️,110.04,[],[],🤦‍♂️ Other 🤷‍♀️,false,50
+Work 💼,📞 Telecommunications 🖱,Network Optimization 🔧,111.01,[],[],🤦‍♂️ Define below 🤷‍♀️,false,51
+Work 💼,📞 Telecommunications 🖱,Customer Service ⚡,111.02,[],[],🤦‍♂️ Define below 🤷‍♀️,false,52
+Work 💼,📞 Telecommunications 🖱,Predictive Maintenance 🔎,111.03,[],[],🤦‍♂️ Define below 🤷‍♀️,false,53
+Work 💼,📞 Telecommunications 🖱,🤦‍♂️ Other 🤷‍♀️,111.04,[],[],🤦‍♂️ Other 🤷‍♀️,false,54
+Work 💼,👩‍⚖ Legal 🏰,Contract Analysis 📝,112.01,[],[],🤦‍♂️ Define below 🤷‍♀️,false,55
+Work 💼,👩‍⚖ Legal 🏰,Legal Research 🔍,112.02,[],[],🤦‍♂️ Define below 🤷‍♀️,false,56
+Work 💼,👩‍⚖ Legal 🏰,Compliance Monitoring 👮,112.03,[],[],🤦‍♂️ Define below 🤷‍♀️,false,57
+Work 💼,👩‍⚖ Legal 🏰,🤦‍♂️ Other 🤷‍♀️,112.04,[],[],🤦‍♂️ Other 🤷‍♀️,false,58
+Work 💼," 💼 Human Resources 🧑‍🎓 ",Talent Acquisition ✈️,113.01,[],[],🤦‍♂️ Define below 🤷‍♀️,false,59
+Work 💼," 💼 Human Resources 🧑‍🎓 ",Employee Engagement 😊,113.02,[],[],🤦‍♂️ Define below 🤷‍♀️,false,60
+Work 💼," 💼 Human Resources 🧑‍🎓 ",Performance Management 🏅,113.03,[],[],🤦‍♂️ Define below 🤷‍♀️,false,61
+Work 💼," 💼 Human Resources 🧑‍🎓 ",🤦‍♂️ Other 🤷‍♀️,113.04,[],[],🤦‍♂️ Other 🤷‍♀️,false,62
+Work 💼,💡Energy 🔋,Energy Consumption Forecasting 💰,114.01,[],[],🤦‍♂️ Define below 🤷‍♀️,false,63
+Work 💼,💡Energy 🔋,Grid Management 🔋,114.02,[],[],🤦‍♂️ Define below 🤷‍♀️,false,64
+Work 💼,💡Energy 🔋,Predictive Maintenance 🔎,114.03,[],[],🤦‍♂️ Define below 🤷‍♀️,false,65
+Work 💼,💡Energy 🔋,🤦‍♂️ Other 🤷‍♀️,114.04,[],[],🤦‍♂️ Other 🤷‍♀️,false,66

@@ -60,7 +60,12 @@ const BrowseAIAgents: React.FC<BrowseAIAgentsProps> = ({ userId, onAgentSelect, 
   // Generate options for Focus Area
   const focusAreaOptions: Option[] = useMemo(() => {
     const uniqueFocusAreas = Array.from(new Set(domainData.map(item => item.ForUse)));
-    return uniqueFocusAreas.map(area => ({ value: area, label: area }));
+    return uniqueFocusAreas
+      .filter(area => area)
+      .map(area => ({ 
+        value: area,
+        label: area === 'Work' ? 'Work 💼' : area
+      }));
   }, []);
 
   // Generate options for Audience based on selected Focus Area
@@ -68,7 +73,12 @@ const BrowseAIAgents: React.FC<BrowseAIAgentsProps> = ({ userId, onAgentSelect, 
     if (!selectedFocusArea) return [];
     const filtered = domainData.filter(item => item.ForUse === selectedFocusArea.value);
     const uniqueAudiences = Array.from(new Set(filtered.map(item => item.Audience)));
-    return uniqueAudiences.map(audience => ({ value: audience, label: audience }));
+    return uniqueAudiences
+      .filter(audience => audience)
+      .map(audience => ({ 
+        value: audience,
+        label: audience === 'Individual' ? 'Individual 👤' : audience
+      }));
   }, [selectedFocusArea]);
 
   // Generate options for Domain based on selected Audience
@@ -80,7 +90,12 @@ const BrowseAIAgents: React.FC<BrowseAIAgentsProps> = ({ userId, onAgentSelect, 
         item.Audience === selectedAudience.value
     );
     const uniqueDomains = Array.from(new Set(filtered.map(item => item.Domain)));
-    return uniqueDomains.map(domain => ({ value: domain, label: domain }));
+    return uniqueDomains
+      .filter(domain => domain)
+      .map(domain => ({ 
+        value: domain,
+        label: domain === 'Digital Services' ? 'Digital Services 🌐' : domain
+      }));
   }, [selectedFocusArea, selectedAudience]);
 
   // Generate options for Area based on selected Domain
@@ -93,7 +108,12 @@ const BrowseAIAgents: React.FC<BrowseAIAgentsProps> = ({ userId, onAgentSelect, 
         item.Domain === selectedDomain.value
     );
     const uniqueAreas = Array.from(new Set(filtered.map(item => item.Area)));
-    return uniqueAreas.map(area => ({ value: area, label: area }));
+    return uniqueAreas
+      .filter(area => area)
+      .map(area => ({ 
+        value: area,
+        label: area === 'Productivity' ? 'Productivity ⚡' : area
+      }));
   }, [selectedFocusArea, selectedAudience, selectedDomain]);
 
   // Handlers for each dropdown
@@ -159,49 +179,42 @@ const BrowseAIAgents: React.FC<BrowseAIAgentsProps> = ({ userId, onAgentSelect, 
 
     if (selectedFocusArea) {
       filtered = filtered.filter(agent => {
-        const domain = domainData.find(d => Number(d.Id) === agent.domainId);
+        const domainMatch = domainData.find(d => 
+          Number(d.Id) === Number(agent.domainId)
+        );
         console.log('ForUse filter:', { 
           agentDomainId: agent.domainId, 
-          domain, 
-          match: domain?.ForUse === selectedFocusArea.value 
+          domain: domainMatch, 
+          match: domainMatch?.ForUse === selectedFocusArea.value 
         });
-        return domain?.ForUse === selectedFocusArea.value;
+        return domainMatch?.ForUse === selectedFocusArea.value;
       });
     }
 
     if (selectedAudience) {
       filtered = filtered.filter(agent => {
-        const domain = domainData.find(d => Number(d.Id) === agent.domainId);
-        console.log('Audience filter:', { 
-          agentDomainId: agent.domainId, 
-          domain, 
-          match: domain?.Audience === selectedAudience.value 
-        });
-        return domain?.Audience === selectedAudience.value;
+        const domainMatch = domainData.find(d => 
+          Number(d.Id) === Number(agent.domainId)
+        );
+        return domainMatch?.Audience === selectedAudience.value;
       });
     }
 
     if (selectedDomain) {
       filtered = filtered.filter(agent => {
-        const domain = domainData.find(d => Number(d.Id) === agent.domainId);
-        console.log('Domain filter:', { 
-          agentDomainId: agent.domainId, 
-          domain, 
-          match: domain?.Domain === selectedDomain.value 
-        });
-        return domain?.Domain === selectedDomain.value;
+        const domainMatch = domainData.find(d => 
+          Number(d.Id) === Number(agent.domainId)
+        );
+        return domainMatch?.Domain === selectedDomain.value;
       });
     }
 
     if (selectedArea) {
       filtered = filtered.filter(agent => {
-        const domain = domainData.find(d => Number(d.Id) === agent.domainId);
-        console.log('Area filter:', { 
-          agentDomainId: agent.domainId, 
-          domain, 
-          match: domain?.Area === selectedArea.value 
-        });
-        return domain?.Area === selectedArea.value;
+        const domainMatch = domainData.find(d => 
+          Number(d.Id) === Number(agent.domainId)
+        );
+        return domainMatch?.Area === selectedArea.value;
       });
     }
 
