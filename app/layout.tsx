@@ -5,7 +5,8 @@ import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
 import { Suspense } from "react";
 import { Analytics } from "@vercel/analytics/react";
-import Providers from "@/components/Providers"; // Import the new Providers component
+import Providers from "@/components/Providers";
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 export const metadata = {
   title: "Meet your goals with the help of AI. ",
@@ -14,25 +15,27 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className="min-h-screen flex flex-col">
-        <section>
-          <Suspense
-            fallback={
-              <div className="flex w-full px-4 lg:px-40 py-4 items-center border-b text-center gap-8 justify-between h-[69px]" />
-            }
-          >
-            <Navbar />
-          </Suspense>
-        </section>
-        <main className="flex flex-1 flex-col items-center">
-          <Providers> {/* Wrap children with Providers */}
-            {children}
-          </Providers>
-        </main>
-        <Footer />
-        <Toaster />
-        <Analytics />
+        <ErrorBoundary>
+          <section>
+            <Suspense
+              fallback={
+                <div className="flex w-full px-4 lg:px-40 py-4 items-center border-b text-center gap-8 justify-between h-[69px]" />
+              }
+            >
+              <Navbar />
+            </Suspense>
+          </section>
+          <main className="flex flex-1 flex-col items-center">
+            <Providers>
+              {children}
+            </Providers>
+          </main>
+          <Footer />
+          <Toaster />
+          <Analytics />
+        </ErrorBoundary>
       </body>
     </html>
   );

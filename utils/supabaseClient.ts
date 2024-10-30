@@ -4,34 +4,32 @@ import { Database } from '@/lib/database.types';
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-console.log('Supabase Configuration:', {
-  hasUrl: !!supabaseUrl,
-  hasKey: !!supabaseAnonKey,
-  url: supabaseUrl
-});
+// Create singleton instance
+let supabase: ReturnType<typeof createClient<Database>> | null = null;
 
-const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true
-  },
-  db: {
-    schema: 'public'
-  },
-  global: {
-    headers: {
-      'X-Client-Info': 'supabase-js-client'
+const getSupabaseClient = () => {
+  if (supabase) return supabase;
+
+  supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+      storageKey: 'app-supabase-auth' // Add unique storage key
+    },
+    db: {
+      schema: 'public'
     }
-  }
-});
+  });
 
-// Add session refresh on client init
-supabase.auth.onAuthStateChange((event, session) => {
-  if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-    // You can also store the session in localStorage if needed
-    console.log('Auth state changed:', event, session?.user?.id);
-  }
-});
+  // Add session refresh on client init
+  supabase.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+      console.log('Auth state changed:', event, session?.user?.id);
+    }
+  });
 
-export default supabase; 
+  return supabase;
+};
+
+export default getSupabaseClient(); 

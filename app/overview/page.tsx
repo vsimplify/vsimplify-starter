@@ -121,7 +121,7 @@ export default function OverviewPage() {
           throw missionError;
         }
 
-        console.log('Missions fetched:', missionData?.length);
+        console.log('Missions fetched:', missionData?.length || 0);
 
         return projectData.map((project: Database['public']['Tables']['Project']['Row']) => ({
           ...project,
@@ -206,7 +206,7 @@ export default function OverviewPage() {
         </button>
       </motion.div>
 
-      {showBrowseAgents && (
+      {showBrowseAgents && user && (
         <motion.div
           initial={{ height: 0, opacity: 0 }}
           animate={{ height: "auto", opacity: 1 }}

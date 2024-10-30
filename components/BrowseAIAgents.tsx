@@ -1,12 +1,13 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import Select, { SingleValue } from 'react-select';
-import { domainData, Domain } from '../data/domainData';
+import { domainData } from '../data/domainData';
 import styles from './BrowseAIAgents.module.css';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import supabase from '@/utils/supabaseClient';
 import { Spinner } from '@/components/ui/spinner';
 import { PortfolioCard } from '@/components/portfolio/PortfolioCard';
 import { Agent } from '@/types/portfolio';
+import { useRouter } from 'next/navigation';
 
 interface Option {
   value: string;
@@ -14,34 +15,62 @@ interface Option {
 }
 
 const fetchAgents = async (): Promise<Agent[]> => {
-  // First check if we have a valid session
-  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-  
-  if (sessionError || !session) {
-    console.error('Auth session error:', sessionError);
-    throw new Error('No valid authentication session');
-  }
+  try {
+    // Get the current session
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    // If no session, return empty array instead of throwing error
+    if (!session) {
+      console.log('No active session, returning empty agents list');
+      return [];
+    }
 
-  const { data, error } = await supabase
-    .from('Agent')
-    .select('*');
-  
-  if (error) {
-    console.error('Agent fetch error:', error);
-    throw error;
-  }
+    const { data, error } = await supabase
+      .from('Agent')
+      .select('*');
+    
+    if (error) {
+      console.error('Agent fetch error:', error);
+      throw error;
+    }
 
-  return data as Agent[];
+    return data as Agent[];
+  } catch (error) {
+    console.error('Error in fetchAgents:', error);
+    return []; // Return empty array instead of throwing
+  }
 };
 
 const BrowseAIAgents: React.FC = () => {
   const queryClient = useQueryClient();
+  const router = useRouter();
   
   // State for each dropdown
   const [selectedFocusArea, setSelectedFocusArea] = useState<SingleValue<Option>>(null);
   const [selectedAudience, setSelectedAudience] = useState<SingleValue<Option>>(null);
   const [selectedDomain, setSelectedDomain] = useState<SingleValue<Option>>(null);
   const [selectedArea, setSelectedArea] = useState<SingleValue<Option>>(null);
+
+  // Check auth status
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        console.log('No session found, redirecting to login');
+        router.push('/login');
+      }
+    };
+    checkAuth();
+  }, [router]);
+
+  // React Query hook for fetching agents
+  const { data: agents = [], isLoading, isError, error } = useQuery({
+    queryKey: ['agents'],
+    queryFn: fetchAgents,
+    retry: 1,
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    refetchOnWindowFocus: false,
+  });
 
   // Generate options for Focus Area
   const focusAreaOptions: Option[] = useMemo(() => {
@@ -105,20 +134,6 @@ const BrowseAIAgents: React.FC = () => {
     setSelectedArea(option);
   };
 
-  // React Query hook for fetching agents
-  const { data: agents, isLoading, isError, error } = useQuery({
-    queryKey: ['agents'],
-    queryFn: fetchAgents,
-    retry: 1, // Only retry once if failed
-  });
-
-  // Handle error logging using useEffect
-  useEffect(() => {
-    if (error) {
-      console.error('Agent query error:', error);
-    }
-  }, [error]);
-
   // Supabase real-time subscription setup
   useEffect(() => {
     const channel = supabase.channel('public:Agent')
@@ -178,12 +193,18 @@ const BrowseAIAgents: React.FC = () => {
           Error loading agents: {error instanceof Error ? error.message : 'Unknown error'}
         </div>
       )}
-      {!isLoading && !isError && agents && (
+      {!isLoading && !isError && agents && agents.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {agents.map((agent: Agent) => (
             <PortfolioCard key={agent.id} agent={agent} />
           ))}
         </div>
+      ) : (
+        !isLoading && (
+          <div className="text-gray-500 text-center py-8">
+            No agents found. Please check your filters or try again later.
+          </div>
+        )
       )}
     </div>
   );
