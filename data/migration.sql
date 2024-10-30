@@ -308,3 +308,95 @@ ON "public"."Project"
 FOR DELETE
 TO authenticated
 USING (auth.uid() = user_id);
+/*The error "permission denied for table Project" indicates that Row Level Security (RLS) is enabled on your Supabase Project table but proper policies aren't set up. Let's fix this by adding the necessary RLS policies.
+1. Go to your Supabase Dashboard:
+Navigate to your project
+Go to Authentication > Policies
+Find the "Project" table
+Enable RLS on the Project table if not already enabled:*/
+   ALTER TABLE "Project" ENABLE ROW LEVEL SECURITY;
+-- Add these RLS Policies for the Project table:
+   -- Enable read access for authenticated users to their own projects
+   CREATE POLICY "Users can view their own projects"
+   ON "public"."Project"
+   FOR SELECT
+   TO authenticated
+   USING (auth.uid() = user_id);
+
+   -- Enable insert access for authenticated users
+   CREATE POLICY "Users can create their own projects"
+   ON "public"."Project"
+   FOR INSERT
+   TO authenticated
+   WITH CHECK (auth.uid() = user_id);
+
+   -- Enable update access for authenticated users
+   CREATE POLICY "Users can update their own projects"
+   ON "public"."Project"
+   FOR UPDATE
+   TO authenticated
+   USING (auth.uid() = user_id);
+
+   -- Enable delete access for authenticated users
+   CREATE POLICY "Users can delete their own projects"
+   ON "public"."Project"
+   FOR DELETE
+   TO authenticated
+   USING (auth.uid() = user_id);
+-- Also add policies for the Mission table since we are querying it:
+   -- Enable RLS on Mission table
+   ALTER TABLE "Mission" ENABLE ROW LEVEL SECURITY;
+
+   -- Enable read access for authenticated users to their own missions
+   CREATE POLICY "Users can view their own missions"
+   ON "public"."Mission"
+   FOR SELECT
+   TO authenticated
+   USING (auth.uid() = user_id);
+/*Verify the user_id format:
+Make sure the user_id in your Project table matches the format of auth.uid(). In your app/overview/page.tsx, add a console log to verify:
+// Add this near the top of your queryFn
+console.log('Auth check:', {
+  authUid: user.id,
+  format: typeof user.id
+});
+
+// Then modify your Project query to log the results:
+const { data: projectData, error: projectError } = await supabase
+  .from("Project")
+  .select("*")
+  .eq("user_id", user.id);
+
+console.log('Project query:', {
+  userId: user.id,
+  error: projectError,
+  count: projectData?.length,
+  firstProject: projectData?.[0]
+});
+6. Test the Policies:
+After adding the policies, you can test them in the Supabase dashboard:
+Go to Table Editor
+Select the Project table
+Click "New Query"
+Run:
+   -- Test the policies*/
+   SELECT *
+   FROM "public"."Project"
+   WHERE user_id = auth.uid();
+-- If you're still having issues, verify the database schema:
+   -- Check the Project table structure
+   SELECT column_name, data_type 
+   FROM information_schema.columns 
+   WHERE table_name = 'Project';
+-- Ensure user_id is being set correctly on new projects:
+--When creating new projects, make sure the user_id is being --set to auth.uid():
+   -- Example of correct project insertion
+   CREATE POLICY "Set user_id on insert"
+   ON "public"."Project"
+   FOR INSERT
+   TO authenticated
+   WITH CHECK (
+     user_id = auth.uid()
+   );
+/*After applying these policies, try accessing the overview page again. The error should be resolved. If you're still having issues, check the browser console for the logged information about the user ID and project query results to help diagnose any remaining problems.
+Let me know if you need help interpreting the logs or if you're still experiencing issues after applying these policies.*/

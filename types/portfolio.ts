@@ -14,8 +14,21 @@ export interface CategoryFilter {
 
 export interface Agent {
   id: number;
-  name: string;
-  // ... other agent properties ...
+  allowDelegation: boolean;
+  backstory: string | null;
+  createdAt: string;
+  creator: string;
+  domainId: number;
+  email: string;
+  goal: string;
+  image: string | null;
+  memory: boolean;
+  role: string;
+  title: string;
+  tools: string[] | null;
+  updatedAt: string;
+  user_id: string;
+  verbose: boolean;
 }
 
 export interface Mission {

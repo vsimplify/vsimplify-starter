@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { Database } from '@/lib/database.types';
 import { useQuery } from '@tanstack/react-query';
@@ -15,6 +15,13 @@ import { Project } from '@/types/portfolio';
 import { useRouter } from 'next/navigation';
 
 export const dynamic = "force-dynamic";
+
+const getErrorDetails = (error: any) => {
+  if (error?.message) return error.message;
+  if (error?.error_description) return error.error_description;
+  if (typeof error === 'string') return error;
+  return JSON.stringify(error, null, 2);
+};
 
 export default function OverviewPage() {
   const supabase = createClientComponentClient<Database>();
@@ -35,22 +42,70 @@ export default function OverviewPage() {
     }
   });
 
+  // Add this effect to check auth state
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      console.log('Auth state check:', {
+        session: !!session,
+        userId: session?.user?.id,
+        error
+      });
+    };
+
+    checkAuth();
+  }, []);
+
   // Query for projects data
   const { data: projects, isLoading: projectsLoading, error } = useQuery({
     queryKey: ["projects", user?.id],
     queryFn: async () => {
-      if (!user?.id) return [];
+      if (!user?.id) {
+        console.log('No user ID available');
+        return [];
+      }
       
       try {
+        console.log('Fetching projects for user:', user.id);
+        
+        console.log('Auth check:', {
+          authUid: user.id,
+          format: typeof user.id
+        });
+
         const { data: projectData, error: projectError } = await supabase
           .from("Project")
           .select("*")
-          .eq("user_id", user.id);
+          .eq("user_id", user.id)
+          .then(result => {
+            console.log('Raw query result:', {
+              data: result.data,
+              error: result.error,
+              status: result.status,
+              statusText: result.statusText,
+              count: result.count
+            });
+            return result;
+          });
+
+        console.log('Project query:', {
+          userId: user.id,
+          error: projectError,
+          count: projectData?.length,
+          firstProject: projectData?.[0]
+        });
 
         if (projectError) {
-          console.error('Project fetch error:', projectError);
+          console.error('Project fetch error:', {
+            error: projectError,
+            message: projectError.message,
+            details: projectError.details,
+            hint: projectError.hint
+          });
           throw projectError;
         }
+
+        console.log('Projects fetched:', projectData?.length);
 
         const { data: missionData, error: missionError } = await supabase
           .from("Mission")
@@ -61,9 +116,16 @@ export default function OverviewPage() {
           );
 
         if (missionError) {
-          console.error('Mission fetch error:', missionError);
+          console.error('Mission fetch error:', {
+            error: missionError,
+            details: getErrorDetails(missionError),
+            
+            code: missionError.code
+          });
           throw missionError;
         }
+
+        console.log('Missions fetched:', missionData?.length);
 
         return projectData.map((project: Database['public']['Tables']['Project']['Row']) => ({
           ...project,
@@ -71,11 +133,16 @@ export default function OverviewPage() {
           agents: [],
         })) as Project[];
       } catch (error) {
-        console.error('Data fetch error:', error);
+        console.error('Data fetch error:', {
+          error,
+          details: getErrorDetails(error),
+          user: user.id,
+          stack: error instanceof Error ? error.stack : undefined
+        });
         throw error;
       }
     },
-    enabled: !!user?.id // Only run query when we have a user ID
+    enabled: !!user?.id
   });
 
   // Handle loading states
@@ -89,13 +156,26 @@ export default function OverviewPage() {
     );
   }
 
-  // Handle error state
+  // Handle error state with more details
   if (error) {
+    console.error('Render error:', {
+      error,
+      details: getErrorDetails(error),
+      user: user?.id
+    });
+    
     return (
       <div className="flex justify-center items-center h-screen">
-        <div className="text-red-500">
-          <p>Failed to load projects.</p>
-          <p className="text-sm mt-2">{error instanceof Error ? error.message : 'Unknown error occurred'}</p>
+        <div className="text-red-500 max-w-md p-4">
+          <p className="font-bold">Failed to load projects.</p>
+          <p className="text-sm mt-2 whitespace-pre-wrap">
+            {getErrorDetails(error)}
+          </p>
+          {process.env.NODE_ENV === 'development' && (
+            <pre className="text-xs mt-4 bg-gray-100 p-2 rounded overflow-auto">
+              {JSON.stringify(error, null, 2)}
+            </pre>
+          )}
         </div>
       </div>
     );
