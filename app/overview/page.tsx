@@ -44,16 +44,20 @@ export default function OverviewPage() {
 
   // Add this effect to check auth state
   useEffect(() => {
-    const checkAuth = async () => {
+    const checkAuthState = async () => {
       const { data: { session }, error } = await supabase.auth.getSession();
-      console.log('Auth state check:', {
-        session: !!session,
-        userId: session?.user?.id,
-        error
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      console.log('Auth Debug:', {
+        hasSession: !!session,
+        sessionUser: session?.user?.id,
+        currentUser: user?.id,
+        error: error?.message,
+        accessToken: session?.access_token?.slice(0, 10) + '...',
       });
     };
-
-    checkAuth();
+    
+    checkAuthState();
   }, []);
 
   // Query for projects data
@@ -77,16 +81,7 @@ export default function OverviewPage() {
           .from("Project")
           .select("*")
           .eq("user_id", user.id)
-          .then(result => {
-            console.log('Raw query result:', {
-              data: result.data,
-              error: result.error,
-              status: result.status,
-              statusText: result.statusText,
-              count: result.count
-            });
-            return result;
-          });
+          .throwOnError();
 
         console.log('Project query:', {
           userId: user.id,
@@ -107,19 +102,20 @@ export default function OverviewPage() {
 
         console.log('Projects fetched:', projectData?.length);
 
+        if (!projectData) return [];
+
         const { data: missionData, error: missionError } = await supabase
           .from("Mission")
           .select("*")
           .in(
             "projectId",
-            projectData?.map((project) => project.id) || []
+            projectData.map((project) => project.id)
           );
 
         if (missionError) {
           console.error('Mission fetch error:', {
             error: missionError,
             details: getErrorDetails(missionError),
-            
             code: missionError.code
           });
           throw missionError;
@@ -129,7 +125,7 @@ export default function OverviewPage() {
 
         return projectData.map((project: Database['public']['Tables']['Project']['Row']) => ({
           ...project,
-          missions: missionData.filter((mission) => mission.projectId === project.id),
+          missions: missionData?.filter((mission) => mission.projectId === project.id) || [],
           agents: [],
         })) as Project[];
       } catch (error) {
