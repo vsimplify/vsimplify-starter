@@ -1,3 +1,5 @@
+import { Json } from '@/types/supabase';
+
 type ForUse = 'Personal' | 'Business'
 type Audience = 'Individual' | 'Team' | 'Enterprise'
 type Domain = 'AI' | 'Web' | 'Mobile' | 'Data' | 'Cloud' | 'Security'
@@ -29,7 +31,7 @@ export interface Mission {
   projectId: number;
   result: string | null;
   taskResult: string | null;
-  tasks: JSON[] | null;
+  tasks: Json[] | null;
   updatedAt: string | null;
   user_id: string;
   verbose: boolean;
@@ -38,11 +40,7 @@ export interface Mission {
 
 export interface Project {
   id: number;
-  title: string;
-  description: string;
-  progress: number;
-  status: string;
-
+  description: string | null;
   createdAt: string;
   domainId: number;
   dueOn: string;
@@ -53,7 +51,10 @@ export interface Project {
   outcome: string;
   updatedAt: string | null;
   user_id: string;
-  missions: Mission[];
+  title: string | null;
+  progress: number | null;
+  status: string | null;
+  missions?: Mission[];
   agents: Agent[];
 }
 

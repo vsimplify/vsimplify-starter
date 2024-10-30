@@ -425,6 +425,9 @@ export type Database = {
           nugget: string
           objective: string
           outcome: string
+          progress: number | null
+          status: string | null
+          title: string | null
           updatedAt: string | null
           user_id: string
         }
@@ -439,6 +442,9 @@ export type Database = {
           nugget: string
           objective: string
           outcome: string
+          progress?: number | null
+          status?: string | null
+          title?: string | null
           updatedAt?: string | null
           user_id?: string
         }
@@ -453,6 +459,9 @@ export type Database = {
           nugget?: string
           objective?: string
           outcome?: string
+          progress?: number | null
+          status?: string | null
+          title?: string | null
           updatedAt?: string | null
           user_id?: string
         }

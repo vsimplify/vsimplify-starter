@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
-import { Database } from "@/types/supabase";
+import { Database } from '@/lib/database.types';
 import { useQuery } from '@tanstack/react-query';
 import axios from "axios";
 import PortfolioDashboard from "@/components/portfolio/PortfolioDashboard";
@@ -30,32 +30,34 @@ export default function OverviewPage() {
 
   const { data: projects, isLoading, error } = useQuery({
     queryKey: ["projects", user?.id],
-    queryFn: async (): Promise<Project[] | []> => {
+    queryFn: async () => {
       if (!user) return [];
-      const { data, error } = await supabase
-        .from("Project")
-        .select(`*, missions ( * ), agents ( * )`)
-        .eq("user_id", user.id);
-      if (error) throw error;
       
-      return data.map((project: any) => ({
-        id: project.id,
-        title: project.title,
-        description: project.description,
-        progress: project.progress,
-        status: project.status,
-        createdAt: project.created_at,
-        domainId: project.domain_id,
-        dueOn: project.due_on,
-        email: project.email,
-        goal: project.goal,
-        nugget: project.nugget,
-        objective: project.objective,
-        outcome: project.outcome,
-        updatedAt: project.updated_at,
-        user_id: project.user_id,
-        missions: project.missions,
-        agents: project.agents,
+      const { data: projectData, error: projectError } = await supabase
+        .from("Project")
+        .select("*")
+        .eq("user_id", user.id);
+
+      if (projectError) {
+        throw projectError;
+      }
+
+      const { data: missionData, error: missionError } = await supabase
+        .from("Mission")
+        .select("*")
+        .in(
+          "projectId",
+          projectData?.map((project) => project.id) || []
+        );
+
+      if (missionError) {
+        throw missionError;
+      }
+
+      return projectData.map((project: Database['public']['Tables']['Project']['Row']) => ({
+        ...project,
+        missions: missionData.filter((mission) => mission.projectId === project.id),
+        agents: [],
       })) as Project[];
     },
     enabled: !!user
@@ -114,7 +116,7 @@ export default function OverviewPage() {
         </motion.div>
       )}
 
-      <PortfolioDashboard projects={projects ?? []} />
+      <PortfolioDashboard projects={projects || []} />
     </div>
   );
 }

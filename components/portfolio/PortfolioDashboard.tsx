@@ -31,18 +31,18 @@ const PortfolioDashboard: React.FC<PortfolioDashboardProps> = ({ projects }) => 
           {projects.map((project) => (
             <tr key={project.id} className="hover:bg-gray-100">
               <td className="px-6 py-4">{project.id}</td>
-              <td className="px-6 py-4">{project.title}</td>
+              <td className="px-6 py-4">{project.title || 'Untitled'}</td>
               <td className="px-6 py-4">{project.description}</td>
               <td className="px-6 py-4">
                 <div className="w-full bg-gray-200 rounded-full h-2.5">
                   <div
                     className="bg-blue-600 h-2.5 rounded-full"
-                    style={{ width: `${project.progress}%` }}
+                    style={{ width: `${project.progress || 0}%` }}
                   ></div>
                 </div>
-                <span className="text-sm">{project.progress}%</span>
+                <span className="text-sm">{project.progress || 0}%</span>
               </td>
-              <td className="px-6 py-4">{project.status}</td>
+              <td className="px-6 py-4">{project.status || 'Unknown'}</td>
               <td className="px-6 py-4">
                 <button className="text-blue-500 hover:underline">
                   View Details
