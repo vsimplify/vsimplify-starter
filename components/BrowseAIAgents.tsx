@@ -138,6 +138,41 @@ const BrowseAIAgents: React.FC<BrowseAIAgentsProps> = ({ userId }) => {
     };
   }, [queryClient, userId]);
 
+  // Filter agents based on selected options
+  const filteredAgents = useMemo(() => {
+    let filtered = agents;
+
+    if (selectedFocusArea) {
+      filtered = filtered.filter(agent => {
+        const domain = domainData.find(d => d.Id === agent.domainId);
+        return domain?.ForUse === selectedFocusArea.value;
+      });
+    }
+
+    if (selectedAudience) {
+      filtered = filtered.filter(agent => {
+        const domain = domainData.find(d => d.Id === agent.domainId);
+        return domain?.Audience === selectedAudience.value;
+      });
+    }
+
+    if (selectedDomain) {
+      filtered = filtered.filter(agent => {
+        const domain = domainData.find(d => d.Id === agent.domainId);
+        return domain?.Domain === selectedDomain.value;
+      });
+    }
+
+    if (selectedArea) {
+      filtered = filtered.filter(agent => {
+        const domain = domainData.find(d => d.Id === agent.domainId);
+        return domain?.Area === selectedArea.value;
+      });
+    }
+
+    return filtered;
+  }, [agents, selectedFocusArea, selectedAudience, selectedDomain, selectedArea]);
+
   return (
     <div className={styles.container}>
       <h2 className={styles.heading}>Browse AI Agents</h2>
@@ -184,18 +219,39 @@ const BrowseAIAgents: React.FC<BrowseAIAgentsProps> = ({ userId }) => {
           Error loading agents: {error instanceof Error ? error.message : 'Unknown error'}
         </div>
       )}
-      {!isLoading && !isError && agents && agents.length > 0 ? (
+      {!isLoading && !isError && filteredAgents.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          {agents.map((agent: Agent) => (
+          {filteredAgents.map((agent: Agent) => (
             <PortfolioCard key={agent.id} agent={agent} />
           ))}
         </div>
       ) : (
         !isLoading && (
           <div className="text-gray-500 text-center py-8">
-            No agents found. Please check your filters or try again later.
+            {agents.length > 0 ? 'No agents match the selected filters.' : 'No agents found.'}
           </div>
         )
+      )}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="mt-4 p-4 bg-gray-100 rounded text-xs">
+          <pre>
+            {JSON.stringify(
+              {
+                totalAgents: agents.length,
+                filteredAgents: filteredAgents.length,
+                selectedFilters: {
+                  focusArea: selectedFocusArea?.value,
+                  audience: selectedAudience?.value,
+                  domain: selectedDomain?.value,
+                  area: selectedArea?.value,
+                },
+                agentDomains: agents.map(a => a.domainId),
+              },
+              null,
+              2
+            )}
+          </pre>
+        </div>
       )}
     </div>
   );
