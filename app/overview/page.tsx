@@ -4,7 +4,6 @@ import { useState } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { Database } from '@/lib/database.types';
 import { useQuery } from '@tanstack/react-query';
-import axios from "axios";
 import PortfolioDashboard from "@/components/portfolio/PortfolioDashboard";
 import BrowseAIAgents from "@/components/BrowseAIAgents";
 import { ChevronDownIcon } from "@heroicons/react/24/solid";
@@ -13,57 +12,74 @@ import { Button } from "@material-tailwind/react";
 import NavigationMenu from '@/components/NavigationMenu';
 import { User } from '@supabase/supabase-js';
 import { Project } from '@/types/portfolio';
+import { useRouter } from 'next/navigation';
 
 export const dynamic = "force-dynamic";
 
 export default function OverviewPage() {
   const supabase = createClientComponentClient<Database>();
+  const router = useRouter();
   const [showBrowseAgents, setShowBrowseAgents] = useState(false);
 
-  const { data: user } = useQuery({
+  // Query for user data
+  const { data: user, isLoading: userLoading } = useQuery({
     queryKey: ['user'],
     queryFn: async (): Promise<User | null> => {
-      const { data } = await supabase.auth.getUser();
-      return data.user;
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (error) {
+        console.error('Auth error:', error);
+        router.push('/login'); // Redirect to login if not authenticated
+        return null;
+      }
+      return user;
     }
   });
 
-  const { data: projects, isLoading, error } = useQuery({
+  // Query for projects data
+  const { data: projects, isLoading: projectsLoading, error } = useQuery({
     queryKey: ["projects", user?.id],
     queryFn: async () => {
-      if (!user) return [];
+      if (!user?.id) return [];
       
-      const { data: projectData, error: projectError } = await supabase
-        .from("Project")
-        .select("*")
-        .eq("user_id", user.id);
+      try {
+        const { data: projectData, error: projectError } = await supabase
+          .from("Project")
+          .select("*")
+          .eq("user_id", user.id);
 
-      if (projectError) {
-        throw projectError;
+        if (projectError) {
+          console.error('Project fetch error:', projectError);
+          throw projectError;
+        }
+
+        const { data: missionData, error: missionError } = await supabase
+          .from("Mission")
+          .select("*")
+          .in(
+            "projectId",
+            projectData?.map((project) => project.id) || []
+          );
+
+        if (missionError) {
+          console.error('Mission fetch error:', missionError);
+          throw missionError;
+        }
+
+        return projectData.map((project: Database['public']['Tables']['Project']['Row']) => ({
+          ...project,
+          missions: missionData.filter((mission) => mission.projectId === project.id),
+          agents: [],
+        })) as Project[];
+      } catch (error) {
+        console.error('Data fetch error:', error);
+        throw error;
       }
-
-      const { data: missionData, error: missionError } = await supabase
-        .from("Mission")
-        .select("*")
-        .in(
-          "projectId",
-          projectData?.map((project) => project.id) || []
-        );
-
-      if (missionError) {
-        throw missionError;
-      }
-
-      return projectData.map((project: Database['public']['Tables']['Project']['Row']) => ({
-        ...project,
-        missions: missionData.filter((mission) => mission.projectId === project.id),
-        agents: [],
-      })) as Project[];
     },
-    enabled: !!user
+    enabled: !!user?.id // Only run query when we have a user ID
   });
 
-  if (isLoading) {
+  // Handle loading states
+  if (userLoading || projectsLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
         <Button variant="text" loading className="text-brown-700">
@@ -73,13 +89,22 @@ export default function OverviewPage() {
     );
   }
 
+  // Handle error state
   if (error) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <div className="text-red-500">Failed to load projects.</div>
-        {error.message}
+        <div className="text-red-500">
+          <p>Failed to load projects.</p>
+          <p className="text-sm mt-2">{error instanceof Error ? error.message : 'Unknown error occurred'}</p>
+        </div>
       </div>
     );
+  }
+
+  // If no user, redirect to login
+  if (!user) {
+    router.push('/login');
+    return null;
   }
 
   return (

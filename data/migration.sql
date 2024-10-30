@@ -254,3 +254,57 @@ CREATE INDEX idx_portfolio_domain_id ON public.portfolios ("domainId");
 CREATE INDEX idx_project_domain_id ON public."Project" ("domainId");
 CREATE INDEX idx_agent_user_id ON public."Agent" (user_id);
 CREATE INDEX idx_portfolio_user_id ON public.portfolios (user_id);
+
+-- Enable read access for authenticated users
+CREATE POLICY "Enable read access for authenticated users"
+ON "public"."Project"
+FOR SELECT
+TO authenticated
+USING (auth.uid() = user_id);
+
+-- Enable insert access for authenticated users
+CREATE POLICY "Enable insert access for authenticated users"
+ON "public"."Project"
+FOR INSERT
+TO authenticated
+WITH CHECK (auth.uid() = user_id);
+
+-- Enable update access for authenticated users
+CREATE POLICY "Enable update access for authenticated users"
+ON "public"."Project"
+FOR UPDATE
+TO authenticated
+USING (auth.uid() = user_id);
+
+-- Enable delete access for authenticated users
+CREATE POLICY "Enable delete access for authenticated users"
+ON "public"."Project"
+FOR DELETE
+TO authenticated
+USING (auth.uid() = user_id);-- Enable read access for authenticated users
+CREATE POLICY "Enable read access for authenticated users"
+ON "public"."Project"
+FOR SELECT
+TO authenticated
+USING (auth.uid() = user_id);
+
+-- Enable insert access for authenticated users
+CREATE POLICY "Enable insert access for authenticated users"
+ON "public"."Project"
+FOR INSERT
+TO authenticated
+WITH CHECK (auth.uid() = user_id);
+
+-- Enable update access for authenticated users
+CREATE POLICY "Enable update access for authenticated users"
+ON "public"."Project"
+FOR UPDATE
+TO authenticated
+USING (auth.uid() = user_id);
+
+-- Enable delete access for authenticated users
+CREATE POLICY "Enable delete access for authenticated users"
+ON "public"."Project"
+FOR DELETE
+TO authenticated
+USING (auth.uid() = user_id);
