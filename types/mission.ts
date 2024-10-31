@@ -18,6 +18,41 @@ export interface Mission extends Omit<DBMission, 'tasks'> {
 	_AgentToMission: AgentToMission[];
 }
 
+// Add type guard for TaskMetrics
+const isTaskMetrics = (metrics: any): metrics is TaskMetrics => {
+	return (
+		metrics &&
+		typeof metrics.tokenUsage === 'number' &&
+		typeof metrics.executionTime === 'number' &&
+		typeof metrics.costPerExecution === 'number' &&
+		typeof metrics.successRate === 'number' &&
+		metrics.lastUpdated instanceof Date
+	);
+};
+
+// Add helper to safely convert JSON to TaskMetrics
+const convertToTaskMetrics = (metrics: Json | null): TaskMetrics | undefined => {
+	if (!metrics || typeof metrics !== 'object') return undefined;
+
+	const metricsObj = metrics as Record<string, any>;
+	
+	if (isTaskMetrics(metricsObj)) return metricsObj;
+
+	// Try to construct TaskMetrics from raw data
+	try {
+		return {
+			tokenUsage: Number(metricsObj.tokenUsage) || 0,
+			executionTime: Number(metricsObj.executionTime) || 0,
+			costPerExecution: Number(metricsObj.costPerExecution) || 0,
+			successRate: Number(metricsObj.successRate) || 0,
+			lastUpdated: new Date(metricsObj.lastUpdated || Date.now())
+		};
+	} catch (error) {
+		console.error('Error converting metrics:', error);
+		return undefined;
+	}
+};
+
 export const getMissionTasks = async (missionId: number): Promise<Task[]> => {
 	const supabase = createClientComponentClient<Database>();
 	
@@ -34,10 +69,10 @@ export const getMissionTasks = async (missionId: number): Promise<Task[]> => {
 	if (newTasks && newTasks.length > 0) {
 		return newTasks.map(task => ({
 			...task,
-			metrics: task.metrics as TaskMetrics | null,
-			expected_output: (task.metrics as any)?.expected_output || '',
-			async_execution: (task.metrics as any)?.async_execution || false
-		})) as Task[];
+			metrics: convertToTaskMetrics(task.metrics),
+			expected_output: task.expected_output || '',
+			async_execution: task.async_execution || false
+		}));
 	}
 
 	// Fallback to legacy tasks if no new tasks found
@@ -54,17 +89,17 @@ export const getMissionTasks = async (missionId: number): Promise<Task[]> => {
 			id: uuidv4(),
 			name: legacyTask.name || '',
 			description: legacyTask.description || '',
-			assignedAgentId: legacyTask.agent_id,
+			assignedAgentId: legacyTask.assignedAgentId || legacyTask.agent?.id || 0,
 			missionId,
 			status: 'not_started' as const,
 			priority: 'medium' as const,
-			dependencies: null,
-			metrics: null,
-			created_at: new Date().toISOString(),
-			updated_at: new Date().toISOString(),
-				user_id: 'f5cb0287-d141-4f8b-9632-98be8d7bcbe7',
+			dependencies: legacyTask.dependencies || [],
+			metrics: convertToTaskMetrics(legacyTask.metrics),
 			expected_output: legacyTask.expected_output || '',
-			async_execution: legacyTask.async_execution || false
+			async_execution: legacyTask.async_execution || false,
+			user_id: 'f5cb0287-d141-4f8b-9632-98be8d7bcbe7',
+			created_at: new Date().toISOString(),
+			updated_at: new Date().toISOString()
 		}));
 	}
 

@@ -1,10 +1,10 @@
 'use client'; // Ensure this is a Client Component
 
 import React from 'react';
-import { Portfolio } from '@/types/portfolio';
+import { Portfolio, Mission } from '@/types/portfolio';
 
 interface PortfolioItemCardProps {
-  portfolio: Portfolio;
+  portfolio: Portfolio & { missions?: Mission[] }; // Extend Portfolio type to include optional missions
 }
 
 const PortfolioItemCard: React.FC<PortfolioItemCardProps> = ({ portfolio }) => {

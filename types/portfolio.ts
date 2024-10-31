@@ -1,13 +1,65 @@
 import { Database } from '@/lib/database.types';
-import { Task } from './task';
+import { Sample } from './sample';
+import { Json } from '@/types/supabase';
 
 // Existing types from database.types.ts
 type DBPortfolio = Database['public']['Tables']['portfolios']['Row'];
 type DBProject = Database['public']['Tables']['Project']['Row'];
 type DBMission = Database['public']['Tables']['Mission']['Row'];
 type DBAgent = Database['public']['Tables']['Agent']['Row'];
+type DBTask = Database['public']['Tables']['Task']['Row'];
 
-// New types for JIRA-style portfolio management
+// Metrics types
+export interface MetricsData {
+  tokenUsage: number;
+  executionTime: number;
+  costPerExecution: number;
+  successRate: number;
+  lastUpdated: Date;
+}
+
+// Task types
+export type TaskMetrics = MetricsData & Json;
+
+export type Task = Omit<DBTask, 'metrics'> & {
+  metrics?: TaskMetrics;
+};
+
+// Agent types
+export type Agent = DBAgent & {
+  performanceRating?: number;
+  successRate?: number;
+  userFeedback?: string[];
+  metrics?: MetricsData;
+};
+
+// Mission types
+type AgentToMission = Database['public']['Tables']['_AgentToMission']['Row'];
+
+export interface Mission extends Omit<DBMission, 'tasks'> {
+  tasks: Task[];
+  agents: Agent[];
+  _AgentToMission: AgentToMission[];
+  metrics?: MetricsData;
+}
+
+// Project types
+export type Project = DBProject & {
+  missions?: Mission[];
+  agents?: Agent[];
+  metrics?: MetricsData;
+};
+
+// Portfolio types
+export type Portfolio = DBPortfolio & {
+  projects?: Project[];
+  releases?: Release[];
+  teams?: Team[];
+  themes?: Theme[];
+  metrics?: MetricsData;
+};
+
+// Additional types for portfolio management
 export type ReleaseStatus = 'planned' | 'in_progress' | 'completed';
 
 export type Release = {
@@ -34,56 +86,7 @@ export type Theme = {
   description?: string;
 };
 
-export type MetricsData = {
-  tokenUsage: number;
-  executionTime: number;
-  costPerExecution: number;
-  successRate: number;
-  lastUpdated: Date;
-};
-
-export type Task = {
-  id: string;
-  name: string;
-  description: string;
-  assignedAgentId: number;
-  status: 'not_started' | 'next' | 'in_progress' | 'blocked' | 'done';
-  metrics?: MetricsData;
-  dependencies?: string[]; // Task IDs
-  priority: 'low' | 'medium' | 'high' | 'critical';
-};
-
-type AgentToMission = Database['public']['Tables']['_AgentToMission']['Row'];
-
-export interface Mission extends Omit<DBMission, 'tasks'> {
-  tasks: Task[];
-  agents: Agent[];
-  _AgentToMission: AgentToMission[];
-  metrics?: MetricsData;
-}
-
-export type Agent = DBAgent & {
-  performanceRating?: number;
-  successRate?: number;
-  userFeedback?: string[];
-  metrics?: MetricsData;
-};
-
-export type Project = DBProject & {
-  missions?: Mission[];
-  agents?: Agent[];
-  metrics?: MetricsData;
-};
-
-export type Portfolio = DBPortfolio & {
-  projects?: Project[];
-  releases?: Release[];
-  teams?: Team[];
-  themes?: Theme[];
-  metrics?: MetricsData;
-};
-
-// Type guards for runtime type checking
+// Type guards
 export const isPortfolio = (item: any): item is Portfolio => {
   return item && 
     typeof item.id === 'string' && 
@@ -112,7 +115,7 @@ export const isAgent = (item: any): item is Agent => {
     typeof item.goal === 'string';
 };
 
-// Utility types for API responses
+// Response types
 export type PortfolioResponse = {
   data: Portfolio | null;
   error: Error | null;

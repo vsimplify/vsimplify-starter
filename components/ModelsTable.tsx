@@ -15,7 +15,7 @@ import { Database } from "@/types/supabase";
 import { Icons } from "./icons";
 import { useRouter } from "next/navigation";
 import { modelRowWithSamples } from "@/types/utils";
-import { Sample } from '@/types/portfolio';
+import { Sample } from '@/types/sample';
 
 type ModelsTableProps = {
   models: modelRowWithSamples[];

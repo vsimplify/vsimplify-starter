@@ -11,7 +11,9 @@ CREATE TABLE IF NOT EXISTS "public"."Task" (
     "metrics" jsonb DEFAULT NULL,
     "created_at" timestamptz DEFAULT now(),
     "updated_at" timestamptz DEFAULT now(),
-    "user_id" uuid NOT NULL
+    "user_id" uuid NOT NULL,
+    "expected_output" TEXT,
+    "async_execution" BOOLEAN DEFAULT false
 );
 
 -- Create function to migrate existing tasks
