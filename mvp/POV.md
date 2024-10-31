@@ -33,8 +33,10 @@
   - MVP: Minimal implementation
   - PROD: Complete implementation
 - Must align with PraisonAI's agents-advanced.yaml structure
-- Need to support up to 3 example Portfolios
-- Each Portfolio can have up to 3 Projects per domainId
+- Each Domain.Domain gets 1 Portfolio
+- Each Portfolio contains 3 Projects, each with a unique Domain.Area:
+  - 1 Project using existing Domain.Area
+  - 2 Projects using new Domain.Areas (requiring new domainIds)
 
 ### 3. UI/UX Requirements
 - Replace current headshot gallery with Agent gallery
@@ -111,11 +113,23 @@ Current structure shows:
 
 ## Domain & Agent Relationship
 Need to clarify:
-1. The relationship between domainId 103.01 and the three default agents:
-   - Senior Software Engineer
-   - Software Quality Control Engineer
-   - Chief Software Quality Control Engineer
-2. These agents are currently hardcoded in Projects-Mission-Agents.ts
+1. Understanding of Projects-Mission-Agents.ts:
+   - Contains incomplete implementation for domainId 103.01
+   - Currently shows 3 agents for "Game Building" mission
+   - Has placeholder "Mission1" and "Mission2" that need realistic names
+   - Each mission needs proper task definitions to determine agent requirements
+
+2. Example for Digital Services 🌐 (domainId: 103.01):
+   - Portfolio: "Game Development Suite"
+   - Project 1: "Chrono Quest" (using existing Area: "Productivity ⚡")
+      - Mission: "Game Building" (using existing 3 agents)
+      - Mission: "Asset Development" (needs agent definition)
+      - Mission: "Testing & QA" (needs agent definition)
+
+3. New Domain.Area Creation:
+   - Each new Project requires a new domainId
+   - New domainIds need PSQL INSERT statements
+   - Area values must align with project objectives
 
 ## YAML Configuration Specifics
 _Need to create comprehensive agent ecosystems:_
@@ -167,12 +181,15 @@ _New requirements for schema:_
 
 ## Implementation Phases
 _Revised implementation approach:_
-1. _Create domain-specific YAML files (MVP & PROD versions)_
-2. _Develop PSQL scripts for new domain areas_
-3. _Implement image management system_
-4. _Extend domain data files_
-5. _Modify page.tsx for enhanced filtering_
-6. _Implement portfolio visualization_
+1. For each Domain.Domain:
+   - Identify portfolio scope
+   - Define 2 new Domain.Area values
+   - Create PSQL INSERT statements for new domainIds
+   - Develop YAML configurations (MVP & PROD)
+2. Implement image management system
+3. Extend domain data files
+4. Modify page.tsx for enhanced filtering
+5. Implement portfolio visualization
 
 ## Configuration Management
 _Enhanced configuration needs:_
