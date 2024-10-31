@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import Select, { SingleValue } from 'react-select';
-import { domainData } from '../data/domainData';
+import { domainData } from '../data/domainData-PROD';
 import styles from './BrowseAIAgents.module.css';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import supabase from '@/utils/supabaseClient';
