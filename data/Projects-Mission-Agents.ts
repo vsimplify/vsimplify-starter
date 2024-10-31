@@ -172,7 +172,7 @@ export const missions: Array<Mission> = [
     result: "result",
   },
   {
-    name: "Mission1",
+    name: "Mission2",
     projectId:1,
     email:"placeholder",
     crew: agents,

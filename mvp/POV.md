@@ -41,7 +41,7 @@
 - Implement cascading dropdowns for domain filtering
 - Display Agent details on image click
 - Rename and reorganize agent images:
-  - Format: <domainId-Role>
+  - Format: <domainId-Role
   - Default to sailor.png when no specific image exists
   - Remove duplicate/unused images
 
@@ -118,41 +118,90 @@ Need to clarify:
 2. These agents are currently hardcoded in Projects-Mission-Agents.ts
 
 ## YAML Configuration Specifics
-For each Portfolio example, we need:
-1. AI Productivity Suite (domainId: 103.01)
-   - Project: Schedule & Task Automator
-   - Project: Content Generation System
-   - Project: Workflow Optimization
+_Need to create comprehensive agent ecosystems:_
+1. _For each Domain.Domain in domainData-PROD.ts:_
+   - _Create 1 Portfolio_
+   - _Create 3 Projects per Portfolio:_
+     - _1 Project using existing Domain.Area_
+     - _2 Additional Projects with new Domain.Areas_
+   - _Each Project needs:_
+     - _MVP YAML (minimal version)_
+     - _PROD YAML (detailed version)_
+     - _Specialized AI Agents for tasks_
 
-2. AI Healthcare Innovations (domainId: 100.01)
-   - Project: Patient Monitoring System
-   - Project: Diagnostic Assistant
-   - Project: Healthcare Data Analytics
+Example for Digital Services 🌐 (domainId: 103.01):
+Portfolio: "AI Productivity Enhancement"
+1. Project: Task Automation (existing Area: "Productivity ⚡")
+2. _Project: Knowledge Management (new Area: "Information Organization 📚")_
+3. _Project: Process Optimization (new Area: "Workflow Enhancement 🔄")_
 
-3. AI Financial Analytics (domainId: 105.01)
-   - Project: Risk Assessment Tool
-   - Project: Market Analysis System
-   - Project: Financial Forecasting
+_Similar structure needed for each Domain.Domain, such as:_
+- Healthcare Monitoring
+- Financial Analysis
+- Legal Documentation
+- Educational Support
+- etc.
 
-## MVP vs PROD Configuration
-Need to implement:
-1. Environment-based switching mechanism:
-   ```typescript
-   const isDevelopment = process.env.NODE_ENV === 'development';
-   const dataSource = isDevelopment ? 
-     require('./data/domainData.ts') : 
-     require('./data/domainData-PROD.ts');
-   ```
-
-2. Feature flags for controlling functionality:
-   ```typescript
-   const FEATURES = {
-     USE_PROD_DATA: process.env.NEXT_PUBLIC_USE_PROD_DATA === 'true',
-     ENABLE_AI_METRICS: process.env.NEXT_PUBLIC_ENABLE_AI_METRICS === 'true'
-   };
-   ```
+## Agent Distribution Strategy
+_New understanding of agent allocation:_
+1. _Each Domain needs multiple specialized agents_
+2. _Agents should be domain-specific experts_
+3. _Need to create agent hierarchies within domains_
+4. _Agents should have complementary skills within each domain_
 
 ## Image Management Strategy
-Current implementation shows:
-```typescript
-src
+_Enhanced image mapping requirements:_
+1. _Each domain needs its own set of agent images_
+2. _Images should reflect agent specialization_
+3. _Naming convention: `${domainId}-${specialization}-${role}.png`_
+4. _Need to map existing agent_images to domains_
+5. _Create new images for missing agent types_
+
+## Database Schema Extensions
+_New requirements for schema:_
+1. _Domain table needs new Areas column_
+2. _Portfolio table needs domain relationship_
+3. _Project table needs portfolio relationship_
+4. _Agent table needs specialization field_
+5. _Mission table needs enhanced tracking_
+
+## Implementation Phases
+_Revised implementation approach:_
+1. _Create domain-specific YAML files (MVP & PROD versions)_
+2. _Develop PSQL scripts for new domain areas_
+3. _Implement image management system_
+4. _Extend domain data files_
+5. _Modify page.tsx for enhanced filtering_
+6. _Implement portfolio visualization_
+
+## Configuration Management
+_Enhanced configuration needs:_
+1. _Domain-specific feature flags_
+2. _Environment-based data switching_
+3. _Image path configuration_
+4. _Agent capability toggles_
+
+## Risk Factors
+_Additional risks identified:_
+1. _Data consistency across multiple domains_
+2. _Image availability for all agent types_
+3. _Performance with increased agent count_
+4. _Domain-specific configuration management_
+5. _Cross-domain agent interactions_
+
+## Next Steps
+_Revised implementation sequence:_
+1. _Audit existing domains and areas_
+2. _Create comprehensive agent mapping_
+3. _Develop YAML templates_
+4. _Create image management system_
+5. _Implement domain-based filtering_
+6. _Develop portfolio visualization_
+
+## Questions for Clarification
+_Additional questions:_
+1. _Priority order for domain implementation_
+2. _Required agent specializations per domain_
+3. _Cross-domain agent collaboration rules_
+4. _Domain-specific metrics requirements_
+5. _Portfolio visualization preferences_
