@@ -1,19 +1,19 @@
-import type { Agent } from "./agent";
-import type { Task, TaskInput } from "./task";
 import { Database } from '@/lib/database.types';
-import { Task } from './task';
-import { createClientComponentClient } from 'supabase-auth-helpers-nextjs';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { v4 as uuidv4 } from 'uuid';
-
-type ProcessType = "SEQUENTIAL" | "HIERARCHICAL";
+import { Agent } from './agent';
+import { Task } from './task';
+import type { Json } from '@/lib/database.types';
 
 type DBMission = Database['public']['Tables']['Mission']['Row'];
-type DBTask = Database['public']['Tables']['Task']['Row'];
+
+export type ProcessType = Database['public']['Enums']['MissionProcess'];
 
 export interface Mission extends Omit<DBMission, 'tasks'> {
 	/** @deprecated Use tasks from Tasks table instead */
 	legacyTasks?: Json | null;
 	tasks: Task[];
+	agents: Agent[];
 }
 
 export const getMissionTasks = async (missionId: number): Promise<Task[]> => {
@@ -37,17 +37,20 @@ export const getMissionTasks = async (missionId: number): Promise<Task[]> => {
 		.single();
 
 	if (mission?.tasks) {
-		// Convert legacy tasks to new format
+		// Convert legacy tasks to new format with required fields
 		return (mission.tasks as any[]).map(legacyTask => ({
-			id: uuidv4(), // Generate new ID
+			id: uuidv4(),
 			name: legacyTask.name,
 			description: legacyTask.description,
 			assignedAgentId: legacyTask.agent_id,
 			missionId: missionId,
 			status: 'not_started',
 			priority: 'medium',
+			dependencies: null,
+			metrics: null,
 			created_at: new Date().toISOString(),
-			updated_at: new Date().toISOString()
+			updated_at: new Date().toISOString(),
+			user_id: 'f5cb0287-d141-4f8b-9632-98be8d7bcbe7' // Using the specified user ID
 		}));
 	}
 
