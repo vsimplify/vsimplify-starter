@@ -172,24 +172,56 @@ _Enhanced image mapping requirements:_
 5. _Create new images for missing agent types_
 
 ## Database Schema Extensions
-_New requirements for schema:_
-1. _Domain table needs new Areas column_
-2. _Portfolio table needs domain relationship_
-3. _Project table needs portfolio relationship_
-4. _Agent table needs specialization field_
-5. _Mission table needs enhanced tracking_
+**Correction: Previous schema analysis was incorrect. Current schema already has:**
+- **Domain table already has Area column**
+- **Portfolio table already has domainId relationship**
+- **Project table already has project_id relationship**
+
+**New schema requirements:**
+1. **Add metrics tracking columns to Mission table:**
+   - **token_usage**
+   - **execution_time**
+   - **cost_per_execution**
+2. **Add feedback columns to Agent table:**
+   - **performance_rating**
+   - **success_rate**
+   - **user_feedback**
 
 ## Implementation Phases
-_Revised implementation approach:_
-1. For each Domain.Domain:
-   - Identify portfolio scope
-   - Define 2 new Domain.Area values
-   - Create PSQL INSERT statements for new domainIds
-   - Develop YAML configurations (MVP & PROD)
-2. Implement image management system
-3. Extend domain data files
-4. Modify page.tsx for enhanced filtering
-5. Implement portfolio visualization
+**Revised implementation approach with expanded UI requirements:**
+1. **Basic Infrastructure:**
+   - Create domain-specific YAML files (MVP & PROD)
+   - Implement image management system
+   - Extend domain data files
+
+2. **Core UI Components:**
+   - **Agent Management UI:**
+     - Create new agents with domain selection
+     - Update agent properties
+     - Delete agents with confirmation
+   - **Portfolio Management UI:**
+     - Create portfolios with domain filtering
+     - Update portfolio details
+     - Delete portfolios with cascade options
+   - **Project Management UI:**
+     - Create projects within selected portfolio
+     - Update project details
+     - Delete projects with related missions
+   - **Activity/Mission Management UI:**
+     - Create activities with agent assignments
+     - Update activity details
+     - Delete activities with confirmation
+
+3. **Page Updates:**
+   - **Modify overview/page.tsx:**
+     - Add portfolio management section
+     - Implement domain-based filtering
+   - **Transform packs/page.tsx to "AI Boost 🚀":**
+     - Replace image gallery with agent showcase
+     - Add agent management features
+   - **Enhance models/[id]/page.tsx:**
+     - Add activity tracking
+     - Implement feedback system
 
 ## Configuration Management
 _Enhanced configuration needs:_
@@ -207,13 +239,22 @@ _Additional risks identified:_
 5. _Cross-domain agent interactions_
 
 ## Next Steps
-_Revised implementation sequence:_
-1. _Audit existing domains and areas_
-2. _Create comprehensive agent mapping_
-3. _Develop YAML templates_
-4. _Create image management system_
-5. _Implement domain-based filtering_
-6. _Develop portfolio visualization_
+**Revised implementation sequence:**
+1. **Audit existing domains and areas**
+2. **Create comprehensive agent mapping**
+3. **Generate missing agent images using DALL-E**
+4. **Implement CRUD UIs:**
+   - Agent management
+   - Portfolio management
+   - Project management
+   - Activity/Mission management
+5. **Update existing pages:**
+   - overview/page.tsx
+   - packs/page.tsx ("AI Boost 🚀")
+   - models/[id]/page.tsx
+6. **Implement domain-based filtering**
+7. **Add metrics tracking**
+8. **Develop feedback system**
 
 ## Questions for Clarification
 _Additional questions:_
