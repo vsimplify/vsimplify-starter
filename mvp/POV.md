@@ -43,7 +43,7 @@
 - Implement cascading dropdowns for domain filtering
 - Display Agent details on image click
 - Rename and reorganize agent images:
-  - Format: <domainId-Role
+  - Format: domainId-Role
   - Default to sailor.png when no specific image exists
   - Remove duplicate/unused images
 
@@ -112,7 +112,6 @@ Current structure shows:
 - Packs gallery implementation in overview/packs/page.tsx
 
 ## Domain & Agent Relationship
-Need to clarify:
 1. Understanding of Projects-Mission-Agents.ts:
    - Contains incomplete implementation for domainId 103.01
    - Currently shows 3 agents for "Game Building" mission
@@ -172,7 +171,6 @@ _Enhanced image mapping requirements:_
 5. _Create new images for missing agent types_
 
 ## Database Schema Extensions
-**Correction: Previous schema analysis was incorrect. Current schema already has:**
 - **Domain table already has Area column**
 - **Portfolio table already has domainId relationship**
 - **Project table already has project_id relationship**
@@ -263,3 +261,33 @@ _Additional questions:_
 3. _Cross-domain agent collaboration rules_
 4. _Domain-specific metrics requirements_
 5. _Portfolio visualization preferences_
+
+## Database Schema & YAML Mapping
+
+### Production Database Structure
+**1. Portfolio Schema Extensions:**
+- **Release Management:**
+  - release_date: timestamp
+  - release_version: string
+  - release_status: enum (planned, in_progress, completed)
+  - release_notes: text
+- **Team Management:**
+  - team_id: references teams table
+  - team_capacity: integer
+  - team_velocity: float
+- **Theme Tracking:**
+  - theme_id: references themes table
+  - theme_priority: integer
+  - theme_progress: float
+
+**2. Dummy Data Requirements:**
+- **For each Domain.Domain:**
+  - 1 Portfolio
+  - 3 Projects (1 existing Area, 2 new Areas)
+  - 2-3 Releases per Portfolio
+  - 1-2 Teams per Portfolio
+  - 2-3 Themes per Portfolio
+
+**3. YAML Structure:**
+
+### MVP Version (Minimal)
