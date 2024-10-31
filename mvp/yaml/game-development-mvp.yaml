@@ -1,0 +1,58 @@
+portfolio:
+  name: "Game Development Suite"
+  domain_id: 103.01
+  description: "Comprehensive game development and management platform"
+  user_id: "f5cb0287-d141-4f8b-9632-98be8d7bcbe7"
+  
+  projects:
+    - name: "Chrono Quest"
+      area: "Productivity ⚡"
+      description: "Narrative-driven web game with time-traveling mechanics"
+      missions:
+        - name: "Game Building"
+          agents:
+            - role: "Senior Software Engineer"
+              goal: "Create software as needed"
+              tools: ["DUCK_DUCK_GO_SEARCH"]
+              domainId: 103.01
+            - role: "Software Quality Control Engineer"
+              goal: "Ensure code quality"
+              tools: ["DUCK_DUCK_GO_SEARCH"]
+              domainId: 103.01
+          tasks:
+            - name: "Core Game Engine Development"
+              description: "Implement core game mechanics and engine"
+              priority: "high"
+              expected_output: "Functional game engine with time-travel mechanics"
+              async_execution: true
+            - name: "Quality Assurance"
+              description: "Test game functionality and performance"
+              priority: "medium"
+              expected_output: "Test reports and bug fixes"
+              async_execution: true
+
+        - name: "Asset Development"
+          agents:
+            - role: "Game Asset Developer"
+              goal: "Create and manage game assets"
+              tools: ["DUCK_DUCK_GO_SEARCH"]
+              domainId: 103.01
+          tasks:
+            - name: "Visual Asset Creation"
+              description: "Design and create game visuals"
+              priority: "medium"
+              expected_output: "Complete set of game visuals"
+              async_execution: true
+
+        - name: "Testing & QA"
+          agents:
+            - role: "Chief Quality Engineer"
+              goal: "Ensure overall game quality"
+              tools: ["SEMANTIC_SCHOLAR", "WIKIDATA"]
+              domainId: 103.01
+          tasks:
+            - name: "Integration Testing"
+              description: "Test all game components together"
+              priority: "high"
+              expected_output: "Integration test results"
+              async_execution: true 
