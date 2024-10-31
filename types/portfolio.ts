@@ -1,88 +1,130 @@
-import { Json } from '@/types/supabase';
+import { Database } from '@/lib/database.types';
 
-type ForUse = 'Personal' | 'Business'
-type Audience = 'Individual' | 'Team' | 'Enterprise'
-type Domain = 'AI' | 'Web' | 'Mobile' | 'Data' | 'Cloud' | 'Security'
-type Area = 'Development' | 'Analysis' | 'Design' | 'Testing' | 'Operations'
+// Existing types from database.types.ts
+type DBPortfolio = Database['public']['Tables']['portfolios']['Row'];
+type DBProject = Database['public']['Tables']['Project']['Row'];
+type DBMission = Database['public']['Tables']['Mission']['Row'];
+type DBAgent = Database['public']['Tables']['Agent']['Row'];
 
-export interface CategoryFilter {
-  forUse: ForUse
-  audience: Audience
-  domain: Domain
-  area: Area
-}
+// New types for JIRA-style portfolio management
+export type ReleaseStatus = 'planned' | 'in_progress' | 'completed';
 
-export interface Agent {
-  id: number;
-  allowDelegation: boolean;
-  backstory: string | null;
-  createdAt: string;
-  creator: string;
-  domainId: number;
-  email: string;
-  goal: string;
-  image: string | null;
-  memory: boolean;
-  role: string;
-  title: string;
-  tools: string[] | null;
-  updatedAt: string;
-  user_id: string;
-  verbose: boolean;
-}
+export type Release = {
+  id: string;
+  version: string;
+  date: Date;
+  status: ReleaseStatus;
+  notes: string;
+};
 
-interface AgentToMission {
-  A: number;  // Agent ID
-  B: number;  // Mission ID
-}
-
-export interface Mission {
-  id: number;
-  abandonedForTokens: boolean;
-  createdAt: string;
-  domainId: number;
-  email: string;
-  inTokens: number;
+export type Team = {
+  id: string;
   name: string;
-  outTokens: number;
-  process: string;
-  projectId: number;
-  result: string | null;
-  taskResult: string | null;
-  tasks: Json[] | null;
-  updatedAt: string | null;
-  user_id: string;
-  verbose: boolean;
-  _AgentToMission?: AgentToMission[];
-}
+  capacity: number;
+  velocity: number;
+  members: string[]; // User IDs
+};
 
-export interface Project {
-  id: number;
-  description: string | null;
-  createdAt: string;
-  domainId: number;
-  dueOn: string;
-  email: string;
-  goal: string;
-  nugget: string;
-  objective: string;
-  outcome: string;
-  updatedAt: string | null;
-  user_id: string;
-  title: string | null;
-  progress: number | null;
-  status: string | null;
-  missions?: Mission[];
+export type Theme = {
+  id: string;
+  name: string;
+  priority: number;
+  progress: number;
+  description?: string;
+};
+
+export type MetricsData = {
+  tokenUsage: number;
+  executionTime: number;
+  costPerExecution: number;
+  successRate: number;
+  lastUpdated: Date;
+};
+
+export type Task = {
+  id: string;
+  name: string;
+  description: string;
+  assignedAgentId: number;
+  status: 'not_started' | 'next' | 'in_progress' | 'blocked' | 'done';
+  metrics?: MetricsData;
+  dependencies?: string[]; // Task IDs
+  priority: 'low' | 'medium' | 'high' | 'critical';
+};
+
+export type Mission = DBMission & {
+  tasks: Task[];
+  metrics?: MetricsData;
   agents: Agent[];
-}
+};
 
-export interface Portfolio extends Project {
-  // If needed, extend Project for Portfolio-specific properties
-  // Otherwise, you can use Project directly
-}
+export type Agent = DBAgent & {
+  performanceRating?: number;
+  successRate?: number;
+  userFeedback?: string[];
+  metrics?: MetricsData;
+};
 
-export interface Sample {
-  id: number;
-  uri: string;
-  // Add other necessary properties based on your database schema
-}
+export type Project = DBProject & {
+  missions?: Mission[];
+  agents?: Agent[];
+  metrics?: MetricsData;
+};
+
+export type Portfolio = DBPortfolio & {
+  projects?: Project[];
+  releases?: Release[];
+  teams?: Team[];
+  themes?: Theme[];
+  metrics?: MetricsData;
+};
+
+// Type guards for runtime type checking
+export const isPortfolio = (item: any): item is Portfolio => {
+  return item && 
+    typeof item.id === 'string' && 
+    typeof item.title === 'string' &&
+    typeof item.user_id === 'string';
+};
+
+export const isProject = (item: any): item is Project => {
+  return item && 
+    typeof item.id === 'number' && 
+    typeof item.title === 'string' &&
+    typeof item.user_id === 'string';
+};
+
+export const isMission = (item: any): item is Mission => {
+  return item && 
+    typeof item.id === 'number' && 
+    typeof item.name === 'string' &&
+    Array.isArray(item.tasks);
+};
+
+export const isAgent = (item: any): item is Agent => {
+  return item && 
+    typeof item.id === 'number' && 
+    typeof item.role === 'string' &&
+    typeof item.goal === 'string';
+};
+
+// Utility types for API responses
+export type PortfolioResponse = {
+  data: Portfolio | null;
+  error: Error | null;
+};
+
+export type ProjectResponse = {
+  data: Project | null;
+  error: Error | null;
+};
+
+export type MissionResponse = {
+  data: Mission | null;
+  error: Error | null;
+};
+
+export type AgentResponse = {
+  data: Agent | null;
+  error: Error | null;
+};
