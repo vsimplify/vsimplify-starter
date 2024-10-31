@@ -1,4 +1,5 @@
 import { Database } from '@/lib/database.types';
+import { Task } from './task';
 
 // Existing types from database.types.ts
 type DBPortfolio = Database['public']['Tables']['portfolios']['Row'];
@@ -52,11 +53,14 @@ export type Task = {
   priority: 'low' | 'medium' | 'high' | 'critical';
 };
 
-export type Mission = DBMission & {
+type AgentToMission = Database['public']['Tables']['_AgentToMission']['Row'];
+
+export interface Mission extends Omit<DBMission, 'tasks'> {
   tasks: Task[];
-  metrics?: MetricsData;
   agents: Agent[];
-};
+  _AgentToMission: AgentToMission[];
+  metrics?: MetricsData;
+}
 
 export type Agent = DBAgent & {
   performanceRating?: number;

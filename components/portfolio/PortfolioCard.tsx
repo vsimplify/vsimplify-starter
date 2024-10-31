@@ -17,7 +17,7 @@ const MetricsDisplay = ({ metrics }: { metrics?: MetricsData }) => {
     <div className="mt-4 space-y-2 text-sm">
       <div className="flex justify-between">
         <span>Success Rate:</span>
-        <Badge variant={metrics.successRate > 0.8 ? "success" : "warning"}>
+        <Badge variant={metrics.successRate > 0.8 ? "default" : "secondary"}>
           {(metrics.successRate * 100).toFixed(1)}%
         </Badge>
       </div>
@@ -51,6 +51,7 @@ export const PortfolioCard: React.FC<PortfolioCardProps> = ({
           alt={agent.role}
           fill
           className="object-cover rounded-t-lg"
+          priority={true}
         />
       </CardHeader>
       <CardContent className="p-4">

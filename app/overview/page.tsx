@@ -11,7 +11,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@material-tailwind/react";
 import NavigationMenu from '@/components/NavigationMenu';
 import { User } from '@supabase/supabase-js';
-import { Project } from '@/types/portfolio';
+import { Project, Mission, MetricsData } from '@/types/portfolio';
 import { useRouter } from 'next/navigation';
 
 export const dynamic = "force-dynamic";
@@ -22,6 +22,40 @@ const getErrorDetails = (error: any) => {
   if (typeof error === 'string') return error;
   return JSON.stringify(error, null, 2);
 };
+
+type AgentToMission = Database['public']['Tables']['_AgentToMission']['Row'];
+type DBMission = Database['public']['Tables']['Mission']['Row'] & {
+  _AgentToMission: AgentToMission[];
+};
+
+const convertDBMissionToMission = (dbMission: DBMission): Mission => ({
+  ...dbMission,
+  tasks: [], // Will be populated by Task table
+  agents: [], // Will be populated by Agent table
+  metrics: {
+    tokenUsage: dbMission.token_usage ?? 0,
+    executionTime: dbMission.execution_time ?? 0,
+    costPerExecution: dbMission.cost_per_execution ?? 0,
+    successRate: 0,
+    lastUpdated: new Date()
+  }
+});
+
+const convertToProject = (
+  project: Database['public']['Tables']['Project']['Row'],
+  missions: Mission[]
+): Project => ({
+  ...project,
+  missions: missions.filter(mission => mission.projectId === project.id),
+  agents: [],
+  metrics: {
+    tokenUsage: missions.reduce((sum, m) => sum + (m.metrics?.tokenUsage ?? 0), 0),
+    executionTime: missions.reduce((sum, m) => sum + (m.metrics?.executionTime ?? 0), 0),
+    costPerExecution: missions.reduce((sum, m) => sum + (m.metrics?.costPerExecution ?? 0), 0),
+    successRate: missions.length ? missions.reduce((sum, m) => sum + (m.metrics?.successRate ?? 0), 0) / missions.length : 0,
+    lastUpdated: new Date()
+  }
+});
 
 export default function OverviewPage() {
   const supabase = createClientComponentClient<Database>();
@@ -66,7 +100,7 @@ export default function OverviewPage() {
           .from("Mission")
           .select(`
             *,
-            _AgentToMission!inner(
+            _AgentToMission (
               A,
               B
             )
@@ -80,17 +114,17 @@ export default function OverviewPage() {
 
         // If an agent is selected, filter missions by agent
         const filteredMissions = selectedAgentId 
-          ? missionData?.filter(mission => 
+          ? (missionData as DBMission[])?.filter(mission => 
               mission._AgentToMission.some(relation => relation.A === selectedAgentId)
             )
-          : missionData;
+          : missionData as DBMission[];
+
+        // Convert DBMission to Mission type
+        const convertedMissions = filteredMissions.map(convertDBMissionToMission);
 
         // Map projects with their filtered missions
-        return projectData.map((project: Database['public']['Tables']['Project']['Row']) => ({
-          ...project,
-          missions: filteredMissions?.filter((mission) => mission.projectId === project.id) || [],
-          agents: [],
-        })) as Project[];
+        return projectData.map(project => convertToProject(project, convertedMissions));
+
       } catch (error) {
         console.error('Data fetch error:', error);
         throw error;
@@ -111,9 +145,10 @@ export default function OverviewPage() {
     if (selectedAgentId) {
       const filtered = projects.filter(project => 
         project.missions?.some(mission => 
-          Array.isArray(mission._AgentToMission) && 
-          mission._AgentToMission.some(relation => relation.A === selectedAgentId)
-        ) ?? false
+          mission._AgentToMission?.some(relation => 
+            relation.A === selectedAgentId
+          )
+        )
       );
       setFilteredProjects(filtered);
     } else {
