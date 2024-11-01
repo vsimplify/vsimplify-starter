@@ -1,3 +1,5 @@
+import type { Portfolio } from '@/types/portfolio';
+
 export const FEATURES = {
   // Environment-based configuration
   IS_PRODUCTION: process.env.NODE_ENV === 'production',
@@ -30,19 +32,30 @@ export const FEATURES = {
 } as const;
 
 // Data source selector
-export const getDataSource = () => {
-  if (FEATURES.USE_PROD_DATA) {
+export const getDataSource = async () => {
+  const environment = FEATURES.USE_PROD_DATA ? 'prod' : 'mvp';
+  
+  try {
+    const response = await fetch(`/api/yaml?env=${environment}`);
+    const { data: yamlConfig } = await response.json();
+
     return {
-      domainData: require('@/data/domainData-PROD').domainData,
-      agentData: require('@/data/domainData-Agents-PROD').agentData,
-      yamlConfig: require('../yaml/game-development-prod.yaml')
+      domainData: FEATURES.USE_PROD_DATA 
+        ? require('@/data/domainData-PROD').domainData
+        : require('@/data/domainData').domainData,
+      agentData: FEATURES.USE_PROD_DATA
+        ? require('@/data/domainData-Agents-PROD').agentData
+        : require('@/data/Projects-Mission-Agents').agents,
+      yamlConfig
+    };
+  } catch (error) {
+    console.error('Error loading YAML config:', error);
+    return {
+      domainData: require('@/data/domainData').domainData,
+      agentData: require('@/data/Projects-Mission-Agents').agents,
+      yamlConfig: null
     };
   }
-  return {
-    domainData: require('@/data/domainData').domainData,
-    agentData: require('@/data/Projects-Mission-Agents').agents,
-    yamlConfig: require('../yaml/game-development-mvp.yaml')
-  };
 };
 
 // Type-safe feature checker

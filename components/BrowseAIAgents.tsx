@@ -1,13 +1,13 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import Select, { SingleValue } from 'react-select';
-import { domainData } from '../data/domainData-PROD';
-import styles from './BrowseAIAgents.module.css';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import supabase from '@/utils/supabaseClient';
-import { Spinner } from '@/components/ui/spinner';
-import { PortfolioCard } from '@/components/portfolio/PortfolioCard';
+import { domainData } from '../data/domainData';
+import { domainData as domainDataPROD } from '../data/domainData-PROD';
+import { useQuery } from '@tanstack/react-query';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { Database } from '@/lib/database.types';
 import { Agent } from '@/types/portfolio';
-import { useRouter } from 'next/navigation';
+import { AgentSlider } from './ui/AgentSlider';
+import { FEATURES } from '@/mvp/config/features';
 
 interface Option {
   value: string;
@@ -21,57 +21,70 @@ type BrowseAIAgentsProps = {
 };
 
 const fetchAgents = async (userId: string): Promise<Agent[]> => {
+  const supabase = createClientComponentClient<Database>();
+  
   try {
     const { data, error } = await supabase
       .from('Agent')
       .select('*')
       .eq('user_id', userId);
     
-    if (error) {
-      console.error('Agent fetch error:', error);
-      throw error;
+    if (error) throw error;
+
+    // Filter based on environment
+    if (!FEATURES.USE_PROD_DATA) {
+      // MVP: Show only 7 agents (4 Home, 3 Work)
+      return (data as Agent[]).filter((agent, index) => {
+        const domain = domainData.find(d => d.Id === agent.domainId);
+        if (!domain) return false;
+        
+        if (domain.ForUse === 'Home 🏠') {
+          return index < 4; // First 4 Home agents
+        } else if (domain.ForUse === 'Work 💼') {
+          return index < 3; // First 3 Work agents
+        }
+        return false;
+      });
     }
 
     return data as Agent[];
   } catch (error) {
-    console.error('Error in fetchAgents:', error);
-    return []; // Return empty array instead of throwing
+    console.error('Error fetching agents:', error);
+    return [];
   }
 };
 
-const BrowseAIAgents: React.FC<BrowseAIAgentsProps> = ({ userId, onAgentSelect, selectedAgentId }) => {
-  const queryClient = useQueryClient();
-  
-  // State for each dropdown
+export const BrowseAIAgents: React.FC<BrowseAIAgentsProps> = ({
+  userId,
+  onAgentSelect,
+  selectedAgentId
+}) => {
   const [selectedFocusArea, setSelectedFocusArea] = useState<SingleValue<Option>>(null);
   const [selectedAudience, setSelectedAudience] = useState<SingleValue<Option>>(null);
   const [selectedDomain, setSelectedDomain] = useState<SingleValue<Option>>(null);
   const [selectedArea, setSelectedArea] = useState<SingleValue<Option>>(null);
 
-  // React Query hook for fetching agents
-  const { data: agents = [], isLoading, isError, error } = useQuery({
-    queryKey: ['agents', userId],
-    queryFn: () => fetchAgents(userId),
-    retry: 1,
-    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
-    refetchOnWindowFocus: false,
+  // Use appropriate domain data based on environment
+  const currentDomainData = FEATURES.USE_PROD_DATA ? domainDataPROD : domainData;
+
+  const { data: agents = [], isLoading } = useQuery({
+    queryKey: ['agents', userId, FEATURES.USE_PROD_DATA],
+    queryFn: () => fetchAgents(userId)
   });
 
-  // Generate options for Focus Area
-  const focusAreaOptions: Option[] = useMemo(() => {
-    const uniqueFocusAreas = Array.from(new Set(domainData.map(item => item.ForUse)));
-    return uniqueFocusAreas
-      .filter(area => area)
-      .map(area => ({ 
-        value: area,
-        label: area === 'Work' ? 'Work 💼' : area
-      }));
-  }, []);
+  // Filter options based on environment
+  const focusAreaOptions = useMemo(() => {
+    const areas = Array.from(new Set(currentDomainData.map(item => item.ForUse)));
+    return areas.map(area => ({
+      value: area,
+      label: area === 'Work 💼' ? 'Work 💼' : 'Home 🏠'
+    }));
+  }, [currentDomainData]);
 
   // Generate options for Audience based on selected Focus Area
   const audienceOptions: Option[] = useMemo(() => {
     if (!selectedFocusArea) return [];
-    const filtered = domainData.filter(item => item.ForUse === selectedFocusArea.value);
+    const filtered = currentDomainData.filter(item => item.ForUse === selectedFocusArea.value);
     const uniqueAudiences = Array.from(new Set(filtered.map(item => item.Audience)));
     return uniqueAudiences
       .filter(audience => audience)
@@ -79,12 +92,12 @@ const BrowseAIAgents: React.FC<BrowseAIAgentsProps> = ({ userId, onAgentSelect, 
         value: audience,
         label: audience === 'Individual' ? 'Individual 👤' : audience
       }));
-  }, [selectedFocusArea]);
+  }, [selectedFocusArea, currentDomainData]);
 
   // Generate options for Domain based on selected Audience
   const domainOptions: Option[] = useMemo(() => {
     if (!selectedAudience) return [];
-    const filtered = domainData.filter(
+    const filtered = currentDomainData.filter(
       item =>
         item.ForUse === selectedFocusArea?.value &&
         item.Audience === selectedAudience.value
@@ -96,12 +109,12 @@ const BrowseAIAgents: React.FC<BrowseAIAgentsProps> = ({ userId, onAgentSelect, 
         value: domain,
         label: domain === 'Digital Services' ? 'Digital Services 🌐' : domain
       }));
-  }, [selectedFocusArea, selectedAudience]);
+  }, [selectedFocusArea, selectedAudience, currentDomainData]);
 
   // Generate options for Area based on selected Domain
   const areaOptions: Option[] = useMemo(() => {
     if (!selectedDomain) return [];
-    const filtered = domainData.filter(
+    const filtered = currentDomainData.filter(
       item =>
         item.ForUse === selectedFocusArea?.value &&
         item.Audience === selectedAudience?.value &&
@@ -114,7 +127,7 @@ const BrowseAIAgents: React.FC<BrowseAIAgentsProps> = ({ userId, onAgentSelect, 
         value: area,
         label: area === 'Productivity' ? 'Productivity ⚡' : area
       }));
-  }, [selectedFocusArea, selectedAudience, selectedDomain]);
+  }, [selectedFocusArea, selectedAudience, selectedDomain, currentDomainData]);
 
   // Handlers for each dropdown
   const handleFocusAreaChange = (option: SingleValue<Option>) => {
@@ -139,61 +152,20 @@ const BrowseAIAgents: React.FC<BrowseAIAgentsProps> = ({ userId, onAgentSelect, 
     setSelectedArea(option);
   };
 
-  // Supabase real-time subscription setup
-  useEffect(() => {
-    const channel = supabase.channel('public:Agent')
-      .on('postgres_changes', 
-        { 
-          event: '*', 
-          schema: 'public', 
-          table: 'Agent',
-          filter: `user_id=eq.${userId}`
-        }, 
-        payload => {
-          queryClient.invalidateQueries({ queryKey: ['agents', userId] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [queryClient, userId]);
-
-  // Add debug logging for domain data
-  useEffect(() => {
-    console.log('Domain Data:', domainData);
-  }, []);
-
-  // Updated filter logic
+  // Filter agents based on selections
   const filteredAgents = useMemo(() => {
-    console.log('Filtering agents:', {
-      agents,
-      selectedFocusArea: selectedFocusArea?.value,
-      selectedAudience: selectedAudience?.value,
-      selectedDomain: selectedDomain?.value,
-      selectedArea: selectedArea?.value
-    });
-
     let filtered = agents;
 
     if (selectedFocusArea) {
       filtered = filtered.filter(agent => {
-        const domainMatch = domainData.find(d => 
-          Number(d.Id) === Number(agent.domainId)
-        );
-        console.log('ForUse filter:', { 
-          agentDomainId: agent.domainId, 
-          domain: domainMatch, 
-          match: domainMatch?.ForUse === selectedFocusArea.value 
-        });
-        return domainMatch?.ForUse === selectedFocusArea.value;
+        const domain = currentDomainData.find(d => d.Id === agent.domainId);
+        return domain?.ForUse === selectedFocusArea.value;
       });
     }
 
     if (selectedAudience) {
       filtered = filtered.filter(agent => {
-        const domainMatch = domainData.find(d => 
+        const domainMatch = currentDomainData.find(d => 
           Number(d.Id) === Number(agent.domainId)
         );
         return domainMatch?.Audience === selectedAudience.value;
@@ -202,7 +174,7 @@ const BrowseAIAgents: React.FC<BrowseAIAgentsProps> = ({ userId, onAgentSelect, 
 
     if (selectedDomain) {
       filtered = filtered.filter(agent => {
-        const domainMatch = domainData.find(d => 
+        const domainMatch = currentDomainData.find(d => 
           Number(d.Id) === Number(agent.domainId)
         );
         return domainMatch?.Domain === selectedDomain.value;
@@ -211,50 +183,20 @@ const BrowseAIAgents: React.FC<BrowseAIAgentsProps> = ({ userId, onAgentSelect, 
 
     if (selectedArea) {
       filtered = filtered.filter(agent => {
-        const domainMatch = domainData.find(d => 
+        const domainMatch = currentDomainData.find(d => 
           Number(d.Id) === Number(agent.domainId)
         );
         return domainMatch?.Area === selectedArea.value;
       });
     }
 
-    console.log('Filtered results:', filtered);
     return filtered;
-  }, [agents, selectedFocusArea, selectedAudience, selectedDomain, selectedArea]);
-
-  // Add debug information in the UI
-  const renderDebugInfo = () => {
-    if (process.env.NODE_ENV !== 'development') return null;
-
-    return (
-      <div className="mt-4 p-4 bg-gray-100 rounded text-xs">
-        <pre>
-          {JSON.stringify({
-            totalAgents: agents?.length || 0,
-            filteredAgents: filteredAgents?.length || 0,
-            selectedFilters: {
-              focusArea: selectedFocusArea?.value,
-              audience: selectedAudience?.value,
-              domain: selectedDomain?.value,
-              area: selectedArea?.value,
-            },
-            agentDomains: agents?.map(a => ({
-              id: a.id,
-              domainId: a.domainId,
-              domain: domainData.find(d => Number(d.Id) === a.domainId)
-            })),
-          }, null, 2)}
-        </pre>
-      </div>
-    );
-  };
+  }, [agents, selectedFocusArea, selectedAudience, selectedDomain, selectedArea, currentDomainData]);
 
   return (
-    <div className={styles.container}>
-      <h2 className={styles.heading}>Browse AI Agents</h2>
-      <div className={styles.dropdownContainer}>
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Select
-          className={styles.select}
           placeholder="Select Focus Area"
           options={focusAreaOptions}
           value={selectedFocusArea}
@@ -262,7 +204,6 @@ const BrowseAIAgents: React.FC<BrowseAIAgentsProps> = ({ userId, onAgentSelect, 
           isClearable
         />
         <Select
-          className={styles.select}
           placeholder="Select Audience"
           options={audienceOptions}
           value={selectedAudience}
@@ -271,7 +212,6 @@ const BrowseAIAgents: React.FC<BrowseAIAgentsProps> = ({ userId, onAgentSelect, 
           isDisabled={!selectedFocusArea}
         />
         <Select
-          className={styles.select}
           placeholder="Select Domain"
           options={domainOptions}
           value={selectedDomain}
@@ -280,7 +220,6 @@ const BrowseAIAgents: React.FC<BrowseAIAgentsProps> = ({ userId, onAgentSelect, 
           isDisabled={!selectedAudience}
         />
         <Select
-          className={styles.select}
           placeholder="Select Area"
           options={areaOptions}
           value={selectedArea}
@@ -289,28 +228,35 @@ const BrowseAIAgents: React.FC<BrowseAIAgentsProps> = ({ userId, onAgentSelect, 
           isDisabled={!selectedDomain}
         />
       </div>
-      {isLoading && <Spinner />}
-      {isError && (
-        <div className="text-red-500">
-          Error loading agents: {error instanceof Error ? error.message : 'Unknown error'}
-        </div>
-      )}
-      {!isLoading && !isError && filteredAgents.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          {filteredAgents.map((agent: Agent) => (
-            <PortfolioCard key={agent.id} agent={agent} />
-          ))}
-        </div>
+
+      {isLoading ? (
+        <div>Loading agents...</div>
       ) : (
-        !isLoading && (
-          <div className="text-gray-500 text-center py-8">
-            {agents.length > 0 ? 'No agents match the selected filters.' : 'No agents found.'}
-          </div>
-        )
+        <AgentSlider 
+          agents={filteredAgents}
+          itemsPerView={FEATURES.USE_PROD_DATA ? 4 : 3}
+        />
       )}
-      {renderDebugInfo()}
+
+      {FEATURES.DEBUG_MODE && (
+        <div className="mt-4 p-4 bg-gray-100 rounded">
+          <pre>
+            {JSON.stringify({
+              environment: FEATURES.USE_PROD_DATA ? 'PROD' : 'MVP',
+              totalAgents: agents.length,
+              filteredAgents: filteredAgents.length,
+              filters: {
+                focusArea: selectedFocusArea?.value,
+                audience: selectedAudience?.value,
+                domain: selectedDomain?.value,
+                area: selectedArea?.value
+              }
+            }, null, 2)}
+          </pre>
+        </div>
+      )}
     </div>
   );
 };
 
-export default BrowseAIAgents; 
+export default BrowseAIAgents;
