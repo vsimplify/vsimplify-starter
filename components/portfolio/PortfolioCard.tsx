@@ -3,6 +3,7 @@ import { Agent, MetricsData } from '@/types/portfolio';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { getAgentImage } from '@/mvp/utils/imageMapping';
 
 interface PortfolioCardProps {
   agent: Agent;
@@ -38,12 +39,13 @@ export const PortfolioCard: React.FC<PortfolioCardProps> = ({
   onClick,
   showMetrics = false
 }) => {
-  const imageSrc = agent.image ?? "/agents_images/sailor.png";
+  const imageSrc = getAgentImage(agent.domainId, agent.role);
 
   return (
     <Card 
       className="hover:shadow-lg transition-shadow duration-200 cursor-pointer"
       onClick={onClick}
+      role="article"
     >
       <CardHeader className="relative h-48 p-0">
         <Image
@@ -52,6 +54,10 @@ export const PortfolioCard: React.FC<PortfolioCardProps> = ({
           fill
           className="object-cover rounded-t-lg"
           priority={true}
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.src = '/agents_images/sailor.png';
+          }}
         />
       </CardHeader>
       <CardContent className="p-4">

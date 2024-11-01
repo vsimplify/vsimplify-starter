@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Agent } from '@/types/portfolio';
 import { PortfolioCard } from '../portfolio/PortfolioCard';
@@ -13,73 +13,62 @@ export const AgentSlider: React.FC<AgentSliderProps> = ({
   agents,
   itemsPerView = 3 
 }) => {
-  const [currentIndex, setCurrentIndex] = React.useState(0);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [pages, setPages] = useState<Agent[][]>([]);
 
-  const slideVariants = {
-    enter: (direction: number) => ({
-      x: direction > 0 ? 1000 : -1000,
-      opacity: 0
-    }),
-    center: {
-      zIndex: 1,
-      x: 0,
-      opacity: 1
-    },
-    exit: (direction: number) => ({
-      zIndex: 0,
-      x: direction < 0 ? 1000 : -1000,
-      opacity: 0
-    })
-  };
+  // Split agents into pages
+  useEffect(() => {
+    const paginatedAgents = [];
+    for (let i = 0; i < agents.length; i += itemsPerView) {
+      paginatedAgents.push(agents.slice(i, i + itemsPerView));
+    }
+    setPages(paginatedAgents);
+  }, [agents, itemsPerView]);
 
-  const swipeConfidenceThreshold = 10000;
-  const swipePower = (offset: number, velocity: number) => {
-    return Math.abs(offset) * velocity;
-  };
-
-  const paginate = (newDirection: number) => {
-    const newIndex = currentIndex + newDirection * itemsPerView;
-    if (newIndex >= 0 && newIndex < agents.length) {
+  const paginate = (direction: number) => {
+    const newIndex = currentIndex + direction;
+    if (newIndex >= 0 && newIndex < pages.length) {
       setCurrentIndex(newIndex);
     }
   };
 
+  if (!pages.length) return null;
+
   return (
-    <div className="relative w-full overflow-hidden">
-      <div className="flex justify-between absolute top-1/2 w-full z-10 -mt-6">
+    <div className="relative w-full overflow-hidden py-4">
+      <div className="flex justify-between absolute top-1/2 w-full z-10 -mt-6 px-4">
         <button
           onClick={() => paginate(-1)}
-          className="bg-white/80 p-2 rounded-full shadow-lg hover:bg-white transition-all"
+          className="bg-white/80 p-2 rounded-full shadow-lg hover:bg-white transition-all disabled:opacity-50"
           disabled={currentIndex === 0}
+          aria-label="Previous agents"
         >
           <ChevronLeftIcon className="h-6 w-6" />
         </button>
         <button
           onClick={() => paginate(1)}
-          className="bg-white/80 p-2 rounded-full shadow-lg hover:bg-white transition-all"
-          disabled={currentIndex + itemsPerView >= agents.length}
+          className="bg-white/80 p-2 rounded-full shadow-lg hover:bg-white transition-all disabled:opacity-50"
+          disabled={currentIndex === pages.length - 1}
+          aria-label="Next agents"
         >
           <ChevronRightIcon className="h-6 w-6" />
         </button>
       </div>
 
-      <AnimatePresence initial={false} custom={currentIndex}>
+      <AnimatePresence mode="wait">
         <motion.div 
-          className="flex gap-4 px-4"
-          animate={{ x: -currentIndex * (100 / itemsPerView) + '%' }}
-          transition={{
-            type: "spring",
-            stiffness: 300,
-            damping: 30
-          }}
+          key={currentIndex}
+          className="grid grid-cols-3 gap-4 px-4"
+          initial={{ opacity: 0, x: 100 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -100 }}
+          transition={{ duration: 0.3 }}
         >
-          {agents.map((agent, index) => (
+          {pages[currentIndex].map((agent, index) => (
             <motion.div
               key={agent.id}
-              className="flex-none w-1/3"
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.8, opacity: 0 }}
               transition={{ delay: index * 0.1 }}
             >
               <PortfolioCard agent={agent} showMetrics />
@@ -87,6 +76,20 @@ export const AgentSlider: React.FC<AgentSliderProps> = ({
           ))}
         </motion.div>
       </AnimatePresence>
+
+      {/* Pagination dots */}
+      <div className="flex justify-center mt-4 gap-2">
+        {pages.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => setCurrentIndex(index)}
+            className={`w-2 h-2 rounded-full transition-all ${
+              index === currentIndex ? 'bg-blue-500 w-4' : 'bg-gray-300'
+            }`}
+            aria-label={`Go to page ${index + 1}`}
+          />
+        ))}
+      </div>
     </div>
   );
 }; 
