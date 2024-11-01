@@ -7,7 +7,7 @@ portfolio:
     version: "1.0.0"
     date: "2024-Q2"
     status: "in_progress"
-    notes: "Initial release of the Game Development Portfolio"
+    notes: "Initial release focusing on game development capabilities"
   team:
     id: "team_game_dev"
     name: "Game Development Team"
@@ -24,16 +24,17 @@ portfolio:
   projects:
     - name: "Chrono Quest"
       area: "Productivity ⚡"
-      description: "Narrative-driven web game with time-traveling mechanics"
+      description: "Time-travel themed game development project"
       metrics:
         token_budget: 100000
         cost_limit: 150.00
         execution_time_limit: "120h"
       missions:
         - name: "Game Building"
+          process: "SEQUENTIAL"
           agents:
             - role: "Senior Software Engineer"
-              goal: "Create software as needed"
+              goal: "Implement core game mechanics"
               tools: ["DUCK_DUCK_GO_SEARCH"]
               domainId: 103.01
               metrics:
@@ -42,8 +43,8 @@ portfolio:
                 token_usage: 25000
                 execution_time: 3600
                 cost_per_execution: 0.05
-            - role: "Software Quality Control Engineer"
-              goal: "Ensure code quality"
+            - role: "Quality Control Engineer"
+              goal: "Ensure code quality and performance"
               tools: ["DUCK_DUCK_GO_SEARCH"]
               domainId: 103.01
               metrics:
@@ -53,29 +54,19 @@ portfolio:
                 execution_time: 1800
                 cost_per_execution: 0.03
           tasks:
-            - name: "Core Game Engine Development"
-              description: "Implement core game mechanics and engine"
+            - name: "Core Game Engine"
+              description: "Implement core game mechanics"
               priority: "high"
               expected_output: "Functional game engine with time-travel mechanics"
-              async_execution: true
+              async_execution: false
               metrics:
                 token_usage: 10000
                 execution_time: 7200
                 cost_per_execution: 0.08
                 success_rate: 0.95
 
-            - name: "Quality Assurance"
-              description: "Test game functionality and performance"
-              priority: "medium"
-              expected_output: "Test reports and bug fixes"
-              async_execution: true
-              metrics:
-                token_usage: 5000
-                execution_time: 3600
-                cost_per_execution: 0.04
-                success_rate: 0.98
-
         - name: "Asset Development"
+          process: "SEQUENTIAL"
           agents:
             - role: "Game Asset Developer"
               goal: "Create and manage game assets"
@@ -88,11 +79,11 @@ portfolio:
                 execution_time: 2400
                 cost_per_execution: 0.04
           tasks:
-            - name: "Visual Asset Creation"
-              description: "Design and create game visuals"
+            - name: "Visual Assets"
+              description: "Create game visuals"
               priority: "medium"
               expected_output: "Complete set of game visuals"
-              async_execution: true
+              async_execution: false
               metrics:
                 token_usage: 8000
                 execution_time: 4800
@@ -100,9 +91,10 @@ portfolio:
                 success_rate: 0.92
 
         - name: "Testing & QA"
+          process: "SEQUENTIAL"
           agents:
             - role: "Chief Quality Engineer"
-              goal: "Ensure overall game quality"
+              goal: "Oversee testing and quality assurance"
               tools: ["SEMANTIC_SCHOLAR", "WIKIDATA"]
               domainId: 103.01
               metrics:
@@ -112,14 +104,14 @@ portfolio:
                 execution_time: 4200
                 cost_per_execution: 0.06
           tasks:
-            - name: "Integration Testing"
-              description: "Test all game components together"
+            - name: "Integration Tests"
+              description: "Test all game components"
               priority: "high"
-              expected_output: "Integration test results"
-              async_execution: true
-              dependencies: ["Core Game Engine Development", "Visual Asset Creation"]
+              expected_output: "Test results and bug reports"
+              async_execution: false
+              dependencies: ["Core Game Engine", "Visual Assets"]
               metrics:
                 token_usage: 12000
                 execution_time: 5400
                 cost_per_execution: 0.07
-                success_rate: 0.94 
+                success_rate: 0.94
