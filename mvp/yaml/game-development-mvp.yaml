@@ -53,4 +53,18 @@ portfolio:
               description: "Test all game components"
               priority: "high"
               expected_output: "Test results and bug reports"
+              async_execution: false
+
+        - name: "Architecture & Planning"
+          process: "SEQUENTIAL"
+          agents:
+            - role: "Technical Architect"
+              goal: "Design system architecture"
+              tools: ["DUCK_DUCK_GO_SEARCH", "SEMANTIC_SCHOLAR"]
+              domainId: 103.01
+          tasks:
+            - name: "System Design"
+              description: "Create technical architecture"
+              priority: "high"
+              expected_output: "Architecture documentation"
               async_execution: false 

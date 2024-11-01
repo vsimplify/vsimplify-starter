@@ -1,7 +1,7 @@
 import { Domain } from './domainData';
 
 export const domainData: Domain[] = [
-  // Include all MVP domains
+  // Game Development (103.01)
   {
     ForUse: "Work 💼",
     Audience: "Individual 👤",
@@ -9,7 +9,21 @@ export const domainData: Domain[] = [
     Area: "Productivity ⚡",
     Id: 103.01
   },
-  // Additional PROD domains
+  {
+    ForUse: "Work 💼",
+    Audience: "Individual 👤",
+    Domain: "Digital Services 🌐",
+    Area: "Game Design 🎮",
+    Id: 103.02
+  },
+  {
+    ForUse: "Work 💼",
+    Audience: "Individual 👤",
+    Domain: "Digital Services 🌐",
+    Area: "Asset Creation 🎨",
+    Id: 103.03
+  },
+  // Healthcare (100.01)
   {
     ForUse: "Work 💼",
     Audience: "Healthcare 🏥",
@@ -26,6 +40,14 @@ export const domainData: Domain[] = [
   },
   {
     ForUse: "Work 💼",
+    Audience: "Healthcare 🏥",
+    Domain: "Medical Services 👨‍⚕️",
+    Area: "Research 📚",
+    Id: 100.03
+  },
+  // Finance (101.01)
+  {
+    ForUse: "Work 💼",
     Audience: "Finance 💰",
     Domain: "Financial Services 💹",
     Area: "Investment Analysis 📊",
@@ -33,24 +55,16 @@ export const domainData: Domain[] = [
   },
   {
     ForUse: "Work 💼",
-    Audience: "Legal 👨‍⚖️",
-    Domain: "Legal Services ⚖️",
-    Area: "Document Review 📄",
-    Id: 102.01
-  },
-  // Game Development additional areas
-  {
-    ForUse: "Work 💼",
-    Audience: "Individual 👤",
-    Domain: "Digital Services 🌐",
-    Area: "Game Design 🎮",
-    Id: 103.02
+    Audience: "Finance 💰",
+    Domain: "Financial Services 💹",
+    Area: "Risk Management 🎯",
+    Id: 101.02
   },
   {
     ForUse: "Work 💼",
-    Audience: "Individual 👤",
-    Domain: "Digital Services 🌐",
-    Area: "Asset Creation 🎨",
-    Id: 103.03
+    Audience: "Finance 💰",
+    Domain: "Financial Services 💹",
+    Area: "Portfolio Management 📈",
+    Id: 101.03
   }
 ];

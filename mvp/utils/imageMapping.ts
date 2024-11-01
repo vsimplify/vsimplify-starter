@@ -13,10 +13,11 @@ const IMAGES_PATH = FEATURES.AGENT_IMAGES_PATH || '/agents_images';
 // Image mapping for MVP (minimal set)
 const mvpImageMap: AgentImageMap = {
   "103.01": {
-    "senior-software-engineer": `${IMAGES_PATH}/103.01-senior-software-engineer.png`,
-    "quality-control-engineer": `${IMAGES_PATH}/103.01-quality-control-engineer.png`,
-    "chief-quality-engineer": `${IMAGES_PATH}/103.01-chief-quality-engineer.png`,
-    "game-asset-developer": `${IMAGES_PATH}/103.01-game-asset-developer.png`
+    "senior-software-engineer": `${IMAGES_PATH}/103.01/engineer.png`,
+    "quality-control-engineer": `${IMAGES_PATH}/103.01/qa-engineer.png`,
+    "chief-quality-engineer": `${IMAGES_PATH}/103.01/chief-qa.png`,
+    "game-asset-developer": `${IMAGES_PATH}/103.01/asset-dev.png`,
+    "technical-architect": `${IMAGES_PATH}/103.01/architect.png`
   }
 };
 
@@ -25,14 +26,14 @@ const prodImageMap: AgentImageMap = {
   // Game Development (103.01)
   "103.01": {
     ...mvpImageMap["103.01"],
-    "game-designer": `${IMAGES_PATH}/103.01-game-designer.png`,
-    "qa-specialist": `${IMAGES_PATH}/103.01-qa-specialist.png`
+    "game-designer": `${IMAGES_PATH}/103.01/game-designer.png`,
+    "qa-specialist": `${IMAGES_PATH}/103.01/qa-specialist.png`
   },
   // Healthcare (100.01)
   "100.01": {
-    "patient-monitor": `${IMAGES_PATH}/100.01-patient-monitor.png`,
-    "diagnostic-assistant": `${IMAGES_PATH}/100.01-diagnostic-assistant.png`,
-    "health-analyst": `${IMAGES_PATH}/100.01-health-analyst.png`
+    "patient-monitor": `${IMAGES_PATH}/100.01/patient-monitor.png`,
+    "diagnostic-assistant": `${IMAGES_PATH}/100.01/diagnostic.png`,
+    "health-analyst": `${IMAGES_PATH}/100.01/analyst.png`
   }
   // Add more domains as needed
 };

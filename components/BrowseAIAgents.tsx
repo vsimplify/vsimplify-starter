@@ -59,10 +59,23 @@ export const BrowseAIAgents: React.FC<BrowseAIAgentsProps> = ({
   onAgentSelect,
   selectedAgentId
 }) => {
-  const [selectedFocusArea, setSelectedFocusArea] = useState<SingleValue<Option>>(null);
-  const [selectedAudience, setSelectedAudience] = useState<SingleValue<Option>>(null);
-  const [selectedDomain, setSelectedDomain] = useState<SingleValue<Option>>(null);
-  const [selectedArea, setSelectedArea] = useState<SingleValue<Option>>(null);
+  // Initialize with pre-selected filters
+  const [selectedFocusArea, setSelectedFocusArea] = useState<SingleValue<Option>>({
+    value: 'Work 💼',
+    label: 'Work 💼'
+  });
+  const [selectedAudience, setSelectedAudience] = useState<SingleValue<Option>>({
+    value: 'Individual 👤',
+    label: 'Individual 👤'
+  });
+  const [selectedDomain, setSelectedDomain] = useState<SingleValue<Option>>({
+    value: 'Digital Services 🌐',
+    label: 'Digital Services 🌐'
+  });
+  const [selectedArea, setSelectedArea] = useState<SingleValue<Option>>({
+    value: 'Productivity ⚡',
+    label: 'Productivity ⚡'
+  });
 
   // Use appropriate domain data based on environment
   const currentDomainData = FEATURES.USE_PROD_DATA ? domainDataPROD : domainData;
