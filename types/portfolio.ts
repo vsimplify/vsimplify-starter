@@ -18,28 +18,24 @@ export interface MetricsData {
   lastUpdated: Date;
 }
 
-// Task types
-export type TaskMetrics = MetricsData & Json;
-
-export type Task = Omit<DBTask, 'metrics'> & {
-  metrics?: TaskMetrics;
-};
-
-// Agent types
-export type Agent = DBAgent & {
-  performanceRating?: number;
-  successRate?: number;
-  userFeedback?: string[];
-  metrics?: MetricsData;
-};
-
 // Mission types
-type AgentToMission = Database['public']['Tables']['_AgentToMission']['Row'];
-
 export interface Mission extends Omit<DBMission, 'tasks'> {
+  /** @deprecated Use tasks from Tasks table instead */
+  legacyTasks?: Json | null;
   tasks: Task[];
   agents: Agent[];
   _AgentToMission: AgentToMission[];
+  metrics?: MetricsData;
+}
+
+// Agent types
+export interface Agent extends Omit<DBAgent, 'metrics'> {
+  metrics?: MetricsData;
+  performanceRating?: number;
+}
+
+// Task types
+export interface Task extends Omit<DBTask, 'metrics'> {
   metrics?: MetricsData;
 }
 
@@ -51,7 +47,7 @@ export type Project = DBProject & {
 };
 
 // Portfolio types
-export type Portfolio = DBPortfolio & {
+export type Portfolio = Database['public']['Tables']['portfolios']['Row'] & {
   projects?: Project[];
   releases?: Release[];
   teams?: Team[];
@@ -101,37 +97,80 @@ export const isProject = (item: any): item is Project => {
     typeof item.user_id === 'string';
 };
 
-export const isMission = (item: any): item is Mission => {
-  return item && 
-    typeof item.id === 'number' && 
-    typeof item.name === 'string' &&
-    Array.isArray(item.tasks);
+// Conversion functions
+export const convertToProject = (data: any): Project => {
+  if (!data) return null as unknown as Project;
+  
+  return {
+    id: data.id,
+    title: data.title || '',
+    description: data.description || '',
+    domainId: data.domainId,
+    dueOn: data.dueOn,
+    email: data.email,
+    goal: data.goal,
+    nugget: data.nugget,
+    objective: data.objective,
+    outcome: data.outcome,
+    progress: data.progress || 0,
+    status: data.status || 'pending',
+    user_id: data.user_id,
+    createdAt: data.createdAt,
+    updatedAt: data.updatedAt,
+    missions: data.missions?.map(convertToMission) || [],
+    agents: data.agents || [],
+    metrics: data.metrics as MetricsData
+  };
 };
 
-export const isAgent = (item: any): item is Agent => {
-  return item && 
-    typeof item.id === 'number' && 
-    typeof item.role === 'string' &&
-    typeof item.goal === 'string';
+export const convertToMission = (data: any): Mission => {
+  if (!data) return null as unknown as Mission;
+  
+  return {
+    id: data.id,
+    name: data.name,
+    process: data.process,
+    projectId: data.projectId,
+    email: data.email,
+    inTokens: data.inTokens || 0,
+    outTokens: data.outTokens || 0,
+    abandonedForTokens: data.abandonedForTokens || false,
+    verbose: data.verbose || false,
+    result: data.result,
+    user_id: data.user_id,
+    createdAt: data.createdAt,
+    updatedAt: data.updatedAt,
+    domainId: data.domainId,
+    tasks: data.tasks || [],
+    agents: data.agents || [],
+    _AgentToMission: data._AgentToMission || [],
+    token_usage: data.token_usage || 0,
+    execution_time: data.execution_time || 0,
+    cost_per_execution: data.cost_per_execution || 0,
+    legacyTasks: data.tasks,
+    taskResult: data.taskResult
+  };
 };
 
-// Response types
-export type PortfolioResponse = {
-  data: Portfolio | null;
-  error: Error | null;
+// Add type conversion helper
+export const convertToPortfolio = (data: any): Portfolio => {
+  return {
+    id: data.id,
+    title: data.title,
+    description: data.description,
+    status: data.status,
+    progress: data.progress,
+    user_id: data.user_id,
+    created_at: data.created_at,
+    domainId: data.domainId,
+    project_id: data.project_id,
+    projects: data.projects?.map(convertToProject) || [],
+    metrics: data.metrics as MetricsData,
+    releases: data.releases as Release[],
+    teams: data.teams as Team[],
+    themes: data.themes as Theme[]
+  };
 };
 
-export type ProjectResponse = {
-  data: Project | null;
-  error: Error | null;
-};
-
-export type MissionResponse = {
-  data: Mission | null;
-  error: Error | null;
-};
-
-export type AgentResponse = {
-  data: Agent | null;
-  error: Error | null;
-};
+// Add missing AgentToMission type
+type AgentToMission = Database['public']['Tables']['_AgentToMission']['Row'];

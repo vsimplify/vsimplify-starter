@@ -5,7 +5,7 @@ import { domainData as domainDataPROD } from '../data/domainData-PROD';
 import { useQuery } from '@tanstack/react-query';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { Database } from '@/lib/database.types';
-import { Agent } from '@/types/portfolio';
+import { Agent, MetricsData } from '@/types/portfolio';
 import { AgentSlider } from './ui/AgentSlider';
 import { FEATURES } from '@/mvp/config/features';
 
@@ -20,6 +20,22 @@ type BrowseAIAgentsProps = {
   selectedAgentId: number | null;
 };
 
+const convertToAgent = (data: Database['public']['Tables']['Agent']['Row']): Agent => {
+  const metrics: MetricsData | undefined = data.metrics ? {
+    tokenUsage: (data.metrics as any).tokenUsage || 0,
+    executionTime: (data.metrics as any).executionTime || 0,
+    costPerExecution: (data.metrics as any).costPerExecution || 0,
+    successRate: (data.metrics as any).successRate || 0,
+    lastUpdated: new Date((data.metrics as any).lastUpdated || Date.now())
+  } : undefined;
+
+  return {
+    ...data,
+    metrics,
+    performanceRating: data.performance_rating || undefined
+  };
+};
+
 const fetchAgents = async (userId: string): Promise<Agent[]> => {
   const supabase = createClientComponentClient<Database>();
   
@@ -31,10 +47,13 @@ const fetchAgents = async (userId: string): Promise<Agent[]> => {
     
     if (error) throw error;
 
+    // Convert data to Agent type
+    const agents = data.map(convertToAgent);
+
     // Filter based on environment
     if (!FEATURES.USE_PROD_DATA) {
       // MVP: Show only 7 agents (4 Home, 3 Work)
-      return (data as Agent[]).filter((agent, index) => {
+      return agents.filter((agent, index) => {
         const domain = domainData.find(d => d.Id === agent.domainId);
         if (!domain) return false;
         
@@ -47,7 +66,7 @@ const fetchAgents = async (userId: string): Promise<Agent[]> => {
       });
     }
 
-    return data as Agent[];
+    return agents;
   } catch (error) {
     console.error('Error fetching agents:', error);
     return [];

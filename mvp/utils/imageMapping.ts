@@ -13,11 +13,10 @@ const IMAGES_PATH = FEATURES.AGENT_IMAGES_PATH || '/agents_images';
 // Image mapping for MVP (minimal set)
 const mvpImageMap: AgentImageMap = {
   "103.01": {
-    "senior-software-engineer": `${IMAGES_PATH}/103.01/engineer.png`,
-    "quality-control-engineer": `${IMAGES_PATH}/103.01/qa-engineer.png`,
-    "chief-quality-engineer": `${IMAGES_PATH}/103.01/chief-qa.png`,
-    "game-asset-developer": `${IMAGES_PATH}/103.01/asset-dev.png`,
-    "technical-architect": `${IMAGES_PATH}/103.01/architect.png`
+    "senior-software-engineer": "/agents_images/103.01-Senior Software Engineer (Scheduler Pro).png",
+    "quality-control-engineer": "/agents_images/103.01_Quality Control Engineer (Content Master).png",
+    "chief-quality-engineer": "/agents_images/103.01-Chief Quality Engineer (Health Monitor).png",
+    "technical-architect": "/agents_images/103.01-Technical Architect (System Designer).png"
   }
 };
 
