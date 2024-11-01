@@ -7,52 +7,50 @@ portfolio:
   projects:
     - name: "Chrono Quest"
       area: "Productivity ⚡"
-      description: "Narrative-driven web game with time-traveling mechanics"
+      description: "Time-travel themed game development project"
       missions:
         - name: "Game Building"
+          process: "SEQUENTIAL"
           agents:
             - role: "Senior Software Engineer"
-              goal: "Create software as needed"
+              goal: "Implement core game mechanics"
               tools: ["DUCK_DUCK_GO_SEARCH"]
               domainId: 103.01
-            - role: "Software Quality Control Engineer"
-              goal: "Ensure code quality"
+            - role: "Quality Control Engineer"
+              goal: "Ensure code quality and performance"
               tools: ["DUCK_DUCK_GO_SEARCH"]
               domainId: 103.01
           tasks:
-            - name: "Core Game Engine Development"
-              description: "Implement core game mechanics and engine"
+            - name: "Core Game Engine"
+              description: "Implement core game mechanics"
               priority: "high"
               expected_output: "Functional game engine with time-travel mechanics"
-              async_execution: true
-            - name: "Quality Assurance"
-              description: "Test game functionality and performance"
-              priority: "medium"
-              expected_output: "Test reports and bug fixes"
-              async_execution: true
+              async_execution: false
 
         - name: "Asset Development"
+          process: "SEQUENTIAL"
           agents:
             - role: "Game Asset Developer"
               goal: "Create and manage game assets"
               tools: ["DUCK_DUCK_GO_SEARCH"]
               domainId: 103.01
           tasks:
-            - name: "Visual Asset Creation"
-              description: "Design and create game visuals"
+            - name: "Visual Assets"
+              description: "Create game visuals"
               priority: "medium"
               expected_output: "Complete set of game visuals"
-              async_execution: true
+              async_execution: false
 
         - name: "Testing & QA"
+          process: "SEQUENTIAL"
           agents:
             - role: "Chief Quality Engineer"
-              goal: "Ensure overall game quality"
-              tools: ["SEMANTIC_SCHOLAR", "WIKIDATA"]
+              goal: "Oversee testing and quality assurance"
+              tools: ["DUCK_DUCK_GO_SEARCH"]
               domainId: 103.01
           tasks:
-            - name: "Integration Testing"
-              description: "Test all game components together"
+            - name: "Integration Tests"
+              description: "Test all game components"
               priority: "high"
-              expected_output: "Integration test results"
-              async_execution: true 
+              expected_output: "Test results and bug reports"
+              async_execution: false 
