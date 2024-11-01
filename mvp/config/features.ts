@@ -22,7 +22,11 @@ export const FEATURES = {
   // UI configuration
   THEME: process.env.NEXT_PUBLIC_THEME || 'light',
   LANGUAGE: process.env.NEXT_PUBLIC_LANGUAGE || 'en',
-  DEBUG_MODE: process.env.NODE_ENV === 'development'
+  DEBUG_MODE: process.env.NODE_ENV === 'development',
+
+  // Image configuration
+  DEFAULT_AGENT_IMAGE: process.env.NEXT_PUBLIC_DEFAULT_AGENT_IMAGE || '/agents_images/sailor.png',
+  AGENT_IMAGES_PATH: process.env.NEXT_PUBLIC_AGENT_IMAGES_PATH || '/agents_images'
 } as const;
 
 // Data source selector
@@ -58,4 +62,10 @@ export const getMetricsConfig = () => ({
   maxTokens: FEATURES.MAX_TOKENS,
   costPerToken: FEATURES.COST_PER_TOKEN,
   enableMetrics: FEATURES.ENABLE_AI_METRICS
-}); 
+});
+
+// Image configuration
+export const getImageConfig = () => ({
+  defaultImage: FEATURES.DEFAULT_AGENT_IMAGE,
+  imagesPath: FEATURES.AGENT_IMAGES_PATH
+});
