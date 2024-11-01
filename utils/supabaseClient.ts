@@ -1,35 +1,23 @@
 import { createClient } from '@supabase/supabase-js';
 import { Database } from '@/lib/database.types';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+  throw new Error('Missing env.NEXT_PUBLIC_SUPABASE_URL');
+}
+if (!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+  throw new Error('Missing env.NEXT_PUBLIC_SUPABASE_ANON_KEY');
+}
 
-// Create singleton instance
-let supabase: ReturnType<typeof createClient<Database>> | null = null;
-
-const getSupabaseClient = () => {
-  if (supabase) return supabase;
-
-  supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+const supabase = createClient<Database>(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  {
     auth: {
       persistSession: true,
       autoRefreshToken: true,
-      detectSessionInUrl: true,
-      storageKey: 'app-supabase-auth' // Add unique storage key
-    },
-    db: {
-      schema: 'public'
+      detectSessionInUrl: true
     }
-  });
+  }
+);
 
-  // Add session refresh on client init
-  supabase.auth.onAuthStateChange((event, session) => {
-    if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-      console.log('Auth state changed:', event, session?.user?.id);
-    }
-  });
-
-  return supabase;
-};
-
-export default getSupabaseClient(); 
+export default supabase; 
