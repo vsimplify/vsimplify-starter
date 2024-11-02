@@ -30,7 +30,7 @@ export default function PortfolioPage() {
         .from('portfolios')
         .select(`
           *,
-          projects:Project(
+          projects!portfolios_project_id_fkey(
             *,
             missions:Mission(
               *,
