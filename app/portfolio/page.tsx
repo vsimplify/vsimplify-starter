@@ -17,7 +17,7 @@ import { useImagePreloader } from '@/mvp/utils/imagePreloader';
 export default function PortfolioPage() {
   const supabase = createClientComponentClient<Database>();
   const router = useRouter();
-  const [selectedDomainId] = React.useState<string>("103.01"); // Pre-selected for Game Development
+  const [selectedDomainId] = React.useState<string>("103.01"); // Update this value to match your image directory
 
   // Preload images for the selected domain
   const preloadStats = useImagePreloader(selectedDomainId);

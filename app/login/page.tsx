@@ -1,30 +1,33 @@
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
-import { cookies, headers } from "next/headers";
-import { redirect } from "next/navigation";
-import { Database } from "../../types/supabase";
-import Login from "@/app/login/components/Login";
+'use client';
 
-export const dynamic = "force-dynamic";
+import { useRouter } from 'next/navigation';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { Database } from '@/lib/database.types';
 
-export default async function LoginPage() {
-    const supabase = createServerComponentClient<Database>({ cookies });
+export default function LoginPage() {
+  const supabase = createClientComponentClient<Database>();
+  const router = useRouter();
 
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
+  const handleLogin = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+    });
 
-    if (user) {
-        redirect("/");
+    if (error) {
+      console.error('Login error:', error);
+    } else {
+      router.push('/overview');
     }
+  };
 
-    const headersList = headers();
-    const host = headersList.get("host");
-
-    return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-900 dark:to-neutral-800">
-            <div className="w-full max-w-md px-4">
-                <Login host={host} />
-            </div>
-        </div>
-    );
+  return (
+    <div className="flex justify-center items-center h-screen">
+      <button
+        onClick={handleLogin}
+        className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+      >
+        Login with Google
+      </button>
+    </div>
+  );
 }
