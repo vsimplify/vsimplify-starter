@@ -1,7 +1,7 @@
 import { Database } from '@/lib/database.types';
 import { Agent } from './agent';
 import { Task } from './task';
-import { Json } from './supabase';
+import { Json } from '@/types/supabase';
 import { v4 as uuidv4 } from 'uuid';
 
 // Existing types from database.types.ts
