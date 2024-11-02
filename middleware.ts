@@ -12,7 +12,7 @@ export async function middleware(request: NextRequest) {
 
     // If there's an error or no session and we're not on auth pages, redirect to login
     if ((!session || error) && !request.nextUrl.pathname.startsWith('/auth')) {
-      return NextResponse.redirect(new URL('/login', request.url))
+      return NextResponse.redirect(new URL('/auth/login', request.url))
     }
 
     return res
