@@ -11,9 +11,7 @@ CREATE TABLE IF NOT EXISTS "public"."Task" (
     "metrics" jsonb DEFAULT NULL,
     "created_at" timestamptz DEFAULT now(),
     "updated_at" timestamptz DEFAULT now(),
-    "user_id" uuid NOT NULL,
-    "expected_output" TEXT,
-    "async_execution" BOOLEAN DEFAULT false
+    "user_id" uuid NOT NULL
 );
 
 -- Create function to migrate existing tasks
@@ -21,21 +19,23 @@ CREATE OR REPLACE FUNCTION migrate_mission_tasks()
 RETURNS void AS $$
 DECLARE
     mission_record RECORD;
-    task_json jsonb;
+    task_json json;
+    task_array json[];
 BEGIN
     FOR mission_record IN SELECT id, tasks, user_id FROM "public"."Mission" WHERE tasks IS NOT NULL
     LOOP
-        -- Convert tasks array to jsonb and iterate
-        FOR task_json IN SELECT * FROM jsonb_array_elements(array_to_json(mission_record.tasks)::jsonb)
+        task_array := array(SELECT json_array_elements(mission_record.tasks::json));
+        
+        FOR task_json IN SELECT unnest(task_array)
         LOOP
             INSERT INTO "public"."Task" (
-                "name",
-                "description",
-                "assignedAgentId",
-                "missionId",
-                "status",
-                "priority",
-                "user_id"
+                name,
+                description,
+                assignedAgentId,
+                missionId,
+                status,
+                priority,
+                user_id
             )
             SELECT
                 task_json->>'name',

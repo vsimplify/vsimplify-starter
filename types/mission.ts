@@ -1,150 +1,92 @@
 import { Database } from '@/lib/database.types';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { Agent } from './agent';
-import { Task, TaskInput, TaskMetrics } from './task';
-import type { Json } from '@/lib/database.types';
+import { Task } from './task';
+import { Json } from './supabase';
 import { v4 as uuidv4 } from 'uuid';
 
+// Existing types from database.types.ts
 type DBMission = Database['public']['Tables']['Mission']['Row'];
-type AgentToMission = Database['public']['Tables']['_AgentToMission']['Row'];
 
-export type ProcessType = Database['public']['Enums']['MissionProcess'];
-
-export interface Mission extends Omit<DBMission, 'tasks'> {
-	/** @deprecated Use tasks from Tasks table instead */
-	legacyTasks?: Json | null;
-	tasks: Task[];
-	agents: Agent[];
-	_AgentToMission: AgentToMission[];
+// Metrics types
+export interface MissionMetrics {
+  tokenUsage: number;
+  executionTime: number;
+  costPerExecution: number;
+  successRate: number;
+  lastUpdated: Date;
 }
 
-// Add type guard for TaskMetrics
-const isTaskMetrics = (metrics: any): metrics is TaskMetrics => {
-	return (
-		metrics &&
-		typeof metrics.tokenUsage === 'number' &&
-		typeof metrics.executionTime === 'number' &&
-		typeof metrics.costPerExecution === 'number' &&
-		typeof metrics.successRate === 'number' &&
-		metrics.lastUpdated instanceof Date
-	);
-};
+// Mission types
+export interface Mission extends Omit<DBMission, 'tasks'> {
+  /** @deprecated Use tasks from Tasks table instead */
+  legacyTasks?: Json | null;
+  tasks: Task[];
+  agents: Agent[];
+  _AgentToMission: AgentToMission[];
+  metrics?: MissionMetrics;
+}
 
-// Add helper to safely convert JSON to TaskMetrics
-const convertToTaskMetrics = (metrics: Json | null): TaskMetrics | undefined => {
-	if (!metrics || typeof metrics !== 'object') return undefined;
+// Add missing AgentToMission type
+type AgentToMission = Database['public']['Tables']['_AgentToMission']['Row'];
 
-	const metricsObj = metrics as Record<string, any>;
-	
-	if (isTaskMetrics(metricsObj)) return metricsObj;
-
-	// Try to construct TaskMetrics from raw data
-	try {
-		return {
-			tokenUsage: Number(metricsObj.tokenUsage) || 0,
-			executionTime: Number(metricsObj.executionTime) || 0,
-			costPerExecution: Number(metricsObj.costPerExecution) || 0,
-			successRate: Number(metricsObj.successRate) || 0,
-			lastUpdated: new Date(metricsObj.lastUpdated || Date.now())
-		};
-	} catch (error) {
-		console.error('Error converting metrics:', error);
-		return undefined;
-	}
-};
-
-export const getMissionTasks = async (missionId: number): Promise<Task[]> => {
-	const supabase = createClientComponentClient<Database>();
-	
-	// First try to get tasks from new Tasks table
-	const { data: newTasks, error: newError } = await supabase
-		.from('Task')
-		.select(`
-			*,
-			metrics
-		`)
-		.eq('missionId', missionId)
-		.eq('user_id', 'f5cb0287-d141-4f8b-9632-98be8d7bcbe7');
-
-	if (newTasks && newTasks.length > 0) {
-		return newTasks.map(task => ({
-			...task,
-			metrics: convertToTaskMetrics(task.metrics),
-			expected_output: task.expected_output || '',
-			async_execution: task.async_execution || false
-		}));
-	}
-
-	// Fallback to legacy tasks if no new tasks found
-	const { data: mission, error: missionError } = await supabase
-		.from('Mission')
-		.select('tasks')
-		.eq('id', missionId)
-		.eq('user_id', 'f5cb0287-d141-4f8b-9632-98be8d7bcbe7')
-		.single();
-
-	if (mission?.tasks) {
-		const legacyTasks = mission.tasks as any[];
-		return legacyTasks.map(legacyTask => ({
-			id: uuidv4(),
-			name: legacyTask.name || '',
-			description: legacyTask.description || '',
-			assignedAgentId: legacyTask.assignedAgentId || legacyTask.agent?.id || 0,
-			missionId,
-			status: 'not_started' as const,
-			priority: 'medium' as const,
-			dependencies: legacyTask.dependencies || [],
-			metrics: convertToTaskMetrics(legacyTask.metrics),
-			expected_output: legacyTask.expected_output || '',
-			async_execution: legacyTask.async_execution || false,
-			user_id: 'f5cb0287-d141-4f8b-9632-98be8d7bcbe7',
-			created_at: new Date().toISOString(),
-			updated_at: new Date().toISOString()
-		}));
-	}
-
-	return [];
-};
-
-export type CreateMissionInput = {
-	id?: number;
-	name: string;
-	crew: Array<number>;
-	tasks: Array<TaskInput>;
-	verbose: boolean;
-	process: ProcessType;
-	taskResult?: string;
-	projectId: number;
-	email: string;
-	inTokens: number;
-	abandonedForTokens: boolean;
-};
-
-// Type guard
+// Type guards
 export const isMission = (item: any): item is Mission => {
-	return item &&
-		typeof item.id === 'number' &&
-		typeof item.name === 'string' &&
-		Array.isArray(item.tasks) &&
-		Array.isArray(item.agents);
+  return item && 
+    typeof item.id === 'number' && 
+    typeof item.name === 'string' &&
+    typeof item.user_id === 'string';
 };
 
-// Mission status utilities
-export const isInProgress = (mission: Mission): boolean => 
-	mission.tasks.some(task => task.status === 'in_progress');
+// Conversion functions
+export const convertToMission = (data: any): Mission => {
+  if (!data) return null as unknown as Mission;
+  
+  return {
+    id: data.id,
+    name: data.name,
+    process: data.process,
+    projectId: data.projectId,
+    email: data.email,
+    inTokens: data.inTokens || 0,
+    outTokens: data.outTokens || 0,
+    abandonedForTokens: data.abandonedForTokens || false,
+    verbose: data.verbose || false,
+    result: data.result,
+    user_id: data.user_id,
+    createdAt: data.createdAt,
+    updatedAt: data.updatedAt,
+    domainId: data.domainId,
+    tasks: convertLegacyTasksToTasks(data),
+    agents: data.agents || [],
+    _AgentToMission: data._AgentToMission || [],
+    token_usage: data.token_usage || 0,
+    execution_time: data.execution_time || 0,
+    cost_per_execution: data.cost_per_execution || 0,
+    legacyTasks: data.tasks,
+    taskResult: data.taskResult
+  };
+};
 
-export const isCompleted = (mission: Mission): boolean => 
-	mission.tasks.every(task => task.status === 'done');
-
-export const hasBlockedTasks = (mission: Mission): boolean => 
-	mission.tasks.some(task => task.status === 'blocked');
-
-// Mission metrics utilities
-export const getTotalTokenUsage = (mission: Mission): number => 
-	mission.token_usage || 0;
-
-export const getTotalExecutionTime = (mission: Mission): number => 
-	mission.execution_time || 0;
-
-export const getTotalCost = (mission: Mission): number => 
-	mission.cost_per_execution || 0;
+// Helper function to convert legacy tasks to new Task type
+const convertLegacyTasksToTasks = (mission: any): Task[] => {
+  if (mission?.tasks) {
+    const legacyTasks = mission.tasks as any[];
+    return legacyTasks.map(legacyTask => ({
+      id: uuidv4(),
+      name: legacyTask.name || '',
+      description: legacyTask.description || '',
+      assignedAgentId: legacyTask.assignedAgentId || null,
+      missionId: mission.id,
+      status: legacyTask.status || 'not_started',
+      priority: legacyTask.priority || 'medium',
+      dependencies: legacyTask.dependencies || null,
+      metrics: legacyTask.metrics || null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      user_id: mission.user_id,
+      expected_output: legacyTask.expected_output || null,
+      async_execution: legacyTask.async_execution || false
+    }));
+  }
+  return [];
+};

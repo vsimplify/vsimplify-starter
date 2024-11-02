@@ -1,5 +1,8 @@
 # Configuration Switch Testing Plan
-env
+
+## 1. Environment Setup
+
+### 1.1 Development (.env.local)
 
 NODE_ENV=development
 
@@ -9,9 +12,7 @@ NEXT_PUBLIC_DATA_VERSION=mvp
 
 NEXT_PUBLIC_DEFAULT_USER_ID=f5cb0287-d141-4f8b-9632-98be8d7bcbe7
 
-### 1.2 Production (.env)
-
-env
+### 1.2 Production (.env)
 
 NODE_ENV=production
 
@@ -21,11 +22,11 @@ NEXT_PUBLIC_DATA_VERSION=prod
 
 NEXT_PUBLIC_DEFAULT_USER_ID=f5cb0287-d141-4f8b-9632-98be8d7bcbe7
 
-#### 2. Test Cases
+#### 2. Test Cases
 
-### 2.1 MVP Mode Testing
+### 2.1 MVP Mode Testing
 
-1. Set environment:
+1. Set environment:
 
    ```bash
 
@@ -35,7 +36,7 @@ NEXT_PUBLIC_DEFAULT_USER_ID=f5cb0287-d141-4f8b-9632-98be8d7bcbe7
 
    ```
 
-2. Verify in browser console:
+2. Verify in browser console:
 
    ```javascript
 
@@ -45,7 +46,7 @@ NEXT_PUBLIC_DEFAULT_USER_ID=f5cb0287-d141-4f8b-9632-98be8d7bcbe7
 
    ```
 
-3. Check loaded data:
+3. Check loaded data:
 
    - Should show minimal agent set
 
@@ -53,9 +54,9 @@ NEXT_PUBLIC_DEFAULT_USER_ID=f5cb0287-d141-4f8b-9632-98be8d7bcbe7
 
    - Should show basic metrics
 
-### 2.2 Production Mode Testing
+### 2.2 Production Mode Testing
 
-1. Set environment:
+1. Set environment:
 
    ```bash
 
@@ -67,7 +68,7 @@ NEXT_PUBLIC_DEFAULT_USER_ID=f5cb0287-d141-4f8b-9632-98be8d7bcbe7
 
    ```
 
-2. Verify in browser console:
+2. Verify in browser console:
 
    ```javascript
 
@@ -77,7 +78,7 @@ NEXT_PUBLIC_DEFAULT_USER_ID=f5cb0287-d141-4f8b-9632-98be8d7bcbe7
 
    ```
 
-3. Check loaded data:
+3. Check loaded data:
 
    - Should show full agent set
 
@@ -85,9 +86,9 @@ NEXT_PUBLIC_DEFAULT_USER_ID=f5cb0287-d141-4f8b-9632-98be8d7bcbe7
 
    - Should show detailed metrics
 
-## 3. Validation Steps
+## 3. Validation Steps
 
-### 3.1 Data Source Validation
+### 3.1 Data Source Validation
 
 typescript
 
@@ -111,7 +112,7 @@ agentDataLength: dataSource.agentData.length
 
 });
 
-### 3.2 Feature Flag Tests
+### 3.2 Feature Flag Tests
 
 typescript
 
@@ -127,7 +128,7 @@ portfolio: isFeatureEnabled('ENABLE_PORTFOLIO_FEATURES')
 
 });
 
-### 3.3 User Authentication Test
+### 3.3 User Authentication Test
 
 typescript
 
@@ -141,9 +142,9 @@ expectedId: 'f5cb0287-d141-4f8b-9632-98be8d7bcbe7'
 
 });
 
-## 4. Common Issues & Solutions
+## 4. Common Issues & Solutions
 
-### 4.1 Environment Variables Not Loading
+### 4.1 Environment Variables Not Loading
 
 - Check if .env files are in correct location
 
@@ -151,7 +152,7 @@ expectedId: 'f5cb0287-d141-4f8b-9632-98be8d7bcbe7'
 
 - Restart development server
 
-### 4.2 Wrong Data Source Loading
+### 4.2 Wrong Data Source Loading
 
 - Clear browser cache
 
@@ -159,7 +160,7 @@ expectedId: 'f5cb0287-d141-4f8b-9632-98be8d7bcbe7'
 
 - Verify USE_PROD_DATA flag
 
-### 4.3 RLS Issues
+### 4.3 RLS Issues
 
 - Verify user ID in requests
 
@@ -167,9 +168,9 @@ expectedId: 'f5cb0287-d141-4f8b-9632-98be8d7bcbe7'
 
 - Validate auth token
 
-## 5. Switching Between Environments
+## 5. Switching Between Environments
 
-### 5.1 Development to Production
+### 5.1 Development to Production
 
 bash
 

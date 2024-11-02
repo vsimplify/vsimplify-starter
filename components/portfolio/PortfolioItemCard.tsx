@@ -1,15 +1,18 @@
 'use client'; // Ensure this is a Client Component
 
 import React from 'react';
-import { Portfolio, Mission } from '@/types/portfolio';
+import { Portfolio } from '@/types/portfolio';
+import { Card } from '@/components/ui/card';
+import { getMetricsSummary } from '@/lib/metrics';
 
 interface PortfolioItemCardProps {
-  portfolio: Portfolio & { missions?: Mission[] }; // Extend Portfolio type to include optional missions
+  portfolio: Portfolio;
+  metrics: ReturnType<typeof getMetricsSummary> | null;
 }
 
-const PortfolioItemCard: React.FC<PortfolioItemCardProps> = ({ portfolio }) => {
+const PortfolioItemCard: React.FC<PortfolioItemCardProps> = ({ portfolio, metrics }) => {
   return (
-    <div className="border rounded-md p-4 shadow-sm">
+    <Card className="p-4">
       <h3 className="text-lg font-semibold">{portfolio.title}</h3>
       <p className="text-sm text-gray-600">{portfolio.description}</p>
       <div className="mt-2">
@@ -19,7 +22,7 @@ const PortfolioItemCard: React.FC<PortfolioItemCardProps> = ({ portfolio }) => {
         <span className="font-medium">Progress:</span> {portfolio.progress}%
       </div>
       {/* Display Missions if available */}
-      {portfolio.missions && portfolio.missions.length > 0 && (
+      {portfolio.missions && (
         <div className="mt-2">
           <span className="font-medium">Missions:</span>
           <ul className="list-disc list-inside">
@@ -29,7 +32,14 @@ const PortfolioItemCard: React.FC<PortfolioItemCardProps> = ({ portfolio }) => {
           </ul>
         </div>
       )}
-    </div>
+      {metrics && (
+        <div className="mt-4">
+          <p>Token Usage: {metrics.tokenUsage}</p>
+          <p>Success Rate: {metrics.successRate}%</p>
+          <p>Cost per Execution: ${metrics.cost}</p>
+        </div>
+      )}
+    </Card>
   );
 };
 

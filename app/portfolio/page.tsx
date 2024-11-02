@@ -23,8 +23,8 @@ export default function PortfolioPage() {
   const preloadStats = useImagePreloader(selectedDomainId);
 
   // Fetch portfolio data
-  const { data: portfolios, isLoading, error } = useQuery({
-    queryKey: ['portfolios', selectedDomainId],
+  const { data: portfolioData, isLoading, error } = useQuery({
+    queryKey: ['portfolio', selectedDomainId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('portfolios')
@@ -41,12 +41,15 @@ export default function PortfolioPage() {
             )
           )
         `)
-        .eq('domainId', selectedDomainId);
+        .eq('domainId', selectedDomainId)
+        .single();
 
       if (error) throw error;
-      return data ? data.map(convertToPortfolio) : [];
+      return data ? convertToPortfolio(data) : null;
     }
   });
+
+  const portfolio = portfolioData || null;
 
   // Animation variants
   const containerVariants = {
@@ -161,7 +164,7 @@ export default function PortfolioPage() {
             className="relative"
           >
             <PortfolioList 
-              portfolios={portfolios || []}
+              portfolio={portfolio}
               selectedDomainId={selectedDomainId}
             />
           </motion.div>

@@ -1,0 +1,31 @@
+name: AI Productivity Suite
+description: Streamline business operations using AI-driven tools
+domain_id: 103.01
+projects:
+  - name: Schedule & Task Automator
+    description: AI-powered scheduling and task automation system
+    agents:
+      - role: Senior Software Engineer
+        goal: Create efficient scheduling algorithms
+        backstory: Experienced in building scalable software solutions
+        tools: [DUCK_DUCK_GO_SEARCH]
+        image: /agents_images/103.01-senior-software-engineer.png
+        domain_id: 103.01
+        
+      - role: Software Quality Control Engineer
+        goal: Ensure code quality and performance
+        backstory: Specializes in code quality and error detection
+        tools: [DUCK_DUCK_GO_SEARCH]
+        image: /agents_images/103.01-quality-control-engineer.png
+        domain_id: 103.01
+        
+    tasks:
+      - name: Design Core Algorithm
+        description: Develop the core scheduling algorithm
+        assigned_to: Senior Software Engineer
+        expected_output: Functional scheduling algorithm design
+        
+      - name: Implement Quality Checks
+        description: Implement code quality verification
+        assigned_to: Software Quality Control Engineer
+        expected_output: Quality assurance test suite 
