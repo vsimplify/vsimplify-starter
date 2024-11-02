@@ -48,12 +48,12 @@ export type Project = DBProject & {
 
 // Portfolio types
 export type Portfolio = Database['public']['Tables']['portfolios']['Row'] & {
-  projects?: Project[];
+  project?: Project;
   missions?: Mission[];
   releases?: Release[];
   teams?: Team[];
   themes?: Theme[];
-  metrics?: MetricsData;
+  metrics?: MetricsData | null;
 };
 
 // Additional types for portfolio management
@@ -165,9 +165,9 @@ export const convertToPortfolio = (data: any): Portfolio => {
     created_at: data.created_at,
     domainId: data.domainId,
     project_id: data.project_id,
-    projects: data.projects?.map(convertToProject) || [],
+    project: data.project ? convertToProject(data.project) : undefined,
     missions: data.missions?.map(convertToMission) || [],
-    metrics: data.metrics as MetricsData,
+    metrics: data.metrics as MetricsData | null,
     releases: data.releases as Release[],
     teams: data.teams as Team[],
     themes: data.themes as Theme[]

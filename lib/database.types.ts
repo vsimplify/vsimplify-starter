@@ -6,7 +6,7 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
-export interface Database {
+export type Database = {
   public: {
     Tables: {
       _AgentToMission: {
@@ -90,10 +90,6 @@ export interface Database {
           updatedAt: string
           user_id: string
           verbose: boolean
-          performance_rating: number | null
-          success_rate: number | null
-          user_feedback: Json | null
-          metrics: Json | null
         }
         Insert: {
           allowDelegation?: boolean
@@ -112,10 +108,6 @@ export interface Database {
           updatedAt: string
           user_id?: string
           verbose?: boolean
-          performance_rating?: number | null
-          success_rate?: number | null
-          user_feedback?: Json | null
-          metrics?: Json | null
         }
         Update: {
           allowDelegation?: boolean
@@ -134,10 +126,6 @@ export interface Database {
           updatedAt?: string
           user_id?: string
           verbose?: boolean
-          performance_rating?: number | null
-          success_rate?: number | null
-          user_feedback?: Json | null
-          metrics?: Json | null
         }
         Relationships: [
           {
@@ -248,16 +236,11 @@ export interface Database {
           process: Database["public"]["Enums"]["MissionProcess"]
           projectId: number
           result: string | null
-          /** @deprecated Use Tasks table instead */
           taskResult: string | null
-          /** @deprecated Use Tasks table instead */
-          tasks: Json | null
+          tasks: Json[] | null
           updatedAt: string
           user_id: string
           verbose: boolean
-          token_usage: number | null
-          execution_time: number | null
-          cost_per_execution: number | null
         }
         Insert: {
           abandonedForTokens?: boolean
@@ -271,16 +254,11 @@ export interface Database {
           process?: Database["public"]["Enums"]["MissionProcess"]
           projectId?: number
           result?: string | null
-          /** @deprecated Use Tasks table instead */
           taskResult?: string | null
-          /** @deprecated Use Tasks table instead */
-          tasks?: Json | null
+          tasks?: Json[] | null
           updatedAt: string
           user_id?: string
           verbose?: boolean
-          token_usage?: number | null
-          execution_time?: number | null
-          cost_per_execution?: number | null
         }
         Update: {
           abandonedForTokens?: boolean
@@ -294,16 +272,11 @@ export interface Database {
           process?: Database["public"]["Enums"]["MissionProcess"]
           projectId?: number
           result?: string | null
-          /** @deprecated Use Tasks table instead */
           taskResult?: string | null
-          /** @deprecated Use Tasks table instead */
-          tasks?: Json | null
+          tasks?: Json[] | null
           updatedAt?: string
           user_id?: string
           verbose?: boolean
-          token_usage?: number | null
-          execution_time?: number | null
-          cost_per_execution?: number | null
         }
         Relationships: [
           {
@@ -387,13 +360,6 @@ export interface Database {
           user_id?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "fk_portfolio_project"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "Project"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "portfolios_domainId_fkey"
             columns: ["domainId"]
@@ -531,6 +497,66 @@ export interface Database {
           },
         ]
       }
+      Task: {
+        Row: {
+          assignedAgentId: number | null
+          created_at: string | null
+          dependencies: string[] | null
+          description: string | null
+          id: string
+          metrics: Json | null
+          missionId: number | null
+          name: string
+          priority: string | null
+          status: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          assignedAgentId?: number | null
+          created_at?: string | null
+          dependencies?: string[] | null
+          description?: string | null
+          id?: string
+          metrics?: Json | null
+          missionId?: number | null
+          name: string
+          priority?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          assignedAgentId?: number | null
+          created_at?: string | null
+          dependencies?: string[] | null
+          description?: string | null
+          id?: string
+          metrics?: Json | null
+          missionId?: number | null
+          name?: string
+          priority?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "Task_assignedAgentId_fkey"
+            columns: ["assignedAgentId"]
+            isOneToOne: false
+            referencedRelation: "Agent"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "Task_missionId_fkey"
+            columns: ["missionId"]
+            isOneToOne: false
+            referencedRelation: "Mission"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       Token: {
         Row: {
           clerkId: string
@@ -615,75 +641,15 @@ export interface Database {
         }
         Relationships: []
       }
-      Task: {
-        Row: {
-          id: string
-          name: string
-          description: string
-          assignedAgentId: number
-          missionId: number
-          status: 'not_started' | 'next' | 'in_progress' | 'blocked' | 'done'
-          priority: 'low' | 'medium' | 'high' | 'critical'
-          dependencies: string[] | null
-          metrics: Json | null
-          created_at: string
-          updated_at: string
-          user_id: string
-          expected_output: string | null
-          async_execution: boolean
-        }
-        Insert: {
-          id?: string
-          name: string
-          description: string
-          assignedAgentId: number
-          missionId: number
-          status?: 'not_started' | 'next' | 'in_progress' | 'blocked' | 'done'
-          priority?: 'low' | 'medium' | 'high' | 'critical'
-          dependencies?: string[] | null
-          metrics?: Json | null
-          created_at?: string
-          updated_at?: string
-          user_id: string
-          expected_output?: string | null
-          async_execution?: boolean
-        }
-        Update: {
-          id?: string
-          name?: string
-          description?: string
-          assignedAgentId?: number
-          missionId?: number
-          status?: 'not_started' | 'next' | 'in_progress' | 'blocked' | 'done'
-          priority?: 'low' | 'medium' | 'high' | 'critical'
-          dependencies?: string[] | null
-          metrics?: Json | null
-          updated_at?: string
-          user_id?: string
-          expected_output?: string | null
-          async_execution?: boolean
-        }
-        Relationships: [
-          {
-            foreignKeyName: "Task_missionId_fkey"
-            columns: ["missionId"]
-            referencedRelation: "Mission"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "Task_assignedAgentId_fkey"
-            columns: ["assignedAgentId"]
-            referencedRelation: "Agent"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      migrate_mission_tasks: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: {
       AgentTool:

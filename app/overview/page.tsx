@@ -13,6 +13,7 @@ import NavigationMenu from '@/components/NavigationMenu';
 import { User } from '@supabase/supabase-js';
 import { Project, Mission, MetricsData } from '@/types/portfolio';
 import { useRouter } from 'next/navigation';
+import { convertToMission } from '@/types/mission';
 
 export const dynamic = "force-dynamic";
 

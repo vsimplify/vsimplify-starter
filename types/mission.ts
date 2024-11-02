@@ -24,6 +24,7 @@ export interface Mission extends Omit<DBMission, 'tasks'> {
   agents: Agent[];
   _AgentToMission: AgentToMission[];
   metrics?: MissionMetrics;
+  token_usage: number;
 }
 
 // Add missing AgentToMission type

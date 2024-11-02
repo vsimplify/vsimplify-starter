@@ -21,15 +21,18 @@ const PortfolioItemCard: React.FC<PortfolioItemCardProps> = ({ portfolio, metric
       <div className="mt-1">
         <span className="font-medium">Progress:</span> {portfolio.progress}%
       </div>
-      {/* Display Missions if available */}
-      {portfolio.missions && (
+      {/* Display Project if available */}
+      {portfolio.project && (
         <div className="mt-2">
-          <span className="font-medium">Missions:</span>
-          <ul className="list-disc list-inside">
-            {portfolio.missions.map((mission) => (
-              <li key={mission.id}>{mission.name}</li>
-            ))}
-          </ul>
+          <span className="font-medium">Project:</span> {portfolio.project.title}
+          {/* Display Missions within the project */}
+          {portfolio.project.missions && portfolio.project.missions.length > 0 && (
+            <ul className="list-disc list-inside ml-4">
+              {portfolio.project.missions.map((mission) => (
+                <li key={mission.id}>{mission.name}</li>
+              ))}
+            </ul>
+          )}
         </div>
       )}
       {metrics && (
