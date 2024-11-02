@@ -27,6 +27,9 @@ const getErrorDetails = (error: any) => {
 type AgentToMission = Database['public']['Tables']['_AgentToMission']['Row'];
 type DBMission = Database['public']['Tables']['Mission']['Row'] & {
   _AgentToMission: AgentToMission[];
+  token_usage?: number;
+  execution_time?: number;
+  cost_per_execution?: number;
 };
 
 const convertDBMissionToMission = (dbMission: DBMission): Mission => ({
@@ -39,7 +42,10 @@ const convertDBMissionToMission = (dbMission: DBMission): Mission => ({
     costPerExecution: dbMission.cost_per_execution ?? 0,
     successRate: 0,
     lastUpdated: new Date()
-  }
+  },
+  token_usage: dbMission.token_usage ?? 0,
+  execution_time: dbMission.execution_time ?? 0,
+  cost_per_execution: dbMission.cost_per_execution ?? 0
 });
 
 const convertToProject = (

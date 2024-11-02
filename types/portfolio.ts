@@ -26,6 +26,9 @@ export interface Mission extends Omit<DBMission, 'tasks'> {
   agents: Agent[];
   _AgentToMission: AgentToMission[];
   metrics?: MetricsData;
+  token_usage: number;
+  execution_time: number;
+  cost_per_execution: number;
 }
 
 // Agent types
@@ -127,6 +130,14 @@ export const convertToProject = (data: any): Project => {
 export const convertToMission = (data: any): Mission => {
   if (!data) return null as unknown as Mission;
   
+  const metrics: MetricsData = {
+    tokenUsage: data.token_usage || 0,
+    executionTime: data.execution_time || 0,
+    costPerExecution: data.cost_per_execution || 0,
+    successRate: 0,
+    lastUpdated: new Date()
+  };
+  
   return {
     id: data.id,
     name: data.name,
@@ -145,6 +156,7 @@ export const convertToMission = (data: any): Mission => {
     tasks: data.tasks || [],
     agents: data.agents || [],
     _AgentToMission: data._AgentToMission || [],
+    metrics,
     token_usage: data.token_usage || 0,
     execution_time: data.execution_time || 0,
     cost_per_execution: data.cost_per_execution || 0,

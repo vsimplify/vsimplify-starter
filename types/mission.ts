@@ -5,7 +5,11 @@ import { Json } from '@/types/supabase';
 import { v4 as uuidv4 } from 'uuid';
 
 // Existing types from database.types.ts
-type DBMission = Database['public']['Tables']['Mission']['Row'];
+type DBMission = Database['public']['Tables']['Mission']['Row'] & {
+  token_usage?: number;
+  execution_time?: number;
+  cost_per_execution?: number;
+};
 
 // Metrics types
 export interface MissionMetrics {
@@ -24,7 +28,9 @@ export interface Mission extends Omit<DBMission, 'tasks'> {
   agents: Agent[];
   _AgentToMission: AgentToMission[];
   metrics?: MissionMetrics;
-  token_usage: number;
+  token_usage?: number;
+  execution_time?: number;
+  cost_per_execution?: number;
 }
 
 // Add missing AgentToMission type

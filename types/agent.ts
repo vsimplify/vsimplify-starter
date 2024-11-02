@@ -1,23 +1,15 @@
-type  Tool =
-  | "DUCK_DUCK_GO_SEARCH"
-  | "SEMANTIC_SCHOLAR"
-  | "WIKIDATA"
-  | "WIKIPEDIA"
-  | "YAHOO_FINANCE"
-  | "YOUTUBE_SEARCH";
+import { Database } from '@/lib/database.types';
+import { MetricsData } from './portfolio';
 
-export type Agent = {
-  id?: number | string;
-  role: string;
-  goal: string;
-  backstory?: string | null;
-  tools: Array<Tool>;
-  allowDelegation: boolean;
-  verbose: boolean;
-  memory: boolean;
-  image?: string | null;
-  creator: string;
-  email: string;
-  title: string;
-	domainId: number;
+type DBAgent = Database['public']['Tables']['Agent']['Row'];
+
+export interface Agent extends DBAgent {
+  metrics?: MetricsData;
+}
+
+export const isAgent = (item: any): item is Agent => {
+  return item && 
+    typeof item.id === 'number' && 
+    typeof item.title === 'string' &&
+    typeof item.role === 'string';
 };

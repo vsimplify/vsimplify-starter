@@ -710,3 +710,24 @@ export type CompositeTypes<
   : PublicCompositeTypeNameOrOptions extends keyof PublicSchema["CompositeTypes"]
     ? PublicSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
+
+export interface MissionRow {
+  id: number;
+  name: string;
+  process: string;
+  projectId: number;
+  email: string;
+  inTokens: number;
+  outTokens: number;
+  abandonedForTokens: boolean;
+  verbose: boolean;
+  result: string | null;
+  user_id: string;
+  createdAt: string;
+  updatedAt: string;
+  domainId: number;
+  token_usage: number;
+  execution_time: number;
+  cost_per_execution: number;
+  taskResult: string | null;
+}

@@ -1,6 +1,7 @@
 import { Agent } from "@/types/agent";
 import { Mission } from "@/types/mission";
 import { Task } from "@/types/portfolio";
+import { Project } from '@/types/portfolio';
 
 export const agents: Array<Agent> = [
   {
@@ -22,6 +23,9 @@ export const agents: Array<Agent> = [
     email:"placeholder@h.com",
     title:"Senior Software Engineer",
     domainId:4,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    user_id: "system",
   },
   {
     id: 2,
@@ -43,6 +47,9 @@ export const agents: Array<Agent> = [
     email:"placeholder@h.com",
     title:"Senior Software Engineer",
     domainId:4,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    user_id: "system",
   },
   {
     id: 3,
@@ -62,6 +69,9 @@ export const agents: Array<Agent> = [
     email:"placeholder@h.com",
     title:"Senior Software Engineer",
     domainId:4,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    user_id: "system",
   },
 ];
 
@@ -293,4 +303,8 @@ export const missions: Array<Mission> = [
     execution_time: 0,
     cost_per_execution: 0
   }
+];
+
+export const projects: Array<Project> = [
+  // ... existing projects code ...
 ];

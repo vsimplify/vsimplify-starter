@@ -1,294 +1,126 @@
-import React, { useState, useMemo } from 'react';
-import Select, { SingleValue } from 'react-select';
-import { domainData } from '../data/domainData';
-import { domainData as domainDataPROD } from '../data/domainData-PROD';
-import { useQuery } from '@tanstack/react-query';
+'use client';
+
+import React, { useState } from 'react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { Database } from '@/lib/database.types';
-import { Agent, MetricsData } from '@/types/portfolio';
-import { AgentSlider } from './ui/AgentSlider';
-import { FEATURES } from '@/mvp/config/features';
+import { useQuery } from '@tanstack/react-query';
+import { Agent } from '@/types/agent';
+import { MetricsData } from '@/types/portfolio';
+import styles from './BrowseAIAgents.module.css';
 
-interface Option {
-  value: string;
-  label: string;
-}
-
-type BrowseAIAgentsProps = {
+interface BrowseAIAgentsProps {
   userId: string;
   onAgentSelect: (agentId: number) => void;
   selectedAgentId: number | null;
+}
+
+type DBAgent = Database['public']['Tables']['Agent']['Row'] & {
+  metrics?: {
+    tokenUsage: number;
+    executionTime: number;
+    costPerExecution: number;
+    successRate: number;
+    lastUpdated: string;
+  } | null;
 };
 
-const convertToAgent = (data: Database['public']['Tables']['Agent']['Row']): Agent => {
+const convertToAgent = (data: DBAgent): Agent => {
   const metrics: MetricsData | undefined = data.metrics ? {
-    tokenUsage: (data.metrics as any).tokenUsage || 0,
-    executionTime: (data.metrics as any).executionTime || 0,
-    costPerExecution: (data.metrics as any).costPerExecution || 0,
-    successRate: (data.metrics as any).successRate || 0,
-    lastUpdated: new Date((data.metrics as any).lastUpdated || Date.now())
+    tokenUsage: data.metrics.tokenUsage || 0,
+    executionTime: data.metrics.executionTime || 0,
+    costPerExecution: data.metrics.costPerExecution || 0,
+    successRate: data.metrics.successRate || 0,
+    lastUpdated: new Date(data.metrics.lastUpdated)
   } : undefined;
 
   return {
-    ...data,
-    metrics,
-    performanceRating: data.performance_rating || undefined
+    id: data.id,
+    title: data.title,
+    role: data.role,
+    goal: data.goal,
+    backstory: data.backstory,
+    allowDelegation: data.allowDelegation,
+    memory: data.memory,
+    verbose: data.verbose,
+    creator: data.creator,
+    email: data.email,
+    image: data.image,
+    tools: data.tools,
+    domainId: data.domainId,
+    user_id: data.user_id,
+    createdAt: data.createdAt,
+    updatedAt: data.updatedAt,
+    metrics
   };
 };
 
-const fetchAgents = async (userId: string): Promise<Agent[]> => {
+export default function BrowseAIAgents({ userId, onAgentSelect, selectedAgentId }: BrowseAIAgentsProps) {
   const supabase = createClientComponentClient<Database>();
-  
-  try {
-    const { data, error } = await supabase
-      .from('Agent')
-      .select('*')
-      .eq('user_id', userId);
-    
-    if (error) throw error;
+  const [searchTerm, setSearchTerm] = useState('');
 
-    // Convert data to Agent type
-    const agents = data.map(convertToAgent);
+  const { data: agents, isLoading, error } = useQuery({
+    queryKey: ['agents', userId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('Agent')
+        .select('*')
+        .eq('user_id', userId);
 
-    // Filter based on environment
-    if (!FEATURES.USE_PROD_DATA) {
-      // MVP: Show only 7 agents (4 Home, 3 Work)
-      return agents.filter((agent, index) => {
-        const domain = domainData.find(d => d.Id === agent.domainId);
-        if (!domain) return false;
-        
-        if (domain.ForUse === 'Home 🏠') {
-          return index < 4; // First 4 Home agents
-        } else if (domain.ForUse === 'Work 💼') {
-          return index < 3; // First 3 Work agents
-        }
-        return false;
-      });
+      if (error) throw error;
+      return data ? data.map((agent) => convertToAgent(agent as DBAgent)) : [];
     }
+  });
 
-    return agents;
-  } catch (error) {
-    console.error('Error fetching agents:', error);
-    return [];
+  if (isLoading) {
+    return <div className="text-center p-4">Loading agents...</div>;
   }
-};
 
-export const BrowseAIAgents: React.FC<BrowseAIAgentsProps> = ({
-  userId,
-  onAgentSelect,
-  selectedAgentId
-}) => {
-  // Initialize with pre-selected filters
-  const [selectedFocusArea, setSelectedFocusArea] = useState<SingleValue<Option>>({
-    value: 'Work 💼',
-    label: 'Work 💼'
-  });
-  const [selectedAudience, setSelectedAudience] = useState<SingleValue<Option>>({
-    value: 'Individual 👤',
-    label: 'Individual 👤'
-  });
-  const [selectedDomain, setSelectedDomain] = useState<SingleValue<Option>>({
-    value: 'Digital Services 🌐',
-    label: 'Digital Services 🌐'
-  });
-  const [selectedArea, setSelectedArea] = useState<SingleValue<Option>>({
-    value: 'Productivity ⚡',
-    label: 'Productivity ⚡'
-  });
-
-  // Use appropriate domain data based on environment
-  const currentDomainData = FEATURES.USE_PROD_DATA ? domainDataPROD : domainData;
-
-  const { data: agents = [], isLoading } = useQuery({
-    queryKey: ['agents', userId, FEATURES.USE_PROD_DATA],
-    queryFn: () => fetchAgents(userId)
-  });
-
-  // Filter options based on environment
-  const focusAreaOptions = useMemo(() => {
-    const areas = Array.from(new Set(currentDomainData.map(item => item.ForUse)));
-    return areas.map(area => ({
-      value: area,
-      label: area === 'Work 💼' ? 'Work 💼' : 'Home 🏠'
-    }));
-  }, [currentDomainData]);
-
-  // Generate options for Audience based on selected Focus Area
-  const audienceOptions: Option[] = useMemo(() => {
-    if (!selectedFocusArea) return [];
-    const filtered = currentDomainData.filter(item => item.ForUse === selectedFocusArea.value);
-    const uniqueAudiences = Array.from(new Set(filtered.map(item => item.Audience)));
-    return uniqueAudiences
-      .filter(audience => audience)
-      .map(audience => ({ 
-        value: audience,
-        label: audience === 'Individual' ? 'Individual 👤' : audience
-      }));
-  }, [selectedFocusArea, currentDomainData]);
-
-  // Generate options for Domain based on selected Audience
-  const domainOptions: Option[] = useMemo(() => {
-    if (!selectedAudience) return [];
-    const filtered = currentDomainData.filter(
-      item =>
-        item.ForUse === selectedFocusArea?.value &&
-        item.Audience === selectedAudience.value
-    );
-    const uniqueDomains = Array.from(new Set(filtered.map(item => item.Domain)));
-    return uniqueDomains
-      .filter(domain => domain)
-      .map(domain => ({ 
-        value: domain,
-        label: domain === 'Digital Services' ? 'Digital Services 🌐' : domain
-      }));
-  }, [selectedFocusArea, selectedAudience, currentDomainData]);
-
-  // Generate options for Area based on selected Domain
-  const areaOptions: Option[] = useMemo(() => {
-    if (!selectedDomain) return [];
-    const filtered = currentDomainData.filter(
-      item =>
-        item.ForUse === selectedFocusArea?.value &&
-        item.Audience === selectedAudience?.value &&
-        item.Domain === selectedDomain.value
-    );
-    const uniqueAreas = Array.from(new Set(filtered.map(item => item.Area)));
-    return uniqueAreas
-      .filter(area => area)
-      .map(area => ({ 
-        value: area,
-        label: area === 'Productivity' ? 'Productivity ⚡' : area
-      }));
-  }, [selectedFocusArea, selectedAudience, selectedDomain, currentDomainData]);
-
-  // Handlers for each dropdown
-  const handleFocusAreaChange = (option: SingleValue<Option>) => {
-    setSelectedFocusArea(option);
-    setSelectedAudience(null);
-    setSelectedDomain(null);
-    setSelectedArea(null);
-  };
-
-  const handleAudienceChange = (option: SingleValue<Option>) => {
-    setSelectedAudience(option);
-    setSelectedDomain(null);
-    setSelectedArea(null);
-  };
-
-  const handleDomainChange = (option: SingleValue<Option>) => {
-    setSelectedDomain(option);
-    setSelectedArea(null);
-  };
-
-  const handleAreaChange = (option: SingleValue<Option>) => {
-    setSelectedArea(option);
-  };
-
-  // Filter agents based on selections
-  const filteredAgents = useMemo(() => {
-    let filtered = agents;
-
-    if (selectedFocusArea) {
-      filtered = filtered.filter(agent => {
-        const domain = currentDomainData.find(d => d.Id === agent.domainId);
-        return domain?.ForUse === selectedFocusArea.value;
-      });
-    }
-
-    if (selectedAudience) {
-      filtered = filtered.filter(agent => {
-        const domainMatch = currentDomainData.find(d => 
-          Number(d.Id) === Number(agent.domainId)
-        );
-        return domainMatch?.Audience === selectedAudience.value;
-      });
-    }
-
-    if (selectedDomain) {
-      filtered = filtered.filter(agent => {
-        const domainMatch = currentDomainData.find(d => 
-          Number(d.Id) === Number(agent.domainId)
-        );
-        return domainMatch?.Domain === selectedDomain.value;
-      });
-    }
-
-    if (selectedArea) {
-      filtered = filtered.filter(agent => {
-        const domainMatch = currentDomainData.find(d => 
-          Number(d.Id) === Number(agent.domainId)
-        );
-        return domainMatch?.Area === selectedArea.value;
-      });
-    }
-
-    return filtered;
-  }, [agents, selectedFocusArea, selectedAudience, selectedDomain, selectedArea, currentDomainData]);
+  if (error) {
+    return <div className="text-red-500 p-4">Error loading agents: {error.message}</div>;
+  }
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Select
-          placeholder="Select Focus Area"
-          options={focusAreaOptions}
-          value={selectedFocusArea}
-          onChange={handleFocusAreaChange}
-          isClearable
-        />
-        <Select
-          placeholder="Select Audience"
-          options={audienceOptions}
-          value={selectedAudience}
-          onChange={handleAudienceChange}
-          isClearable
-          isDisabled={!selectedFocusArea}
-        />
-        <Select
-          placeholder="Select Domain"
-          options={domainOptions}
-          value={selectedDomain}
-          onChange={handleDomainChange}
-          isClearable
-          isDisabled={!selectedAudience}
-        />
-        <Select
-          placeholder="Select Area"
-          options={areaOptions}
-          value={selectedArea}
-          onChange={handleAreaChange}
-          isClearable
-          isDisabled={!selectedDomain}
+    <div className={styles.container}>
+      <div className={styles.searchBar}>
+        <input
+          type="text"
+          placeholder="Search agents..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full p-2 border rounded-md"
         />
       </div>
-
-      {isLoading ? (
-        <div>Loading agents...</div>
-      ) : (
-        <AgentSlider 
-          agents={filteredAgents}
-          itemsPerView={FEATURES.USE_PROD_DATA ? 4 : 3}
-        />
-      )}
-
-      {FEATURES.DEBUG_MODE && (
-        <div className="mt-4 p-4 bg-gray-100 rounded">
-          <pre>
-            {JSON.stringify({
-              environment: FEATURES.USE_PROD_DATA ? 'PROD' : 'MVP',
-              totalAgents: agents.length,
-              filteredAgents: filteredAgents.length,
-              filters: {
-                focusArea: selectedFocusArea?.value,
-                audience: selectedAudience?.value,
-                domain: selectedDomain?.value,
-                area: selectedArea?.value
-              }
-            }, null, 2)}
-          </pre>
-        </div>
-      )}
+      
+      <div className={styles.agentGrid}>
+        {agents?.filter(agent => 
+          agent.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          agent.role.toLowerCase().includes(searchTerm.toLowerCase())
+        ).map((agent) => (
+          <div
+            key={agent.id}
+            className={`${styles.agentCard} ${selectedAgentId === agent.id ? styles.selected : ''}`}
+            onClick={() => onAgentSelect(agent.id)}
+          >
+            {agent.image && (
+              <img
+                src={agent.image}
+                alt={agent.title}
+                className={styles.agentImage}
+              />
+            )}
+            <div className={styles.agentInfo}>
+              <h3 className={styles.agentTitle}>{agent.title}</h3>
+              <p className={styles.agentRole}>{agent.role}</p>
+              {agent.metrics && (
+                <div className={styles.metrics}>
+                  <p>Success Rate: {agent.metrics.successRate}%</p>
+                  <p>Cost: ${agent.metrics.costPerExecution}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
-};
-
-export default BrowseAIAgents;
+}
