@@ -42,7 +42,7 @@ const convertDBMissionToMission = (dbMission: DBMission): Mission => {
   if (!dbMission) return null as unknown as Mission;
   
   return {
-    id: String(dbMission.id),
+    id: String(dbMission.id || ''),
     title: dbMission.name || dbMission.process || '',
     description: dbMission.process || '',
     status: (dbMission.mission_status as Mission['status']) || 'pending',
@@ -50,7 +50,7 @@ const convertDBMissionToMission = (dbMission: DBMission): Mission => {
     updatedAt: dbMission.updated_at,
     tokenUsage: dbMission.token_usage || 0,
     cost: dbMission.cost_per_execution || 0,
-    projectId: String(dbMission.project_id),
+    projectId: dbMission.project_id || 0,
     tasks: [],
     agents: [],
     metrics: {
@@ -67,14 +67,19 @@ const convertToProject = (
   project: Database['public']['Tables']['Project']['Row'],
   missions: Mission[]
 ): Project => {
-  if (!project) return null as unknown as Project;
+  if (!project?.id) return null as unknown as Project;
   
+  const projectId = project.id;
+  const filteredMissions = missions.filter(mission => 
+    mission && mission.projectId === projectId
+  );
+
   return {
-    id: String(project.id),
+    id: String(projectId),
     title: project.title || '',
     description: project.description || '',
     status: project.status || '',
-    missions: missions.filter(mission => mission?.projectId === String(project.id)) || [],
+    missions: filteredMissions,
     domain: project.domainId ? {
       id: String(project.domainId),
       name: project.title || ''
@@ -131,7 +136,7 @@ export default function OverviewPage() {
             )
           `)
           .in(
-            "projectId",
+            "project_id",
             projectData.map((project) => project.id)
           );
 
@@ -140,15 +145,21 @@ export default function OverviewPage() {
         // If an agent is selected, filter missions by agent
         const filteredMissions = selectedAgentId 
           ? (missionData as DBMission[])?.filter(mission => 
-              mission._AgentToMission.some(relation => relation.A === selectedAgentId)
+              mission._AgentToMission?.some(relation => relation.A === selectedAgentId)
             )
           : missionData as DBMission[];
 
-        // Convert DBMission to Mission type
-        const convertedMissions = filteredMissions.map(convertDBMissionToMission);
+        // Convert DBMission to Mission type with null checks
+        const convertedMissions = (filteredMissions || [])
+          .filter(Boolean)
+          .map(convertDBMissionToMission)
+          .filter(Boolean);
 
         // Map projects with their filtered missions
-        return projectData.map(project => convertToProject(project, convertedMissions));
+        return projectData
+          .filter(Boolean)
+          .map(project => convertToProject(project, convertedMissions))
+          .filter(Boolean);
 
       } catch (error) {
         console.error('Data fetch error:', error);

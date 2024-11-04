@@ -234,7 +234,7 @@ export type Database = {
           name: string
           outTokens: number
           process: Database["public"]["Enums"]["MissionProcess"]
-          projectId: number
+          project_id: number
           result: string | null
           taskResult: string | null
           tasks: Json[] | null
@@ -252,7 +252,7 @@ export type Database = {
           name: string
           outTokens?: number
           process?: Database["public"]["Enums"]["MissionProcess"]
-          projectId?: number
+          project_id?: number
           result?: string | null
           taskResult?: string | null
           tasks?: Json[] | null
@@ -270,7 +270,7 @@ export type Database = {
           name?: string
           outTokens?: number
           process?: Database["public"]["Enums"]["MissionProcess"]
-          projectId?: number
+          project_id?: number
           result?: string | null
           taskResult?: string | null
           tasks?: Json[] | null
@@ -287,8 +287,8 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "fk-project-mission"
-            columns: ["projectId"]
+            foreignKeyName: "Mission_project_id_fkey"
+            columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "Project"
             referencedColumns: ["id"]

@@ -3,6 +3,7 @@ import { Agent } from './agent';
 import { Task } from './task';
 import { Json } from '@/types/supabase';
 import { v4 as uuidv4 } from 'uuid';
+import { Mission as PortfolioMission } from './portfolio';
 
 // Existing types from database.types.ts
 type DBMission = Database['public']['Tables']['Mission']['Row'] & {
@@ -21,17 +22,7 @@ export interface MissionMetrics {
 }
 
 // Mission types
-export interface Mission extends Omit<DBMission, 'tasks'> {
-  /** @deprecated Use tasks from Tasks table instead */
-  legacyTasks?: Json | null;
-  tasks: Task[];
-  agents: Agent[];
-  _AgentToMission: AgentToMission[];
-  metrics?: MissionMetrics;
-  token_usage?: number;
-  execution_time?: number;
-  cost_per_execution?: number;
-}
+export type Mission = PortfolioMission;
 
 // Add missing AgentToMission type
 type AgentToMission = Database['public']['Tables']['_AgentToMission']['Row'];
@@ -52,7 +43,8 @@ export const convertToMission = (data: any): Mission => {
     id: data.id,
     name: data.name,
     process: data.process,
-    projectId: data.projectId,
+    project_id: data.project_id || data.projectId,
+    projectId: data.project_id || data.projectId,
     email: data.email,
     inTokens: data.inTokens || 0,
     outTokens: data.outTokens || 0,
@@ -63,14 +55,22 @@ export const convertToMission = (data: any): Mission => {
     createdAt: data.createdAt,
     updatedAt: data.updatedAt,
     domainId: data.domainId,
-    tasks: convertLegacyTasksToTasks(data),
+    tasks: data.tasks || [],
     agents: data.agents || [],
     _AgentToMission: data._AgentToMission || [],
     token_usage: data.token_usage || 0,
-    execution_time: data.execution_time || 0,
     cost_per_execution: data.cost_per_execution || 0,
-    legacyTasks: data.tasks,
-    taskResult: data.taskResult
+    execution_time: data.execution_time || 0,
+    status: data.status || 'pending',
+    tokenUsage: data.token_usage || 0,
+    cost: data.cost_per_execution || 0,
+    metrics: {
+      tokenUsage: data.token_usage || 0,
+      costPerExecution: data.cost_per_execution || 0,
+      executionTime: data.execution_time || 0,
+      successRate: 0,
+      lastUpdated: new Date()
+    }
   };
 };
 

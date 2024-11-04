@@ -1,5 +1,5 @@
 import { Agent } from "@/types/agent";
-import { Mission } from "@/types/mission";
+import { Mission } from "@/types/portfolio";
 import { Task } from "@/types/portfolio";
 import { Project } from '@/types/portfolio';
 
@@ -92,114 +92,65 @@ Players will face diverse challenges, from deciphering ancient codes in the Egyp
 With stunning visuals, immersive storytelling, and dynamic gameplay mechanics, "Chrono Quest: Time Traveler" offers an unforgettable experience that combines elements of adventure, strategy, and puzzle-solving. Dive into the depths of time and rewrite history in this epic web-based adventure game.
 `;
 
-export const missions: Array<Mission> = [
+export const missions: Mission[] = [
   {
     id: 1,
     name: "Game Building",
+    project_id: 1,
     projectId: 1,
     email: "placeholder",
     inTokens: 888,
     outTokens: 888,
     abandonedForTokens: false,
-    tasks: [
-      {
-        id: "1",
-        name: "Code Task",
-        description: `
-        You will create a game using python, these are the instructions:
-
-			  Instructions
-			  ------------
-    	  ${game}
-        `,
-        assignedAgentId: 1,
-        missionId: 1,
-        status: 'not_started',
-        priority: 'high',
-        dependencies: [],
-        expected_output: "Your Final answer must be the full python code, only the python code and nothing else.",
-        async_execution: true,
-        user_id: "system",
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      },
-      {
-        id: "2",
-        name: "Review Task",
-        description: `
-        You are helping create a game using python, these are the instructions:
-
-			  Instructions
-			  ------------
-        ${game}
-
-        Using the code you got, check for errors. Check for logic errors,
-        syntax errors, missing imports, variable declarations, mismatched brackets,
-        and security vulnerabilities.
-        `,
-        assignedAgentId: 2,
-        missionId: 1,
-        status: 'not_started',
-        priority: 'high',
-        dependencies: ["1"],
-        expected_output: "Your Final answer must be the full python code, only the python code and nothing else.",
-        async_execution: true,
-        user_id: "system",
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      },
-      {
-        id: "3",
-        name: "Evaluate Task",
-        description: `
-        You are helping create a game using python, these are the instructions:
-
-        Instructions
-        ------------
-        ${game}
-
-        You will look over the code to insure that it is complete and
-        does the job that it is supposed to do.
-        `,
-        assignedAgentId: 3,
-        missionId: 1,
-        status: 'not_started',
-        priority: 'high',
-        dependencies: ["2"],
-        expected_output: "Your Final answer must be the full python code, only the python code and nothing else.",
-        async_execution: true,
-        user_id: "system",
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      },
-    ],
     verbose: true,
-    process: "SEQUENTIAL",
-    result: "",
-    domainId: 4,
-    _AgentToMission: [
-      { A: 1, B: 1 },
-      { A: 2, B: 1 },
-      { A: 3, B: 1 }
-    ],
-    agents: agents,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    taskResult: null,
-    user_id: "system",
-    token_usage: 0,
-    execution_time: 0,
-    cost_per_execution: 0
+    result: null,
+    status: "pending" as Mission['status'],
+    tokenUsage: 0,
+    cost: 0,
+    tasks: [],
+    agents: [],
+    metrics: {
+      tokenUsage: 0,
+      costPerExecution: 0,
+      executionTime: 0,
+      successRate: 0,
+      lastUpdated: new Date()
+    }
   },
   {
     id: 2,
+    name: "Website Development",
+    project_id: 2,
+    projectId: 2,
+    email: "placeholder",
+    inTokens: 777,
+    outTokens: 777,
+    abandonedForTokens: false,
+    verbose: true,
+    result: null,
+    status: "in_progress" as Mission['status'],
+    tokenUsage: 0,
+    cost: 0,
+    tasks: [],
+    agents: [],
+    metrics: {
+      tokenUsage: 0,
+      costPerExecution: 0,
+      executionTime: 0,
+      successRate: 0,
+      lastUpdated: new Date()
+    }
+  },
+  {
+    id: 3,
     name: "Mission1",
+    project_id: 1,
     projectId: 1,
     email: "placeholder",
     inTokens: 888,
     outTokens: 888,
     abandonedForTokens: false,
-    domainId: 4,
+    domainId: "4",
     tasks: [
       {
         id: "4",
@@ -214,7 +165,14 @@ export const missions: Array<Mission> = [
         async_execution: true,
         user_id: "system",
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
+        metrics: {
+          tokenUsage: 0,
+          costPerExecution: 0,
+          executionTime: 0,
+          successRate: 0,
+          lastUpdated: new Date()
+        }
       },
       {
         id: "5",
@@ -229,7 +187,14 @@ export const missions: Array<Mission> = [
         async_execution: true,
         user_id: "system",
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
+        metrics: {
+          tokenUsage: 0,
+          costPerExecution: 0,
+          executionTime: 0,
+          successRate: 0,
+          lastUpdated: new Date()
+        }
       },
     ],
     verbose: true,
@@ -238,18 +203,29 @@ export const missions: Array<Mission> = [
     _AgentToMission: [
       { A: 1, B: 2 }
     ],
-    agents: [agents[0]],
+    agents: [{ ...agents[0], name: agents[0].title }],
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     taskResult: null,
     user_id: "system",
     token_usage: 0,
     execution_time: 0,
-    cost_per_execution: 0
+    cost_per_execution: 0,
+    status: "pending" as Mission['status'],
+    tokenUsage: 0,
+    cost: 0,
+    metrics: {
+      tokenUsage: 0,
+      costPerExecution: 0,
+      executionTime: 0,
+      successRate: 0,
+      lastUpdated: new Date()
+    }
   },
   {
     id: 3,
     name: "Mission2",
+    project_id: 1,
     projectId: 1,
     email: "placeholder",
     inTokens: 888,
@@ -269,7 +245,14 @@ export const missions: Array<Mission> = [
         async_execution: true,
         user_id: "system",
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
+        metrics: {
+          tokenUsage: 0,
+          costPerExecution: 0,
+          executionTime: 0,
+          successRate: 0,
+          lastUpdated: new Date()
+        }
       },
       {
         id: "7",
@@ -284,27 +267,44 @@ export const missions: Array<Mission> = [
         async_execution: true,
         user_id: "system",
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
+        metrics: {
+          tokenUsage: 0,
+          costPerExecution: 0,
+          executionTime: 0,
+          successRate: 0,
+          lastUpdated: new Date()
+        }
       }
     ],
     verbose: true,
     process: "SEQUENTIAL",
     result: "result",
-    domainId: 4,
+    domainId: "4",
     _AgentToMission: [
       { A: 1, B: 3 }
     ],
-    agents: [agents[0]],
+    agents: [{ ...agents[0], name: agents[0].title }],
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     taskResult: null,
     user_id: "system",
     token_usage: 0,
     execution_time: 0,
-    cost_per_execution: 0
+    cost_per_execution: 0,
+    status: "pending" as Mission['status'],
+    tokenUsage: 0,
+    cost: 0,
+    metrics: {
+      tokenUsage: 0,
+      costPerExecution: 0,
+      executionTime: 0,
+      successRate: 0,
+      lastUpdated: new Date()
+    }
   }
 ];
 
-export const projects: Array<Project> = [
+export const projects: Project[] = [
   // ... existing projects code ...
 ];

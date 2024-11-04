@@ -31,18 +31,20 @@ export type MetricsData = {
 
 // Mission types
 export type Mission = {
-  id: string;
-  title: string;
-  description: string;
+  id: string | number;
+  title?: string;
+  name?: string;
+  description?: string;
   status: 'pending' | 'in_progress' | 'completed' | 'failed';
-  createdAt: string;
-  updatedAt: string;
-  tokenUsage: number;
-  cost: number;
-  projectId: string;
-  tasks: Task[];
-  agents: Agent[];
-  metrics: MetricsData;
+  createdAt?: string;
+  updatedAt?: string;
+  tokenUsage?: number;
+  cost?: number;
+  projectId: number;
+  project_id?: number;
+  tasks?: Task[];
+  agents?: Agent[];
+  metrics?: MetricsData;
   process?: string;
   email?: string;
   inTokens?: number;
@@ -68,7 +70,20 @@ export interface Agent extends Omit<DBAgent, 'metrics'> {
 }
 
 // Task types
-export interface Task extends Omit<DBTask, 'metrics'> {
+export interface Task {
+  id: string;
+  name: string;
+  description: string;
+  assignedAgentId: number;
+  missionId: number;
+  status: string;
+  priority: string;
+  dependencies: string[];
+  expected_output: string;
+  async_execution: boolean;
+  user_id: string;
+  created_at: string;
+  updated_at: string;
   metrics?: MetricsData;
 }
 
@@ -149,7 +164,8 @@ export const convertToProject = (
   project: Database['public']['Tables']['Project']['Row'],
   missions: Mission[] = []
 ): Project => {
-  const projectMissions = missions.filter(mission => mission.projectId === project.id.toString());
+  const projectId = Number(project.id);
+  const projectMissions = missions.filter(mission => mission.projectId === projectId);
   
   const metrics: MetricsData = {
     tokenUsage: projectMissions.reduce((sum, m) => sum + (m.tokenUsage || 0), 0),
@@ -188,14 +204,16 @@ export const convertToMission = (data: any): Mission => {
   
   return {
     id: data.id,
-    title: data.title || '',
+    title: data.title || data.name || '',
+    name: data.name || data.title || '',
     description: data.description || '',
     status: data.status || 'pending',
-    projectId: data.project_id,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
-    tokenUsage: data.token_usage || 0,
-    cost: data.cost_per_execution || 0,
+    projectId: data.projectId || data.project_id,
+    project_id: data.project_id || data.projectId,
+    createdAt: data.created_at || data.createdAt,
+    updatedAt: data.updated_at || data.updatedAt,
+    tokenUsage: data.token_usage || data.tokenUsage || 0,
+    cost: data.cost_per_execution || data.cost || 0,
     tasks: data.tasks || [],
     agents: data.agents || [],
     metrics,

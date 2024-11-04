@@ -9,9 +9,11 @@ type ActivityTimelineProps = {
 };
 
 export function ActivityTimeline({ activities }: ActivityTimelineProps) {
-  const sortedActivities = [...activities].sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  );
+  const sortedActivities = [...activities].sort((a, b) => {
+    const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0);
+    const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0);
+    return dateB.getTime() - dateA.getTime();
+  });
 
   return (
     <div className="space-y-4">
@@ -23,7 +25,9 @@ export function ActivityTimeline({ activities }: ActivityTimelineProps) {
               <p className="text-sm text-muted-foreground">{activity.description}</p>
             </div>
             <span className="text-sm text-muted-foreground">
-              {formatDistanceToNow(new Date(activity.createdAt), { addSuffix: true })}
+              {activity.createdAt 
+                ? formatDistanceToNow(new Date(activity.createdAt), { addSuffix: true })
+                : 'Date unknown'}
             </span>
           </div>
         </Card>
