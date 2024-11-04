@@ -17,7 +17,7 @@ export default async function CreatePortfolioPage() {
     redirect("/login");
   }
 
-  // Fetch domains without the parent_id field
+  // Fetch domains with all required fields
   const { data: domains, error: domainError } = await supabase
     .from("Domain")
     .select(`
@@ -38,6 +38,16 @@ export default async function CreatePortfolioPage() {
     return <div>Failed to load domain data.</div>;
   }
 
+  // Ensure all required fields are present with default values
+  const formattedDomains = (domains || []).map(domain => ({
+    ...domain,
+    Agents: domain.Agents || [],
+    Area: domain.Area || null,
+    agentAbsent: domain.agentAbsent || null,
+    identifier: domain.identifier || 0,
+    Missions: domain.Missions || []
+  }));
+
   return (
     <div className="container mx-auto p-6">
       <div className="max-w-3xl mx-auto">
@@ -46,7 +56,7 @@ export default async function CreatePortfolioPage() {
           Create a new portfolio to organize your projects and initiatives
         </p>
         <CreatePortfolioForm
-          domains={domains || []}
+          domains={formattedDomains}
           userId={user.id}
         />
       </div>
