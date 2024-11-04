@@ -5,6 +5,8 @@ import { Database } from '@/types/supabase';
 import { convertToPortfolio } from '@/types/portfolio';
 import PortfolioList from "@/components/portfolio/PortfolioList";
 import DomainFilter from "@/components/portfolio/DomainFilter";
+import PortfolioItemCard from "@/components/portfolio/PortfolioItemCard";
+import { getMetricsSummary } from "@/lib/metrics";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -44,14 +46,9 @@ export default async function PortfolioPage() {
     .select("*")
     .order('id');
 
-  if (portfoliosError) {
-    console.error("Error fetching portfolios:", portfoliosError);
-    return <div>Error loading portfolios: {portfoliosError.message}</div>;
-  }
-
-  if (domainsError) {
-    console.error("Error fetching domains:", domainsError);
-    return <div>Error loading domains: {domainsError.message}</div>;
+  if (portfoliosError || domainsError) {
+    console.error("Error fetching data:", portfoliosError || domainsError);
+    return <div>Failed to load portfolios.</div>;
   }
 
   const portfolios = portfoliosData?.map(convertToPortfolio) || [];
