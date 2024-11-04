@@ -69,22 +69,24 @@ export default function DomainFilter({ domains }: DomainFilterProps) {
             render={({ field }) => (
               <FormItem>
                 <FormControl>
-                  <div className="relative">
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Filter by Domain" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        <SelectLabel>Domains</SelectLabel>
-                        <SelectItem value="">All Domains</SelectItem>
-                        {domains.map((domain) => (
-                          <SelectItem key={domain.id} value={domain.id.toString()}>
-                            {domain.Domain} ({domain.ForUse})
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    </SelectContent>
-                  </div>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Filter by Domain" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectLabel>Domains</SelectLabel>
+                      <SelectItem value="">All Domains</SelectItem>
+                      {domains.map((domain) => (
+                        <SelectItem 
+                          key={domain.id} 
+                          value={domain.id.toString()}
+                          onClick={() => handleDomainChange(domain.id.toString())}
+                        >
+                          {domain.Domain} ({domain.ForUse})
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
                 </FormControl>
               </FormItem>
             )}

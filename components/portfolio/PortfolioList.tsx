@@ -1,115 +1,47 @@
-'use client'
+'use client';
 
-import React, { useState, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import React from 'react';
 import { Portfolio } from '@/types/portfolio';
-import { useRouter } from 'next/navigation';
-import PortfolioItemCard from './PortfolioItemCard';
-import { getMetricsSummary } from '@/lib/metrics';
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import DomainFilter from "@/components/portfolio/DomainFilter";
+import PortfolioItemCard from "@/components/portfolio/PortfolioItemCard";
+import { getMetricsSummary } from "@/lib/metrics";
 
 interface PortfolioListProps {
-  portfolio: Portfolio | null;
-  selectedDomainId: string;
+  portfolios: Portfolio[];
+  domains: {
+    id: number;
+    Domain: string;
+    ForUse: string;
+    Audience: string;
+  }[];
 }
 
-type FilterOption = {
-  value: string;
-  label: string;
-};
-
-export const PortfolioList: React.FC<PortfolioListProps> = ({ portfolio, selectedDomainId }) => {
-  const router = useRouter();
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [progressFilter, setProgressFilter] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<string>('title');
-
-  // Filter options
-  const statusOptions: FilterOption[] = [
-    { value: 'all', label: 'All Status' },
-    { value: 'active', label: 'Active' },
-    { value: 'completed', label: 'Completed' },
-    { value: 'pending', label: 'Pending' }
-  ];
-
-  const progressOptions: FilterOption[] = [
-    { value: 'all', label: 'All Progress' },
-    { value: 'low', label: '0-33%' },
-    { value: 'medium', label: '34-66%' },
-    { value: 'high', label: '67-100%' }
-  ];
-
-  const sortOptions: FilterOption[] = [
-    { value: 'title', label: 'Title' },
-    { value: 'progress', label: 'Progress' },
-    { value: 'projects', label: 'Project Count' }
-  ];
-
-  // Filter and sort portfolios
-  const filteredPortfolio = useMemo(() => {
-    if (!portfolio) return null;
-
-    let filtered = portfolio;
-
-    // Apply status filter
-    if (statusFilter !== 'all' && filtered.status !== statusFilter) {
-      return null;
-    }
-
-    // Apply progress filter
-    if (progressFilter !== 'all') {
-      const progress = filtered.progress || 0;
-      switch (progressFilter) {
-        case 'low':
-          if (progress > 0.33) return null;
-          break;
-        case 'medium':
-          if (progress <= 0.33 || progress > 0.66) return null;
-          break;
-        case 'high':
-          if (progress <= 0.66) return null;
-          break;
-      }
-    }
-
-    return filtered;
-  }, [portfolio, statusFilter, progressFilter]);
-
-  // Animation variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    show: { y: 0, opacity: 1 }
-  };
-
-  const filterVariants = {
-    hidden: { y: -20, opacity: 0 },
-    show: { y: 0, opacity: 1 }
-  };
-
-  if (!portfolio) {
-    return (
-      <div className="text-center text-gray-500">
-        No portfolio found for the selected domain.
-      </div>
-    );
-  }
-
-  const metrics = getMetricsSummary(portfolio);
-
+export default function PortfolioList({ portfolios, domains }: PortfolioListProps) {
   return (
-    <div className="space-y-4">
-      {filteredPortfolio && (
-        <PortfolioItemCard portfolio={filteredPortfolio} metrics={metrics} />
-      )}
+    <div className="container mx-auto p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Portfolios</h1>
+        <Link href="/portfolio/create">
+          <Button>Create Portfolio</Button>
+        </Link>
+      </div>
+
+      <div className="mb-6">
+        <DomainFilter domains={domains} />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {portfolios.map((portfolio) => (
+          <Link key={portfolio.id} href={`/portfolio/${portfolio.id}`}>
+            <PortfolioItemCard
+              portfolio={portfolio}
+              metrics={getMetricsSummary(portfolio)}
+            />
+          </Link>
+        ))}
+      </div>
     </div>
   );
-};
+}

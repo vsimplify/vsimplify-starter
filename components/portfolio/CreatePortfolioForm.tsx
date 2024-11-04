@@ -110,7 +110,11 @@ export default function CreatePortfolioForm({ domains, userId }: CreatePortfolio
                   <SelectGroup>
                     <SelectLabel>Domains</SelectLabel>
                     {domains.map((domain) => (
-                      <SelectItem key={domain.id} value={domain.id.toString()}>
+                      <SelectItem 
+                        key={domain.id} 
+                        value={domain.id.toString()}
+                        onClick={() => field.onChange(domain.id.toString())}
+                      >
                         {domain.Domain} ({domain.ForUse})
                       </SelectItem>
                     ))}
