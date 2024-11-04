@@ -102,6 +102,21 @@ export default function Navbar() {
               Home
             </Button>
           </Link>
+          <Link href="/portfolio">
+            <Button variant={"ghost"} className="text-white hover:text-yellow-300">
+              Portfolios
+            </Button>
+          </Link>
+          <Link href="/projects">
+            <Button variant={"ghost"} className="text-white hover:text-yellow-300">
+              Projects
+            </Button>
+          </Link>
+          <Link href="/activities">
+            <Button variant={"ghost"} className="text-white hover:text-yellow-300">
+              Activities
+            </Button>
+          </Link>
           {packsIsEnabled && (
             <Link href="/overview/packs">
               <Button variant={"ghost"} className="text-white hover:text-yellow-300">
