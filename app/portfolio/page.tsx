@@ -3,7 +3,10 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { Database } from '@/types/supabase';
 import { convertToPortfolio } from '@/types/portfolio';
-import PortfolioList from "@/components/portfolio/PortfolioList";
+import PortfolioCard from "@/components/portfolio/PortfolioCard";
+import DomainFilter from "@/components/portfolio/DomainFilter";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export const revalidate = 0;
 
@@ -48,6 +51,27 @@ export default async function PortfolioPage() {
 
   const portfolios = portfoliosData?.map(convertToPortfolio) || [];
 
-  return <PortfolioList portfolios={portfolios} domains={domains || []} />;
+  return (
+    <div className="container mx-auto p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Portfolios</h1>
+        <Link href="/portfolio/create">
+          <Button>Create Portfolio</Button>
+        </Link>
+      </div>
+
+      <div className="mb-6">
+        <DomainFilter domains={domains || []} />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {portfolios.map((portfolio) => (
+          <Link key={portfolio.id} href={`/portfolio/${portfolio.id}`}>
+            <PortfolioCard portfolio={portfolio} />
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
 }
 
