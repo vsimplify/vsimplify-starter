@@ -6,14 +6,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { Database } from '@/types/supabase';
 import {
@@ -148,25 +153,46 @@ export default function CreatePortfolioForm({ domains, userId }: CreatePortfolio
               <FormItem>
                 <FormLabel>Domain</FormLabel>
                 <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select Domain" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      {uniqueDomains.map(domain => (
-                        <SelectItem 
-                          key={domain} 
-                          value={domain}
-                          onSelect={() => {
-                            field.onChange(domain);
-                            setSelectedDomain(domain);
-                          }}
-                        >
-                          {domain}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        className="w-full justify-between"
+                      >
+                        {field.value
+                          ? uniqueDomains.find((domain) => domain === field.value)
+                          : "Select domain..."}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0">
+                      <Command>
+                        <CommandInput placeholder="Search domain..." />
+                        <CommandEmpty>No domain found.</CommandEmpty>
+                        <CommandGroup>
+                          {uniqueDomains.map((domain) => (
+                            <CommandItem
+                              key={domain}
+                              value={domain}
+                              onSelect={() => {
+                                field.onChange(domain);
+                                setSelectedDomain(domain);
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  field.value === domain ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              {domain}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </FormControl>
               </FormItem>
             )}
@@ -179,25 +205,47 @@ export default function CreatePortfolioForm({ domains, userId }: CreatePortfolio
               <FormItem>
                 <FormLabel>For Use</FormLabel>
                 <FormControl>
-                  <SelectTrigger disabled={!selectedDomain}>
-                    <SelectValue placeholder="Select For Use" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      {forUseOptions.map(forUse => (
-                        <SelectItem 
-                          key={forUse} 
-                          value={forUse}
-                          onSelect={() => {
-                            field.onChange(forUse);
-                            setSelectedForUse(forUse);
-                          }}
-                        >
-                          {forUse}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        className="w-full justify-between"
+                        disabled={!selectedDomain}
+                      >
+                        {field.value
+                          ? forUseOptions.find((forUse) => forUse === field.value)
+                          : "Select for use..."}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0">
+                      <Command>
+                        <CommandInput placeholder="Search for use..." />
+                        <CommandEmpty>No option found.</CommandEmpty>
+                        <CommandGroup>
+                          {forUseOptions.map((forUse) => (
+                            <CommandItem
+                              key={forUse}
+                              value={forUse}
+                              onSelect={() => {
+                                field.onChange(forUse);
+                                setSelectedForUse(forUse);
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  field.value === forUse ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              {forUse}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </FormControl>
               </FormItem>
             )}
@@ -210,25 +258,47 @@ export default function CreatePortfolioForm({ domains, userId }: CreatePortfolio
               <FormItem>
                 <FormLabel>Audience</FormLabel>
                 <FormControl>
-                  <SelectTrigger disabled={!selectedForUse}>
-                    <SelectValue placeholder="Select Audience" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      {audienceOptions.map(audience => (
-                        <SelectItem 
-                          key={audience} 
-                          value={audience}
-                          onSelect={() => {
-                            field.onChange(audience);
-                            setSelectedAudience(audience);
-                          }}
-                        >
-                          {audience}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        className="w-full justify-between"
+                        disabled={!selectedForUse}
+                      >
+                        {field.value
+                          ? audienceOptions.find((audience) => audience === field.value)
+                          : "Select audience..."}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0">
+                      <Command>
+                        <CommandInput placeholder="Search audience..." />
+                        <CommandEmpty>No audience found.</CommandEmpty>
+                        <CommandGroup>
+                          {audienceOptions.map((audience) => (
+                            <CommandItem
+                              key={audience}
+                              value={audience}
+                              onSelect={() => {
+                                field.onChange(audience);
+                                setSelectedAudience(audience);
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  field.value === audience ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              {audience}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </FormControl>
               </FormItem>
             )}

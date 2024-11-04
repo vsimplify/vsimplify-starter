@@ -38,41 +38,49 @@ type DBMission = Database['public']['Tables']['Mission']['Row'] & {
   mission_status?: 'pending' | 'in_progress' | 'completed' | 'failed';
 };
 
-const convertDBMissionToMission = (dbMission: DBMission): Mission => ({
-  id: dbMission.id.toString(),
-  title: dbMission.name || dbMission.process || '',
-  description: dbMission.process || '',
-  status: (dbMission.mission_status as Mission['status']) || 'pending',
-  createdAt: dbMission.created_at,
-  updatedAt: dbMission.updated_at,
-  tokenUsage: dbMission.token_usage || 0,
-  cost: dbMission.cost_per_execution || 0,
-  projectId: dbMission.project_id.toString(),
-  tasks: [],
-  agents: [],
-  metrics: {
+const convertDBMissionToMission = (dbMission: DBMission): Mission => {
+  if (!dbMission) return null as unknown as Mission;
+  
+  return {
+    id: String(dbMission.id),
+    title: dbMission.name || dbMission.process || '',
+    description: dbMission.process || '',
+    status: (dbMission.mission_status as Mission['status']) || 'pending',
+    createdAt: dbMission.created_at,
+    updatedAt: dbMission.updated_at,
     tokenUsage: dbMission.token_usage || 0,
-    executionTime: dbMission.execution_time || 0,
-    costPerExecution: dbMission.cost_per_execution || 0,
-    successRate: 0,
-    lastUpdated: new Date()
-  }
-});
+    cost: dbMission.cost_per_execution || 0,
+    projectId: String(dbMission.project_id),
+    tasks: [],
+    agents: [],
+    metrics: {
+      tokenUsage: dbMission.token_usage || 0,
+      executionTime: dbMission.execution_time || 0,
+      costPerExecution: dbMission.cost_per_execution || 0,
+      successRate: 0,
+      lastUpdated: new Date()
+    }
+  };
+};
 
 const convertToProject = (
   project: Database['public']['Tables']['Project']['Row'],
   missions: Mission[]
-): Project => ({
-  id: project.id.toString(),
-  title: project.title || '',
-  description: project.description || '',
-  status: project.status || '',
-  missions: missions.filter(mission => mission.projectId === project.id.toString()),
-  domain: project.domainId ? {
-    id: project.domainId.toString(),
-    name: project.title || ''
-  } : undefined
-});
+): Project => {
+  if (!project) return null as unknown as Project;
+  
+  return {
+    id: String(project.id),
+    title: project.title || '',
+    description: project.description || '',
+    status: project.status || '',
+    missions: missions.filter(mission => mission?.projectId === String(project.id)) || [],
+    domain: project.domainId ? {
+      id: String(project.domainId),
+      name: project.title || ''
+    } : undefined
+  };
+};
 
 export default function OverviewPage() {
   const supabase = createClientComponentClient<Database>();
