@@ -17,7 +17,7 @@ export default async function CreatePortfolioPage() {
     redirect("/login");
   }
 
-  // Fetch all domains with their hierarchical data
+  // Fetch domains without the parent_id field
   const { data: domains, error: domainError } = await supabase
     .from("Domain")
     .select(`
@@ -25,7 +25,11 @@ export default async function CreatePortfolioPage() {
       Domain,
       ForUse,
       Audience,
-      parent_id
+      Area,
+      Agents,
+      Missions,
+      identifier,
+      agentAbsent
     `)
     .order('Domain');
 
@@ -41,9 +45,9 @@ export default async function CreatePortfolioPage() {
         <p className="text-muted-foreground mb-6">
           Create a new portfolio to organize your projects and initiatives
         </p>
-        <CreatePortfolioForm 
-          domains={domains || []} 
-          userId={user.id} 
+        <CreatePortfolioForm
+          domains={domains || []}
+          userId={user.id}
         />
       </div>
     </div>
