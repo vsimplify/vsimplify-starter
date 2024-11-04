@@ -1,19 +1,10 @@
 'use client';
 
 import React from "react";
-import { Portfolio, Project } from "@/types/portfolio";
+import { Portfolio } from "@/types/portfolio";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import dynamic from 'next/dynamic';
-
-const ProjectList = dynamic<{projects: Project[]}>(
-  () => import('./ProjectList').then(mod => mod.default),
-  { ssr: false }
-);
-
-const MetricsChart = dynamic<{portfolio: Portfolio}>(
-  () => import('./MetricsChart').then(mod => mod.default),
-  { ssr: false }
-);
+import ProjectList from "./ProjectList";
+import MetricsChart from "./MetricsChart";
 
 interface PortfolioDetailsProps {
   portfolio: Portfolio;

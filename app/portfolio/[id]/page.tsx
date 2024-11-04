@@ -2,12 +2,8 @@ import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { Database } from "@/types/supabase";
-import { Portfolio, convertToPortfolio } from "@/types/portfolio";
-import dynamic from 'next/dynamic';
-
-const DynamicPortfolioDetails = dynamic(() => import('@/components/portfolio/PortfolioDetails'), {
-  ssr: false
-});
+import { convertToPortfolio } from "@/types/portfolio";
+import PortfolioDetails from "@/components/portfolio/PortfolioDetails";
 
 export const revalidate = 0;
 
@@ -50,7 +46,7 @@ export default async function PortfolioPage({ params }: { params: { id: string }
   return (
     <div className="p-4">
       {portfolio ? (
-        <DynamicPortfolioDetails portfolio={portfolio} />
+        <PortfolioDetails portfolio={portfolio} />
       ) : (
         <div>Portfolio not found.</div>
       )}

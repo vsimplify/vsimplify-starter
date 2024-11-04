@@ -62,36 +62,34 @@ export default function DomainFilter({ domains }: DomainFilterProps) {
   return (
     <div className="w-full max-w-xs">
       <Form {...form}>
-        <form>
-          <FormField
-            control={form.control}
-            name="domain"
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Filter by Domain" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectLabel>Domains</SelectLabel>
-                      <SelectItem value="">All Domains</SelectItem>
-                      {domains.map((domain) => (
-                        <SelectItem 
-                          key={domain.id} 
-                          value={domain.id.toString()}
-                          onClick={() => handleDomainChange(domain.id.toString())}
-                        >
-                          {domain.Domain} ({domain.ForUse})
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </FormControl>
-              </FormItem>
-            )}
-          />
-        </form>
+        <FormField
+          control={form.control}
+          name="domain"
+          render={({ field }) => (
+            <FormItem>
+              <FormControl>
+                <SelectTrigger>
+                  <SelectValue placeholder="Filter by Domain" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>Domains</SelectLabel>
+                    <SelectItem value="">All Domains</SelectItem>
+                    {domains.map((domain) => (
+                      <SelectItem
+                        key={domain.id}
+                        value={domain.id.toString()}
+                        onClick={() => handleDomainChange(domain.id.toString())}
+                      >
+                        {domain.Domain} ({domain.ForUse})
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </FormControl>
+            </FormItem>
+          )}
+        />
       </Form>
     </div>
   );
