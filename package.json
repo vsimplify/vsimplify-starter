@@ -79,6 +79,7 @@
     "react-icons": "^4.11.0",
     "react-intersection-observer": "^9.13.1",
     "react-select": "^5.8.2",
+    "recharts": "^2.13.3",
     "resend": "^3.2.0",
     "run": "^1.5.0",
     "sonner": "^1.5.0",
@@ -94,6 +95,9 @@
   },
   "devDependencies": {
     "@babel/core": "^7.26.0",
+    "@babel/plugin-transform-class-properties": "^7.23.3",
+    "@babel/plugin-transform-private-methods": "^7.23.3",
+    "@babel/plugin-transform-private-property-in-object": "^7.23.3",
     "@babel/preset-env": "^7.26.0",
     "@babel/preset-react": "^7.25.9",
     "@babel/preset-typescript": "^7.26.0",
@@ -116,10 +120,7 @@
     "json-loader": "^0.5.7",
     "raw-loader": "^4.0.2",
     "ts-node": "^10.9.2",
-    "typescript": "^5.3.3",
-    "@babel/plugin-transform-private-methods": "^7.23.3",
-    "@babel/plugin-transform-private-property-in-object": "^7.23.3",
-    "@babel/plugin-transform-class-properties": "^7.23.3"
+    "typescript": "^5.3.3"
   },
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }

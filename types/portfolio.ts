@@ -10,13 +10,13 @@ type DBAgent = Database['public']['Tables']['Agent']['Row'];
 type DBTask = Database['public']['Tables']['Task']['Row'];
 
 // Metrics types
-export interface MetricsData {
+export type MetricsData = {
   tokenUsage: number;
-  executionTime: number;
   costPerExecution: number;
+  executionTime: number;
   successRate: number;
   lastUpdated: Date;
-}
+};
 
 // Mission types
 export interface Mission extends Omit<DBMission, 'tasks'> {
@@ -43,20 +43,40 @@ export interface Task extends Omit<DBTask, 'metrics'> {
 }
 
 // Project types
-export type Project = DBProject & {
+export type Project = {
+  id: number;
+  title: string | null;
+  description: string | null;
+  dueOn: string;
+  email: string;
+  goal: string;
+  nugget: string;
+  objective: string;
+  outcome: string;
+  progress?: number | null;
+  status?: string | null;
+  createdAt: string;
+  updatedAt: string | null;
+  domainId: number;
+  user_id: string;
+  metrics?: MetricsData;
   missions?: Mission[];
   agents?: Agent[];
-  metrics?: MetricsData;
 };
 
 // Portfolio types
-export type Portfolio = Database['public']['Tables']['portfolios']['Row'] & {
-  project?: Project;
-  missions?: Mission[];
-  releases?: Release[];
-  teams?: Team[];
-  themes?: Theme[];
-  metrics?: MetricsData | null;
+export type Portfolio = {
+  id: string;
+  title: string;
+  description: string;
+  created_at: string;
+  domainId?: number;
+  progress?: number;
+  project_id?: number;
+  status?: string;
+  user_id: string;
+  projects: Project[];
+  metrics?: MetricsData;
 };
 
 // Additional types for portfolio management
@@ -102,30 +122,23 @@ export const isProject = (item: any): item is Project => {
 };
 
 // Conversion functions
-export const convertToProject = (data: any): Project => {
-  if (!data) return null as unknown as Project;
-  
-  return {
-    id: data.id,
-    title: data.title || '',
-    description: data.description || '',
-    domainId: data.domainId,
-    dueOn: data.dueOn,
-    email: data.email,
-    goal: data.goal,
-    nugget: data.nugget,
-    objective: data.objective,
-    outcome: data.outcome,
-    progress: data.progress || 0,
-    status: data.status || 'pending',
-    user_id: data.user_id,
-    createdAt: data.createdAt,
-    updatedAt: data.updatedAt,
-    missions: data.missions?.map(convertToMission) || [],
-    agents: data.agents || [],
-    metrics: data.metrics as MetricsData
-  };
-};
+export const convertToProject = (
+  project: Database['public']['Tables']['Project']['Row'],
+  missions: Mission[] = []
+): Project => ({
+  ...project,
+  title: project.title || '',
+  description: project.description || '',
+  missions: missions.filter(mission => mission.projectId === project.id),
+  agents: [],
+  metrics: {
+    tokenUsage: missions.reduce((sum, m) => sum + (m.metrics?.tokenUsage ?? 0), 0),
+    executionTime: missions.reduce((sum, m) => sum + (m.metrics?.executionTime ?? 0), 0),
+    costPerExecution: missions.reduce((sum, m) => sum + (m.metrics?.costPerExecution ?? 0), 0),
+    successRate: missions.length ? missions.reduce((sum, m) => sum + (m.metrics?.successRate ?? 0), 0) / missions.length : 0,
+    lastUpdated: new Date()
+  }
+});
 
 export const convertToMission = (data: any): Mission => {
   if (!data) return null as unknown as Mission;
@@ -167,6 +180,24 @@ export const convertToMission = (data: any): Mission => {
 
 // Add type conversion helper
 export const convertToPortfolio = (data: any): Portfolio => {
+  // Calculate metrics from projects if they exist
+  const projectMetrics = data.project?.reduce((acc: MetricsData, proj: any) => {
+    if (!proj.metrics) return acc;
+    return {
+      tokenUsage: acc.tokenUsage + (proj.metrics.tokenUsage || 0),
+      costPerExecution: acc.costPerExecution + (proj.metrics.costPerExecution || 0),
+      executionTime: acc.executionTime + (proj.metrics.executionTime || 0),
+      successRate: acc.successRate + (proj.metrics.successRate || 0),
+      lastUpdated: new Date()
+    };
+  }, {
+    tokenUsage: 0,
+    costPerExecution: 0,
+    executionTime: 0,
+    successRate: 0,
+    lastUpdated: new Date()
+  });
+
   return {
     id: data.id,
     title: data.title,
@@ -177,12 +208,8 @@ export const convertToPortfolio = (data: any): Portfolio => {
     created_at: data.created_at,
     domainId: data.domainId,
     project_id: data.project_id,
-    project: data.project ? convertToProject(data.project) : undefined,
-    missions: data.missions?.map(convertToMission) || [],
-    metrics: data.metrics as MetricsData | null,
-    releases: data.releases as Release[],
-    teams: data.teams as Team[],
-    themes: data.themes as Theme[]
+    projects: data.project ? [convertToProject(data.project)] : [],
+    metrics: projectMetrics || null
   };
 };
 

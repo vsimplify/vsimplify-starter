@@ -1,47 +1,86 @@
 'use client'; // Ensure this is a Client Component
 
 import React from 'react';
-import { Portfolio } from '@/types/portfolio';
-import { Card } from '@/components/ui/card';
-import { getMetricsSummary } from '@/lib/metrics';
+import { Portfolio, MetricsData } from '@/types/portfolio';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
 interface PortfolioItemCardProps {
   portfolio: Portfolio;
-  metrics: ReturnType<typeof getMetricsSummary> | null;
+  metrics?: {
+    tokenUsage: string;
+    successRate: string;
+    cost: string;
+  } | null;
 }
 
-const PortfolioItemCard: React.FC<PortfolioItemCardProps> = ({ portfolio, metrics }) => {
+export const PortfolioItemCard: React.FC<PortfolioItemCardProps> = ({ portfolio, metrics }) => {
   return (
-    <Card className="p-4">
-      <h3 className="text-lg font-semibold">{portfolio.title}</h3>
-      <p className="text-sm text-gray-600">{portfolio.description}</p>
-      <div className="mt-2">
-        <span className="font-medium">Status:</span> {portfolio.status}
-      </div>
-      <div className="mt-1">
-        <span className="font-medium">Progress:</span> {portfolio.progress}%
-      </div>
-      {/* Display Project if available */}
-      {portfolio.project && (
-        <div className="mt-2">
-          <span className="font-medium">Project:</span> {portfolio.project.title}
-          {/* Display Missions within the project */}
-          {portfolio.project.missions && portfolio.project.missions.length > 0 && (
-            <ul className="list-disc list-inside ml-4">
-              {portfolio.project.missions.map((mission) => (
-                <li key={mission.id}>{mission.name}</li>
-              ))}
-            </ul>
+    <Card className="hover:shadow-lg transition-shadow duration-200">
+      <CardHeader>
+        <CardTitle>{portfolio.title}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {/* Basic Portfolio Info */}
+        <div>
+          <p className="text-gray-600">{portfolio.description}</p>
+          {portfolio.status && (
+            <Badge variant="outline" className="mt-2">{portfolio.status}</Badge>
           )}
         </div>
-      )}
-      {metrics && (
-        <div className="mt-4">
-          <p>Token Usage: {metrics.tokenUsage}</p>
-          <p>Success Rate: {metrics.successRate}%</p>
-          <p>Cost per Execution: ${metrics.cost}</p>
+
+        {/* Display Projects if available */}
+        {portfolio.projects && portfolio.projects.length > 0 && (
+          <div className="mt-2">
+            <span className="font-medium">Projects:</span>
+            {portfolio.projects.map(project => (
+              <div key={project.id} className="ml-4 mt-1">
+                <p>{project.title}</p>
+                {/* Display Missions within the project */}
+                {project.missions && project.missions.length > 0 && (
+                  <div className="ml-4 text-sm text-gray-600">
+                    <span className="font-medium">Missions:</span> {project.missions.length}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Display Metrics if available */}
+        {metrics && (
+          <div className="mt-4 space-y-2">
+            <div>
+              <span className="font-medium">Token Usage:</span> {metrics.tokenUsage}
+            </div>
+            <div>
+              <span className="font-medium">Success Rate:</span> {metrics.successRate}
+            </div>
+            <div>
+              <span className="font-medium">Cost:</span> ${metrics.cost}
+            </div>
+          </div>
+        )}
+
+        {/* Display Progress if available */}
+        {portfolio.progress !== undefined && (
+          <div className="mt-2">
+            <span className="font-medium">Progress:</span> {portfolio.progress}%
+          </div>
+        )}
+
+        {/* Display Domain if available */}
+        {portfolio.domainId && (
+          <div className="mt-2">
+            <span className="font-medium">Domain ID:</span> {portfolio.domainId}
+          </div>
+        )}
+
+        {/* Created Date */}
+        <div className="mt-4 text-sm text-gray-500">
+          Created: {new Date(portfolio.created_at).toLocaleDateString()}
         </div>
-      )}
+      </CardContent>
     </Card>
   );
 };
