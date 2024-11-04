@@ -30,9 +30,11 @@ export default async function PortfolioPage({ params }: { params: { id: string }
     .from("portfolios")
     .select(`
       *,
-      projects:Project(
+      domain:Domain(*),
+      projects:Project!portfolio_id(
         *,
-        missions:Mission(
+        domain:Domain(*),
+        missions:Mission!project_id(
           *,
           agent_missions:_AgentToMission(
             agent:Agent(*),
@@ -41,8 +43,7 @@ export default async function PortfolioPage({ params }: { params: { id: string }
             token_usage,
             cost
           )
-        ),
-        domain:Domain(*)
+        )
       )
     `)
     .eq("id", params.id)

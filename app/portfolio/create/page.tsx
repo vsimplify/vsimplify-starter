@@ -17,14 +17,21 @@ export default async function CreatePortfolioPage() {
     redirect("/login");
   }
 
-  // Fetch domains for the dropdown
-  const { data: domains } = await supabase
+  // Fetch all domains with their hierarchical data
+  const { data: domains, error: domainError } = await supabase
     .from("Domain")
-    .select("*")
-    .order('id');
+    .select(`
+      id,
+      Domain,
+      ForUse,
+      Audience,
+      parent_id
+    `)
+    .order('Domain');
 
-  if (!domains) {
-    return <div>Failed to load required data.</div>;
+  if (domainError) {
+    console.error("Error fetching domains:", domainError);
+    return <div>Failed to load domain data.</div>;
   }
 
   return (
@@ -34,7 +41,10 @@ export default async function CreatePortfolioPage() {
         <p className="text-muted-foreground mb-6">
           Create a new portfolio to organize your projects and initiatives
         </p>
-        <CreatePortfolioForm domains={domains} userId={user.id} />
+        <CreatePortfolioForm 
+          domains={domains || []} 
+          userId={user.id} 
+        />
       </div>
     </div>
   );
