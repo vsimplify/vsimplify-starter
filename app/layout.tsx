@@ -7,6 +7,7 @@ import { Suspense } from "react";
 import { Analytics } from "@vercel/analytics/react";
 import Providers from "@/components/Providers";
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import Link from 'next/link'
 
 export const metadata = {
   title: "Meet your goals with the help of AI. ",
