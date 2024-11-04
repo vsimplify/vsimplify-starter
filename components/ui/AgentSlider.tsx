@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Agent } from '@/types/portfolio';
-import { PortfolioCard } from '../portfolio/PortfolioCard';
+import AgentCard from '../portfolio/AgentCard';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid';
 
 interface AgentSliderProps {
@@ -71,7 +71,7 @@ export const AgentSlider: React.FC<AgentSliderProps> = ({
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: index * 0.1 }}
             >
-              <PortfolioCard agent={agent} showMetrics />
+              <AgentCard agent={agent} />
             </motion.div>
           ))}
         </motion.div>

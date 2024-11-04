@@ -33,6 +33,8 @@ export interface Mission extends Omit<DBMission, 'tasks'> {
 
 // Agent types
 export interface Agent extends Omit<DBAgent, 'metrics'> {
+  name: string;
+  description?: string;
   metrics?: MetricsData;
   performanceRating?: number;
 }
