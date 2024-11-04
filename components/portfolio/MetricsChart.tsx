@@ -148,4 +148,4 @@ const MetricsChart: React.FC<MetricsChartProps> = ({ portfolio }) => {
   );
 };
 
-export default MetricsChart; 
+export default MetricsChart;

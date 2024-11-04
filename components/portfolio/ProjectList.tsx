@@ -181,4 +181,4 @@ const ProjectList: React.FC<ProjectListProps> = ({ projects: initialProjects }) 
   );
 };
 
-export default ProjectList; 
+export default ProjectList;
