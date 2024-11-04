@@ -66,3 +66,5 @@
 .animate-fadeIn {
   animation: fadeIn 0.5s ease-out;
 }
+
+@import 'react-day-picker/dist/style.css';
