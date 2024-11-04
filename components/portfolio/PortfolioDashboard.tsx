@@ -1,59 +1,71 @@
 'use client';
 
-import React from "react";
 import { Project } from "@/types/portfolio";
-import { motion } from "framer-motion";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { MetricsChart } from "./MetricsChart";
 
-interface PortfolioDashboardProps {
+type PortfolioDashboardProps = {
   projects: Project[];
-}
-
-const PortfolioDashboard: React.FC<PortfolioDashboardProps> = ({ projects }) => {
-  return (
-    <motion.div
-      className="overflow-x-auto"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-    >
-      <table className="min-w-full bg-white">
-        <thead>
-          <tr>
-            <th className="px-6 py-3">ID</th>
-            <th className="px-6 py-3">Title</th>
-            <th className="px-6 py-3">Description</th>
-            <th className="px-6 py-3">Progress</th>
-            <th className="px-6 py-3">Status</th>
-            <th className="px-6 py-3">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {projects.map((project) => (
-            <tr key={project.id} className="hover:bg-gray-100">
-              <td className="px-6 py-4">{project.id}</td>
-              <td className="px-6 py-4">{project.title || 'Untitled'}</td>
-              <td className="px-6 py-4">{project.description}</td>
-              <td className="px-6 py-4">
-                <div className="w-full bg-gray-200 rounded-full h-2.5">
-                  <div
-                    className="bg-blue-600 h-2.5 rounded-full"
-                    style={{ width: `${project.progress || 0}%` }}
-                  ></div>
-                </div>
-                <span className="text-sm">{project.progress || 0}%</span>
-              </td>
-              <td className="px-6 py-4">{project.status || 'Unknown'}</td>
-              <td className="px-6 py-4">
-                <button className="text-blue-500 hover:underline">
-                  View Details
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </motion.div>
-  );
 };
 
-export default PortfolioDashboard;
+export default function PortfolioDashboard({ projects }: PortfolioDashboardProps) {
+  // Calculate project progress based on completed missions
+  const calculateProgress = (project: Project): number => {
+    if (project.progress !== undefined) return project.progress;
+    if (!project.missions.length) return 0;
+    
+    const completedMissions = project.missions.filter(
+      mission => mission.status === 'completed'
+    ).length;
+    
+    return Math.round((completedMissions / project.missions.length) * 100);
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {projects.map((project) => {
+          const progress = calculateProgress(project);
+          
+          return (
+            <Card key={project.id} className="p-4">
+              <div className="flex justify-between items-start mb-2">
+                <h3 className="font-medium">{project.title}</h3>
+                <Badge variant={project.status === 'active' ? 'default' : 'secondary'}>
+                  {project.status}
+                </Badge>
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">
+                {project.description}
+              </p>
+              <div className="flex items-center gap-2">
+                <div className="flex-1 bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                  <div
+                    className="bg-blue-600 h-2.5 rounded-full"
+                    style={{ width: `${progress}%` }}
+                  ></div>
+                </div>
+                <span className="text-sm">{progress}%</span>
+              </div>
+              <div className="mt-4 text-sm text-muted-foreground">
+                <div className="flex justify-between">
+                  <span>Missions: {project.missions.length}</span>
+                  <span>
+                    Completed: {project.missions.filter(m => m.status === 'completed').length}
+                  </span>
+                </div>
+              </div>
+            </Card>
+          );
+        })}
+      </div>
+      
+      {projects.length > 0 && (
+        <Card className="p-6">
+          <MetricsChart projects={projects} />
+        </Card>
+      )}
+    </div>
+  );
+}

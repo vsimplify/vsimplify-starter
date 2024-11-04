@@ -1,96 +1,90 @@
 'use client';
 
 import { useState } from 'react';
+import { Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-} from "@/components/ui/form";
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
 import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useForm } from "react-hook-form";
-import * as z from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
-const formSchema = z.object({
-  domain: z.string(),
-});
+type Domain = {
+  id: string;
+  name: string;
+};
 
 interface DomainFilterProps {
-  domains: {
-    id: number;
-    Domain: string;
-    ForUse: string;
-    Audience: string;
-  }[];
+  domains: Domain[];
+  selectedDomain: string | null;
+  onDomainChange: (domainId: string | null) => void;
 }
 
-export default function DomainFilter({ domains }: DomainFilterProps) {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const [selectedDomain, setSelectedDomain] = useState<string>(
-    searchParams.get('domainId') || ''
-  );
+export function DomainFilter({ domains, selectedDomain, onDomainChange }: DomainFilterProps) {
+  const [open, setOpen] = useState(false);
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      domain: selectedDomain,
-    },
-  });
-
-  const handleDomainChange = (value: string) => {
-    setSelectedDomain(value);
-    const params = new URLSearchParams(searchParams.toString());
-    if (value) {
-      params.set('domainId', value);
-    } else {
-      params.delete('domainId');
-    }
-    router.push(`/portfolio?${params.toString()}`);
-  };
+  const selectedDomainName = domains.find(domain => domain.id === selectedDomain)?.name || "All Domains";
 
   return (
-    <div className="w-full max-w-xs">
-      <Form {...form}>
-        <FormField
-          control={form.control}
-          name="domain"
-          render={({ field }) => (
-            <FormItem>
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder="Filter by Domain" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectLabel>Domains</SelectLabel>
-                    <SelectItem value="">All Domains</SelectItem>
-                    {domains.map((domain) => (
-                      <SelectItem
-                        key={domain.id}
-                        value={domain.id.toString()}
-                        onClick={() => handleDomainChange(domain.id.toString())}
-                      >
-                        {domain.Domain} ({domain.ForUse})
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </FormControl>
-            </FormItem>
-          )}
-        />
-      </Form>
-    </div>
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="w-[200px] justify-between"
+        >
+          {selectedDomainName}
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[200px] p-0">
+        <Command>
+          <CommandInput placeholder="Search domains..." />
+          <CommandEmpty>No domain found.</CommandEmpty>
+          <CommandGroup>
+            <CommandItem
+              onSelect={() => {
+                onDomainChange(null);
+                setOpen(false);
+              }}
+            >
+              <Check
+                className={cn(
+                  "mr-2 h-4 w-4",
+                  !selectedDomain ? "opacity-100" : "opacity-0"
+                )}
+              />
+              All Domains
+            </CommandItem>
+            {domains.map((domain) => (
+              <CommandItem
+                key={domain.id}
+                onSelect={() => {
+                  onDomainChange(domain.id);
+                  setOpen(false);
+                }}
+              >
+                <Check
+                  className={cn(
+                    "mr-2 h-4 w-4",
+                    selectedDomain === domain.id ? "opacity-100" : "opacity-0"
+                  )}
+                />
+                {domain.name}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        </Command>
+      </PopoverContent>
+    </Popover>
   );
 } 

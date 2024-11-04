@@ -5,7 +5,18 @@ import { Json } from '@/types/supabase';
 // Existing types from database.types.ts
 type DBPortfolio = Database['public']['Tables']['portfolios']['Row'];
 type DBProject = Database['public']['Tables']['Project']['Row'];
-type DBMission = Database['public']['Tables']['Mission']['Row'];
+type DBMission = Database['public']['Tables']['Mission']['Row'] & {
+  _AgentToMission: AgentToMission[];
+  token_usage?: number;
+  execution_time?: number;
+  cost_per_execution?: number;
+  name: string;
+  description: string;
+  status: string;
+  projectId: number;
+  createdAt: string;
+  updatedAt: string;
+};
 type DBAgent = Database['public']['Tables']['Agent']['Row'];
 type DBTask = Database['public']['Tables']['Task']['Row'];
 
@@ -19,17 +30,34 @@ export type MetricsData = {
 };
 
 // Mission types
-export interface Mission extends Omit<DBMission, 'tasks'> {
-  /** @deprecated Use tasks from Tasks table instead */
-  legacyTasks?: Json | null;
+export type Mission = {
+  id: string;
+  title: string;
+  description: string;
+  status: 'pending' | 'in_progress' | 'completed' | 'failed';
+  createdAt: string;
+  updatedAt: string;
+  tokenUsage: number;
+  cost: number;
+  projectId: string;
   tasks: Task[];
   agents: Agent[];
-  _AgentToMission: AgentToMission[];
-  metrics?: MetricsData;
-  token_usage: number;
-  execution_time: number;
-  cost_per_execution: number;
-}
+  metrics: MetricsData;
+  process?: string;
+  email?: string;
+  inTokens?: number;
+  outTokens?: number;
+  abandonedForTokens?: boolean;
+  verbose?: boolean;
+  result?: any;
+  user_id?: string;
+  domainId?: string;
+  _AgentToMission?: AgentToMission[];
+  token_usage?: number;
+  execution_time?: number;
+  cost_per_execution?: number;
+  taskResult?: any;
+};
 
 // Agent types
 export interface Agent extends Omit<DBAgent, 'metrics'> {
@@ -46,24 +74,17 @@ export interface Task extends Omit<DBTask, 'metrics'> {
 
 // Project types
 export type Project = {
-  id: number;
-  title: string | null;
-  description: string | null;
-  dueOn: string;
-  email: string;
-  goal: string;
-  nugget: string;
-  objective: string;
-  outcome: string;
-  progress?: number | null;
-  status?: string | null;
-  createdAt: string;
-  updatedAt: string | null;
-  domainId: number;
-  user_id: string;
+  id: string;
+  title: string;
+  description: string;
+  status: string;
+  missions: Mission[];
+  domain?: {
+    id: string;
+    name: string;
+  };
   metrics?: MetricsData;
-  missions?: Mission[];
-  agents?: Agent[];
+  progress?: number;
 };
 
 // Portfolio types
@@ -71,14 +92,14 @@ export type Portfolio = {
   id: string;
   title: string;
   description: string;
-  created_at: string;
-  domainId?: number;
-  progress?: number;
-  project_id?: number;
-  status?: string;
-  user_id: string;
+  status: string;
   projects: Project[];
-  metrics?: MetricsData;
+  created_at: string;
+  updated_at: string;
+  user_id: string;
+  domainId?: string;
+  progress?: number;
+  metrics?: MetricsData | null;
 };
 
 // Additional types for portfolio management
@@ -127,23 +148,35 @@ export const isProject = (item: any): item is Project => {
 export const convertToProject = (
   project: Database['public']['Tables']['Project']['Row'],
   missions: Mission[] = []
-): Project => ({
-  ...project,
-  title: project.title || '',
-  description: project.description || '',
-  missions: missions.filter(mission => mission.projectId === project.id),
-  agents: [],
-  metrics: {
-    tokenUsage: missions.reduce((sum, m) => sum + (m.metrics?.tokenUsage ?? 0), 0),
-    executionTime: missions.reduce((sum, m) => sum + (m.metrics?.executionTime ?? 0), 0),
-    costPerExecution: missions.reduce((sum, m) => sum + (m.metrics?.costPerExecution ?? 0), 0),
-    successRate: missions.length ? missions.reduce((sum, m) => sum + (m.metrics?.successRate ?? 0), 0) / missions.length : 0,
+): Project => {
+  const projectMissions = missions.filter(mission => mission.projectId === project.id.toString());
+  
+  const metrics: MetricsData = {
+    tokenUsage: projectMissions.reduce((sum, m) => sum + (m.tokenUsage || 0), 0),
+    costPerExecution: projectMissions.reduce((sum, m) => sum + (m.cost || 0), 0),
+    executionTime: projectMissions.reduce((sum, m) => sum + (m.metrics?.executionTime || 0), 0),
+    successRate: projectMissions.length 
+      ? projectMissions.filter(m => m.status === 'completed').length / projectMissions.length * 100 
+      : 0,
     lastUpdated: new Date()
-  }
-});
+  };
+
+  return {
+    id: project.id.toString(),
+    title: project.title || '',
+    description: project.description || '',
+    status: project.status || '',
+    missions: projectMissions,
+    domain: project.domainId ? {
+      id: project.domainId.toString(),
+      name: project.title || ''
+    } : undefined,
+    metrics
+  };
+};
 
 export const convertToMission = (data: any): Mission => {
-  if (!data) return null as unknown as Mission;
+  if (!data) throw new Error('Mission data is required');
   
   const metrics: MetricsData = {
     tokenUsage: data.token_usage || 0,
@@ -155,27 +188,30 @@ export const convertToMission = (data: any): Mission => {
   
   return {
     id: data.id,
-    name: data.name,
-    process: data.process,
-    projectId: data.projectId,
-    email: data.email,
-    inTokens: data.inTokens || 0,
-    outTokens: data.outTokens || 0,
-    abandonedForTokens: data.abandonedForTokens || false,
-    verbose: data.verbose || false,
-    result: data.result,
-    user_id: data.user_id,
-    createdAt: data.createdAt,
-    updatedAt: data.updatedAt,
-    domainId: data.domainId,
+    title: data.title || '',
+    description: data.description || '',
+    status: data.status || 'pending',
+    projectId: data.project_id,
+    createdAt: data.created_at,
+    updatedAt: data.updated_at,
+    tokenUsage: data.token_usage || 0,
+    cost: data.cost_per_execution || 0,
     tasks: data.tasks || [],
     agents: data.agents || [],
-    _AgentToMission: data._AgentToMission || [],
     metrics,
-    token_usage: data.token_usage || 0,
-    execution_time: data.execution_time || 0,
-    cost_per_execution: data.cost_per_execution || 0,
-    legacyTasks: data.tasks,
+    process: data.process,
+    email: data.email,
+    inTokens: data.inTokens,
+    outTokens: data.outTokens,
+    abandonedForTokens: data.abandonedForTokens,
+    verbose: data.verbose,
+    result: data.result,
+    user_id: data.user_id,
+    domainId: data.domainId,
+    _AgentToMission: data._AgentToMission,
+    token_usage: data.token_usage,
+    execution_time: data.execution_time,
+    cost_per_execution: data.cost_per_execution,
     taskResult: data.taskResult
   };
 };
@@ -208,8 +244,8 @@ export const convertToPortfolio = (data: any): Portfolio => {
     progress: data.progress,
     user_id: data.user_id,
     created_at: data.created_at,
+    updated_at: data.updated_at,
     domainId: data.domainId,
-    project_id: data.project_id,
     projects: data.project ? [convertToProject(data.project)] : [],
     metrics: projectMetrics || null
   };

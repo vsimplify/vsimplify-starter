@@ -30,38 +30,48 @@ type DBMission = Database['public']['Tables']['Mission']['Row'] & {
   token_usage?: number;
   execution_time?: number;
   cost_per_execution?: number;
+  name?: string;
+  process?: string;
+  created_at: string;
+  updated_at: string;
+  project_id: number;
+  mission_status?: 'pending' | 'in_progress' | 'completed' | 'failed';
 };
 
 const convertDBMissionToMission = (dbMission: DBMission): Mission => ({
-  ...dbMission,
-  tasks: [], // Will be populated by Task table
-  agents: [], // Will be populated by Agent table
+  id: dbMission.id.toString(),
+  title: dbMission.name || dbMission.process || '',
+  description: dbMission.process || '',
+  status: (dbMission.mission_status as Mission['status']) || 'pending',
+  createdAt: dbMission.created_at,
+  updatedAt: dbMission.updated_at,
+  tokenUsage: dbMission.token_usage || 0,
+  cost: dbMission.cost_per_execution || 0,
+  projectId: dbMission.project_id.toString(),
+  tasks: [],
+  agents: [],
   metrics: {
-    tokenUsage: dbMission.token_usage ?? 0,
-    executionTime: dbMission.execution_time ?? 0,
-    costPerExecution: dbMission.cost_per_execution ?? 0,
+    tokenUsage: dbMission.token_usage || 0,
+    executionTime: dbMission.execution_time || 0,
+    costPerExecution: dbMission.cost_per_execution || 0,
     successRate: 0,
     lastUpdated: new Date()
-  },
-  token_usage: dbMission.token_usage ?? 0,
-  execution_time: dbMission.execution_time ?? 0,
-  cost_per_execution: dbMission.cost_per_execution ?? 0
+  }
 });
 
 const convertToProject = (
   project: Database['public']['Tables']['Project']['Row'],
   missions: Mission[]
 ): Project => ({
-  ...project,
-  missions: missions.filter(mission => mission.projectId === project.id),
-  agents: [],
-  metrics: {
-    tokenUsage: missions.reduce((sum, m) => sum + (m.metrics?.tokenUsage ?? 0), 0),
-    executionTime: missions.reduce((sum, m) => sum + (m.metrics?.executionTime ?? 0), 0),
-    costPerExecution: missions.reduce((sum, m) => sum + (m.metrics?.costPerExecution ?? 0), 0),
-    successRate: missions.length ? missions.reduce((sum, m) => sum + (m.metrics?.successRate ?? 0), 0) / missions.length : 0,
-    lastUpdated: new Date()
-  }
+  id: project.id.toString(),
+  title: project.title || '',
+  description: project.description || '',
+  status: project.status || '',
+  missions: missions.filter(mission => mission.projectId === project.id.toString()),
+  domain: project.domainId ? {
+    id: project.domainId.toString(),
+    name: project.title || ''
+  } : undefined
 });
 
 export default function OverviewPage() {

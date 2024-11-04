@@ -17,21 +17,25 @@ export default async function CreatePortfolioPage() {
     redirect("/login");
   }
 
-  // Fetch all domains for the dropdown
-  const { data: domains, error: domainsError } = await supabase
+  // Fetch domains for the dropdown
+  const { data: domains } = await supabase
     .from("Domain")
     .select("*")
     .order('id');
 
-  if (domainsError) {
-    console.error("Error fetching domains:", domainsError);
-    return <div>Failed to load domains.</div>;
+  if (!domains) {
+    return <div>Failed to load required data.</div>;
   }
 
   return (
     <div className="container mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Create Portfolio</h1>
-      <CreatePortfolioForm domains={domains || []} userId={user.id} />
+      <div className="max-w-3xl mx-auto">
+        <h1 className="text-3xl font-bold mb-2">Create Portfolio</h1>
+        <p className="text-muted-foreground mb-6">
+          Create a new portfolio to organize your projects and initiatives
+        </p>
+        <CreatePortfolioForm domains={domains} userId={user.id} />
+      </div>
     </div>
   );
 } 

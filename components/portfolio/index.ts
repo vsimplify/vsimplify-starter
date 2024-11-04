@@ -1,7 +1,8 @@
-export { default as PortfolioDetails } from './PortfolioDetails';
-export { default as PortfolioList } from './PortfolioList';
-export { default as ProjectList } from './ProjectList';
-export { default as MetricsChart } from './MetricsChart';
+export { PortfolioHeader } from './PortfolioHeader';
+export { PortfolioMetrics } from './PortfolioMetrics';
+export { ActivityTimeline } from './ActivityTimeline';
+export { ProjectList } from './ProjectList';
+export { DomainFilter } from './DomainFilter';
+export { PortfolioItemCard } from './PortfolioItemCard';
 export { default as CreatePortfolioForm } from './CreatePortfolioForm';
-export { default as DomainFilter } from './DomainFilter';
-export { default as PortfolioItemCard } from './PortfolioItemCard';
+export { default as PortfolioDetails } from './PortfolioDetails';
