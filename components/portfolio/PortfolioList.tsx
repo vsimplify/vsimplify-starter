@@ -4,8 +4,7 @@ import React from 'react';
 import { Portfolio } from '@/types/portfolio';
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import DomainFilter from "@/components/portfolio/DomainFilter";
-import PortfolioItemCard from "@/components/portfolio/PortfolioItemCard";
+import { DomainFilter, PortfolioItemCard } from "@/components/portfolio";
 import { getMetricsSummary } from "@/lib/metrics";
 
 interface PortfolioListProps {

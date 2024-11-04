@@ -3,8 +3,7 @@
 import React from "react";
 import { Portfolio } from "@/types/portfolio";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import ProjectList from "./ProjectList";
-import MetricsChart from "./MetricsChart";
+import { ProjectList, MetricsChart } from "@/components/portfolio";
 
 interface PortfolioDetailsProps {
   portfolio: Portfolio;

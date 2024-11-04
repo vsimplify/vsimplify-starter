@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { Database } from "@/types/supabase";
 import { convertToPortfolio } from "@/types/portfolio";
-import PortfolioDetails from "@/components/portfolio/PortfolioDetails";
+import { PortfolioDetails } from "@/components/portfolio";
 
 export const revalidate = 0;
 

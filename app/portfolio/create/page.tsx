@@ -2,7 +2,7 @@ import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { Database } from "@/types/supabase";
-import CreatePortfolioForm from "@/components/portfolio/CreatePortfolioForm";
+import { CreatePortfolioForm } from "@/components/portfolio";
 
 export const revalidate = 0;
 
