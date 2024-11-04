@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { Database } from '@/types/supabase';
 import { convertToPortfolio } from '@/types/portfolio';
-import PortfolioCard from "@/components/portfolio/PortfolioCard";
+import PortfolioList from "@/components/portfolio/PortfolioList";
 import DomainFilter from "@/components/portfolio/DomainFilter";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -44,9 +44,14 @@ export default async function PortfolioPage() {
     .select("*")
     .order('id');
 
-  if (portfoliosError || domainsError) {
-    console.error("Error fetching data:", portfoliosError || domainsError);
-    return <div>Failed to load portfolios.</div>;
+  if (portfoliosError) {
+    console.error("Error fetching portfolios:", portfoliosError);
+    return <div>Error loading portfolios: {portfoliosError.message}</div>;
+  }
+
+  if (domainsError) {
+    console.error("Error fetching domains:", domainsError);
+    return <div>Error loading domains: {domainsError.message}</div>;
   }
 
   const portfolios = portfoliosData?.map(convertToPortfolio) || [];
@@ -67,7 +72,10 @@ export default async function PortfolioPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {portfolios.map((portfolio) => (
           <Link key={portfolio.id} href={`/portfolio/${portfolio.id}`}>
-            <PortfolioCard portfolio={portfolio} />
+            <PortfolioItemCard
+              portfolio={portfolio}
+              metrics={getMetricsSummary(portfolio)}
+            />
           </Link>
         ))}
       </div>
