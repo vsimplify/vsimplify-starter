@@ -639,3 +639,214 @@ UPDATE "Project" p
 SET "progress" = pts.progress
 FROM project_task_stats pts
 WHERE p."id" = pts."project_id";
+-- More
+-- First, add any missing columns to Mission table
+DO $$ 
+BEGIN
+    -- Add columns if they don't exist
+    BEGIN
+        ALTER TABLE "Mission" 
+        ADD COLUMN IF NOT EXISTS "emoji" TEXT DEFAULT '🔄',
+        ADD COLUMN IF NOT EXISTS "inTokens" INTEGER DEFAULT 0,
+        ADD COLUMN IF NOT EXISTS "outTokens" INTEGER DEFAULT 0,
+        ADD COLUMN IF NOT EXISTS "abandonedForTokens" BOOLEAN DEFAULT false,
+        ADD COLUMN IF NOT EXISTS "verbose" BOOLEAN DEFAULT true,
+        ADD COLUMN IF NOT EXISTS "taskResult" JSONB DEFAULT NULL,
+        ADD COLUMN IF NOT EXISTS "result" JSONB DEFAULT NULL;
+    EXCEPTION
+        WHEN duplicate_column THEN NULL;
+    END;
+END $$;
+
+-- Update existing missions with random data
+WITH "mission_updates" AS (
+  SELECT 
+    m."id",
+    CASE floor(random() * 5)
+      WHEN 0 THEN '🚀 Launch Feature'
+      WHEN 1 THEN '🔧 System Update'
+      WHEN 2 THEN '📊 Data Analysis'
+      WHEN 3 THEN '🤖 AI Training'
+      ELSE '💡 Innovation Task'
+    END || ' ' || m."id"::text as "name",
+    'SEQUENTIAL'::"MissionProcess" as "process",
+    floor(random() * 1000)::integer as "inTokens",
+    floor(random() * 1000)::integer as "outTokens",
+    CASE floor(random() * 5)
+      WHEN 0 THEN '🚀'
+      WHEN 1 THEN '🔧'
+      WHEN 2 THEN '📊'
+      WHEN 3 THEN '🤖'
+      ELSE '💡'
+    END as "emoji"
+  FROM "Mission" m
+  WHERE m."id" IN (SELECT "id" FROM "Mission" ORDER BY RANDOM() LIMIT 10)
+)
+UPDATE "Mission" m
+SET 
+  "name" = mu."name",
+  "process" = mu."process",
+  "inTokens" = mu."inTokens",
+  "outTokens" = mu."outTokens",
+  "emoji" = mu."emoji",
+  "updatedAt" = NOW()
+FROM "mission_updates" mu
+WHERE m."id" = mu."id";
+
+-- Add random activities
+WITH max_mission AS (
+  SELECT COALESCE(MAX("id"), 0) as max_id FROM "Mission"
+)
+INSERT INTO "Mission" (
+  "id",
+  "name",
+  "process",
+  "project_id",
+  "inTokens",
+  "outTokens",
+  "abandonedForTokens",
+  "verbose",
+  "emoji",
+  "email",
+  "createdAt",
+  "updatedAt",
+  "user_id",
+  "domainId",
+  "result",
+  "taskResult"
+)
+SELECT 
+  (max_id + ROW_NUMBER() OVER ()) as "id",
+  CASE floor(random() * 10)
+    WHEN 0 THEN '🚀 Feature Development'
+    WHEN 1 THEN '🔧 System Maintenance'
+    WHEN 2 THEN '📊 Data Analysis'
+    WHEN 3 THEN '🤖 AI Model Training'
+    WHEN 4 THEN '💡 Innovation Research'
+    WHEN 5 THEN '🎯 Performance Optimization'
+    WHEN 6 THEN '🔍 Code Review'
+    WHEN 7 THEN '🛠️ Infrastructure Update'
+    WHEN 8 THEN '📱 UI Enhancement'
+    ELSE '🔒 Security Audit'
+  END || ' ' || i::text,
+  'SEQUENTIAL'::"MissionProcess",
+  p."id",
+  floor(random() * 1000)::integer,
+  floor(random() * 1000)::integer,
+  false,
+  true,
+  CASE floor(random() * 10)
+    WHEN 0 THEN '🚀'
+    WHEN 1 THEN '🔧'
+    WHEN 2 THEN '📊'
+    WHEN 3 THEN '🤖'
+    WHEN 4 THEN '💡'
+    WHEN 5 THEN '🎯'
+    WHEN 6 THEN '🔍'
+    WHEN 7 THEN '🛠️'
+    WHEN 8 THEN '📱'
+    ELSE '🔒'
+  END,
+  'test' || floor(random() * 1000) || '@example.com',
+  NOW() - (random() * interval '30 days'),
+  NOW(),
+  p."user_id",
+  p."domainId",
+  NULL,
+  NULL
+FROM 
+  max_mission,
+  "Project" p,
+  generate_series(1, floor(random() * 3 + 2)::int) i
+WHERE p."id" IN (
+  SELECT "id" FROM "Project" 
+  WHERE "id" NOT IN (SELECT DISTINCT "project_id" FROM "Mission" WHERE "project_id" IS NOT NULL)
+  ORDER BY RANDOM() LIMIT 5
+);
+
+-- Update project progress based on mission completion
+WITH "project_progress" AS (
+  SELECT 
+    "project_id",
+    ROUND(
+      (COUNT(CASE WHEN "abandonedForTokens" = false THEN 1 END)::numeric / 
+      NULLIF(COUNT(*)::numeric, 0) * 100)
+    )::integer as progress
+  FROM "Mission"
+  GROUP BY "project_id"
+)
+UPDATE "Project" p
+SET "progress" = pp.progress
+FROM "project_progress" pp
+WHERE p."id" = pp."project_id";
+--
+-- First, update portfolios with project_id
+UPDATE "portfolios" SET
+  "domainId" = CASE "title"
+    WHEN 'Home Automation' THEN 103.02
+    WHEN 'Fitness Tracker' THEN 2.02
+    WHEN 'Personal Finance Management' THEN 3.01
+    ELSE "domainId"
+  END;
+
+-- Update Project table with portfolio_id using proper UUID casting
+UPDATE "Project" p SET
+  "portfolio_id" = (
+    CASE p."id"
+      WHEN 1 THEN '31d35361-8792-4c79-895a-4c0dbe353415'::uuid  -- AI Productivity Suite
+      WHEN 2 THEN 'c1c45943-f892-4352-a75d-77576bc2b354'::uuid  -- AI Financial Analytics
+      WHEN 3 THEN 'b377c311-c44a-44d1-8533-bbdc29dfa9d8'::uuid  -- AI Healthcare Solutions
+      WHEN 4 THEN '8e2b1c4e-4d3b-4f8b-9632-98be8d7bcbe7'::uuid  -- Home Automation
+      WHEN 5 THEN '9f3c2d5f-5e4c-4a9c-8743-12cd8e9fcdef'::uuid  -- Personal Finance Management
+      WHEN 6 THEN '10d4e6f8-6f5d-4b0d-9854-23de9f0abcde'::uuid  -- Fitness Tracker
+    END
+  )
+WHERE p."id" IN (1, 2, 3, 4, 5, 6);
+
+-- Verify the updates
+SELECT 
+  p."id" as "Project ID",
+  p."title" as "Project Title",
+  pf."id" as "Portfolio ID",
+  pf."title" as "Portfolio Title"
+FROM "Project" p
+LEFT JOIN "portfolios" pf ON p."portfolio_id" = pf."id"
+ORDER BY p."id";
+--
+-- Update project titles to match their corresponding portfolios
+UPDATE "Project" p
+SET "title" = CASE p."id"
+    WHEN 1 THEN 'AI-driven Schedule with Task Automation'  -- AI Productivity Suite
+    WHEN 2 THEN 'AI Financial Forecasting Tool'           -- AI Financial Analytics
+    WHEN 3 THEN 'Patient Monitoring System'               -- AI Healthcare Solutions
+    WHEN 4 THEN 'Smart Home Controller'                   -- Home Automation
+    WHEN 5 THEN 'AI Expense Tracker'                      -- Personal Finance Management
+    WHEN 6 THEN 'Personalized Workout Planner'           -- Fitness Tracker
+  END,
+  "description" = CASE p."id"
+    WHEN 1 THEN 'An AI-driven scheduling application to optimize user calendars.'
+    WHEN 2 THEN 'A content generation tool leveraging large language models for diverse content needs.'
+    WHEN 3 THEN 'An AI-based system for tracking and analyzing patient vitals in real-time.'
+    WHEN 4 THEN 'Voice-controlled home automation system'
+    WHEN 5 THEN 'Automatically categorize and track expenses'
+    WHEN 6 THEN 'Generate custom workout plans based on goals'
+  END,
+  "portfolio_id" = CASE p."id"
+    WHEN 1 THEN '31d35361-8792-4c79-895a-4c0dbe353415'::uuid  -- AI Productivity Suite
+    WHEN 2 THEN 'c1c45943-f892-4352-a75d-77576bc2b354'::uuid  -- AI Financial Analytics
+    WHEN 3 THEN 'b377c311-c44a-44d1-8533-bbdc29dfa9d8'::uuid  -- AI Healthcare Solutions
+    WHEN 4 THEN '8e2b1c4e-4d3b-4f8b-9632-98be8d7bcbe7'::uuid  -- Home Automation
+    WHEN 5 THEN '9f3c2d5f-5e4c-4a9c-8743-12cd8e9fcdef'::uuid  -- Personal Finance Management
+    WHEN 6 THEN '10d4e6f8-6f5d-4b0d-9854-23de9f0abcde'::uuid  -- Fitness Tracker
+  END
+WHERE p."id" IN (1, 2, 3, 4, 5, 6);
+
+-- Verify the updates
+SELECT 
+  p."id" as "Project ID",
+  p."title" as "Project Title",
+  pf."id" as "Portfolio ID",
+  pf."title" as "Portfolio Title"
+FROM "Project" p
+LEFT JOIN "portfolios" pf ON p."portfolio_id" = pf."id"
+ORDER BY p."id";

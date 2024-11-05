@@ -1,0 +1,10 @@
+id,name,description,assignedAgentId,missionId,status,priority,dependencies,metrics,created_at,updated_at,user_id
+079fac88-e0e8-48c5-bb8f-f03ab4f418ac,Algorithm Development,Develop the core scheduling algorithm to automate routine tasks.,69,5,not_started,medium,,,2024-10-31 18:25:17.095596+00,2024-10-31 18:25:17.095596+00,f5cb0287-d141-4f8b-9632-98be8d7bcbe7
+10d4e6f8-6f5d-4b0d-9854-23de9f0abcd1,Design Workout UI,Create an intuitive user interface for viewing and managing workout plans,,10,not_started,medium,,,2024-11-04 05:14:17.65623+00,2024-11-04 05:14:17.65623+00,f5cb0287-d141-4f8b-9632-98be8d7bcbe7
+114bbd43-69a1-4036-a0a6-cc09a7f6ae02,Integration Testing,Integrate monitoring system with existing healthcare infrastructure.,69,7,not_started,medium,,,2024-10-31 18:25:17.095596+00,2024-10-31 18:25:17.095596+00,f5cb0287-d141-4f8b-9632-98be8d7bcbe7
+1a11a939-34eb-445d-88e8-738c1bf868b4,Review,Review the generated content for quality.,70,6,not_started,medium,,,2024-10-31 18:25:17.095596+00,2024-10-31 18:25:17.095596+00,f5cb0287-d141-4f8b-9632-98be8d7bcbe7
+82f614a0-b152-4866-9dbd-3aa77e7ddc7b,Content Implementation,Implement the content generation feature.,69,6,not_started,medium,,,2024-10-31 18:25:17.095596+00,2024-10-31 18:25:17.095596+00,f5cb0287-d141-4f8b-9632-98be8d7bcbe7
+8e2b1c4e-4d3b-4f8b-9632-98be8d7bcbe8,Configure Smart Lights,Set up and connect smart light bulbs,,8,not_started,medium,,,2024-11-04 05:14:17.65623+00,2024-11-04 05:14:17.65623+00,f5cb0287-d141-4f8b-9632-98be8d7bcbe7
+9669470f-9df9-4428-9eff-dcd6b1cafa9e,Testing,Test the algorithm for bugs.,70,5,not_started,medium,,,2024-10-31 18:25:17.095596+00,2024-10-31 18:25:17.095596+00,f5cb0287-d141-4f8b-9632-98be8d7bcbe7
+9f3c2d5f-5e4c-4a9c-8743-12cd8e9fcde1,Train Categorization Model,Train an AI model on expense data for accurate categorization,,9,not_started,medium,,,2024-11-04 05:14:17.65623+00,2024-11-04 05:14:17.65623+00,f5cb0287-d141-4f8b-9632-98be8d7bcbe7
+b4c30205-3a46-4e2f-9b38-40dfa46b5009,Monitoring System Setup,Set up patient monitoring systems.,69,7,not_started,medium,,,2024-10-31 18:25:17.095596+00,2024-10-31 18:25:17.095596+00,f5cb0287-d141-4f8b-9632-98be8d7bcbe7
