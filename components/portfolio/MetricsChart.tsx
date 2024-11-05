@@ -9,7 +9,9 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  ResponsiveContainer
+  ResponsiveContainer,
+  ComposedChart,
+  Bar
 } from "recharts";
 import { Card } from "@/components/ui/card";
 
@@ -25,27 +27,18 @@ type ChartData = {
 };
 
 export function MetricsChart({ projects }: MetricsChartProps) {
-  // Calculate metrics for each project
-  const calculateProjectMetrics = (project: Project): MetricsData => {
-    const missions = project.missions || [];
-    return {
-      tokenUsage: missions.reduce((sum, m) => sum + (m.tokenUsage || 0), 0),
-      costPerExecution: missions.reduce((sum, m) => sum + (m.cost || 0), 0),
-      executionTime: missions.reduce((sum, m) => sum + (m.metrics?.executionTime || 0), 0),
-      successRate: missions.length 
-        ? missions.filter(m => m.status === 'completed').length / missions.length * 100 
-        : 0,
-      lastUpdated: new Date()
+  const lineData = projects.map(project => {
+    const metrics = project.metrics || {
+      tokenUsage: 0,
+      costPerExecution: 0,
+      successRate: 0
     };
-  };
 
-  const lineData: ChartData[] = projects.map((project: Project) => {
-    const metrics = project.metrics || calculateProjectMetrics(project);
     return {
       name: project.title || 'Untitled',
       tokenUsage: metrics.tokenUsage || 0,
       cost: metrics.costPerExecution || 0,
-      success: metrics.successRate || 0,
+      successRate: metrics.successRate || 0
     };
   });
 
@@ -54,13 +47,15 @@ export function MetricsChart({ projects }: MetricsChartProps) {
       <h3 className="text-lg font-medium mb-4">Project Metrics</h3>
       <div className="h-[300px]">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={lineData}>
+          <ComposedChart data={lineData}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="name" />
             <YAxis yAxisId="left" />
             <YAxis yAxisId="right" orientation="right" />
             <Tooltip />
             <Legend />
+            
+            {/* Lines for Token Usage and Cost */}
             <Line
               yAxisId="left"
               type="monotone"
@@ -75,14 +70,15 @@ export function MetricsChart({ projects }: MetricsChartProps) {
               stroke="#82ca9d"
               name="Cost ($)"
             />
-            <Line
+            
+            {/* Bar for Success Rate */}
+            <Bar
               yAxisId="right"
-              type="monotone"
-              dataKey="success"
-              stroke="#ffc658"
+              dataKey="successRate"
+              fill="#ffc658"
               name="Success Rate (%)"
             />
-          </LineChart>
+          </ComposedChart>
         </ResponsiveContainer>
       </div>
     </div>

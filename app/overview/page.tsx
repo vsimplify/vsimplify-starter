@@ -192,6 +192,12 @@ const PortfolioAccordion = ({ portfolios, expandedPortfolios, togglePortfolio }:
   );
 };
 
+type FilterState = {
+  domain: string;
+  forUse: string;
+  audience: string;
+};
+
 export default function OverviewPage() {
   const supabase = createClientComponentClient<Database>();
   const router = useRouter();
@@ -199,9 +205,14 @@ export default function OverviewPage() {
   const [selectedAgentId, setSelectedAgentId] = useState<number | null>(null);
   const [selectedDomain, setSelectedDomain] = useState<string | null>(null);
   const [expandedPortfolios, setExpandedPortfolios] = useState<string[]>([]);
+  const [filters, setFilters] = useState<FilterState>({
+    domain: '',
+    forUse: '',
+    audience: ''
+  });
 
-  // Add domains query
-  const { data: domains, isLoading: domainsLoading } = useQuery({
+  // Add domains query with cascading filter data
+  const { data: domainData, isLoading: domainsLoading } = useQuery({
     queryKey: ['domains'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -210,10 +221,40 @@ export default function OverviewPage() {
         .order('Domain');
       
       if (error) throw error;
-      return data?.map(domain => ({
-        id: domain.id.toString(),
-        name: domain.Domain || ''
-      })) || [];
+
+      // Get unique values for each filter level
+      const domains = new Set<string>();
+      const forUseByDomain = new Map<string, Set<string>>();
+      const audienceByForUse = new Map<string, Set<string>>();
+
+      data?.forEach(item => {
+        domains.add(item.Domain || '');
+        
+        if (item.Domain && item.ForUse) {
+          if (!forUseByDomain.has(item.Domain)) {
+            forUseByDomain.set(item.Domain, new Set());
+          }
+          forUseByDomain.get(item.Domain)?.add(item.ForUse);
+        }
+
+        if (item.ForUse && item.Audience) {
+          if (!audienceByForUse.has(item.ForUse)) {
+            audienceByForUse.set(item.ForUse, new Set());
+          }
+          audienceByForUse.get(item.ForUse)?.add(item.Audience);
+        }
+      });
+
+      return {
+        domains: Array.from(domains),
+        forUseByDomain: Object.fromEntries(
+          Array.from(forUseByDomain.entries()).map(([k, v]) => [k, Array.from(v)])
+        ),
+        audienceByForUse: Object.fromEntries(
+          Array.from(audienceByForUse.entries()).map(([k, v]) => [k, Array.from(v)])
+        ),
+        rawDomains: data || []
+      };
     }
   });
 
@@ -292,6 +333,66 @@ export default function OverviewPage() {
     enabled: !!user?.id
   });
 
+  // Filter handlers
+  const handleDomainChange = (domain: string) => {
+    setFilters(prev => ({
+      domain,
+      forUse: '',
+      audience: ''
+    }));
+  };
+
+  const handleForUseChange = (forUse: string) => {
+    setFilters(prev => ({
+      ...prev,
+      forUse,
+      audience: ''
+    }));
+  };
+
+  const handleAudienceChange = (audience: string) => {
+    setFilters(prev => ({
+      ...prev,
+      audience
+    }));
+  };
+
+  // Filter and group projects
+  const { filteredProjects, portfolioGroups } = useMemo(() => {
+    if (!projects) return { filteredProjects: [], portfolioGroups: [] };
+    
+    // Filter projects based on domain filters
+    const filtered = projects.filter(project => {
+      const domain = domainData?.rawDomains.find(d => d.id.toString() === project.domain?.id);
+      if (!domain) return false;
+
+      return (
+        (!filters.domain || domain.Domain === filters.domain) &&
+        (!filters.forUse || domain.ForUse === filters.forUse) &&
+        (!filters.audience || domain.Audience === filters.audience)
+      );
+    });
+
+    // Group by portfolio
+    const groups = filtered.reduce((acc, project) => {
+      const portfolioId = project.portfolio_id || 'unassigned';
+      if (!acc[portfolioId]) {
+        acc[portfolioId] = {
+          id: portfolioId,
+          title: portfolioId === 'unassigned' ? 'Unassigned Projects' : 'Portfolio ' + portfolioId,
+          projects: []
+        };
+      }
+      acc[portfolioId].projects.push(project);
+      return acc;
+    }, {} as Record<string, PortfolioGroup>);
+
+    return {
+      filteredProjects: filtered,
+      portfolioGroups: Object.values(groups)
+    };
+  }, [projects, filters, domainData?.rawDomains]);
+
   // Add domain filter handler
   const handleDomainChange = (domainId: string) => {
     setSelectedDomain(domainId);
@@ -306,35 +407,6 @@ export default function OverviewPage() {
         : [...prev, portfolioId]
     );
   };
-
-  // Filter and group projects
-  const { filteredProjects, portfolioGroups } = useMemo(() => {
-    if (!projects) return { filteredProjects: [], portfolioGroups: [] };
-    
-    // Filter projects based on domain
-    const filtered = projects.filter(project => 
-      !selectedDomain || project.domain?.id === selectedDomain
-    );
-
-    // Group filtered projects by portfolio
-    const groups = filtered.reduce((acc, project) => {
-      const portfolioId = project.portfolio_id || 'unassigned';
-      if (!acc[portfolioId]) {
-        acc[portfolioId] = {
-          id: portfolioId,
-          title: portfolioId === 'unassigned' ? 'Unassigned Projects' : 'Portfolio ' + portfolioId,
-          projects: []
-        };
-      }
-      acc[portfolioId].projects.push(project);
-      return acc;
-    }, {} as Record<string, { id: string; title: string; projects: Project[] }>);
-
-    return {
-      filteredProjects: filtered,
-      portfolioGroups: Object.values(groups)
-    };
-  }, [projects, selectedDomain]);
 
   if (userLoading || projectsLoading || domainsLoading) {
     return (
@@ -371,14 +443,65 @@ export default function OverviewPage() {
         </Button>
       </div>
 
-      <DomainFilter
-        domains={domains || []}
-        selectedDomain={selectedDomain}
-        onDomainChange={handleDomainChange}
-      />
+      {/* Domain Filters */}
+      <div className="grid grid-cols-3 gap-4 mb-6">
+        <div>
+          <label className="text-sm font-medium">Domain</label>
+          <select
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+            value={filters.domain}
+            onChange={(e) => handleDomainChange(e.target.value)}
+          >
+            <option value="">All Domains</option>
+            {domainData?.domains.map(domain => (
+              <option key={domain} value={domain}>{domain}</option>
+            ))}
+          </select>
+        </div>
 
+        <div>
+          <label className="text-sm font-medium">For Use</label>
+          <select
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+            value={filters.forUse}
+            onChange={(e) => handleForUseChange(e.target.value)}
+            disabled={!filters.domain}
+          >
+            <option value="">All Uses</option>
+            {filters.domain && 
+              domainData?.forUseByDomain[filters.domain]?.map(forUse => (
+                <option key={forUse} value={forUse}>{forUse}</option>
+              ))
+            }
+          </select>
+        </div>
+
+        <div>
+          <label className="text-sm font-medium">Audience</label>
+          <select
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+            value={filters.audience}
+            onChange={(e) => handleAudienceChange(e.target.value)}
+            disabled={!filters.forUse}
+          >
+            <option value="">All Audiences</option>
+            {filters.forUse && 
+              domainData?.audienceByForUse[filters.forUse]?.map(audience => (
+                <option key={audience} value={audience}>{audience}</option>
+              ))
+            }
+          </select>
+        </div>
+      </div>
+
+      {/* Project Metrics */}
+      <div className="mb-6">
+        <MetricsChart projects={filteredProjects} />
+      </div>
+
+      {/* Portfolio Groups */}
       <PortfolioAccordion 
-        portfolios={portfolioGroups} 
+        portfolios={portfolioGroups}
         expandedPortfolios={expandedPortfolios}
         togglePortfolio={togglePortfolio}
       />
