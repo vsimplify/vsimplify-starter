@@ -34,8 +34,8 @@ type DBProject = {
 
 type RawMission = {
   id: number;
-  title: string | null;
-  description: string | null;
+  name: string | null;
+  process: string | null;
   status: string | null;
   project_id: number;
   token_usage: number | null;
@@ -117,8 +117,8 @@ export default async function PortfolioPage({ params }: { params: { id: string }
       .from("Mission")
       .select(`
         id,
-        title,
-        description,
+        name,
+        process,
         status,
         project_id,
         token_usage,
@@ -147,11 +147,11 @@ export default async function PortfolioPage({ params }: { params: { id: string }
         })
         .map(mission => ({
           id: String(mission.id || ''),
-          title: String(mission.title || ''),
-          description: String(mission.description || ''),
+          title: String(mission.name || ''),
+          description: String(mission.process || ''),
           status: String(mission.status || 'pending'),
           tokenUsage: Number(mission.token_usage || 0),
-          cost: 0, // Set default since we don't have cost_per_execution
+          cost: 0,
           agents: Array.isArray(mission.agent_missions) 
             ? mission.agent_missions.map(am => am.agent)
             : []

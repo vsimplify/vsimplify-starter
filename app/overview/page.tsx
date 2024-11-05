@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { Database } from '@/lib/database.types';
 import { useQuery } from '@tanstack/react-query';
@@ -87,12 +87,135 @@ const convertToProject = (
   };
 };
 
+// Update the project card component
+const ProjectCard = ({ project }: { project: Project }) => {
+  return (
+    <div className="border rounded-lg p-4 hover:shadow-lg transition-all">
+      <h3 className="font-medium">{project.title}</h3>
+      <p className="text-sm text-muted-foreground">{project.description}</p>
+      <div className="mt-4">
+        <div className="flex justify-between text-sm mb-2">
+          <span>Activities: {project.missions.length}</span>
+          <span>Completed: {project.missions.filter(m => m.status === 'completed').length}</span>
+        </div>
+        <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+          <div
+            className="bg-blue-600 h-2.5 rounded-full transition-all"
+            style={{ width: `${project.progress || 0}%` }}
+          ></div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+type Domain = {
+  id: string;
+  name: string;
+};
+
+type DomainFilterProps = {
+  domains: Domain[];
+  selectedDomain: string | null;
+  onDomainChange: (domainId: string) => void;
+};
+
+type PortfolioGroup = {
+  id: string;
+  title: string;
+  projects: Project[];
+};
+
+type PortfolioAccordionProps = {
+  portfolios: PortfolioGroup[];
+  expandedPortfolios: string[];
+  togglePortfolio: (id: string) => void;
+};
+
+// Add domain filter component
+const DomainFilter = ({ domains, selectedDomain, onDomainChange }: DomainFilterProps) => {
+  return (
+    <div className="mb-6 space-y-4">
+      <div className="flex flex-col space-y-2">
+        <label className="text-sm font-medium">Domain</label>
+        <select 
+          className="form-select"
+          value={selectedDomain || ""}
+          onChange={(e) => onDomainChange(e.target.value)}
+        >
+          <option value="">All Domains</option>
+          {domains.map(domain => (
+            <option key={domain.id} value={domain.id}>{domain.name}</option>
+          ))}
+        </select>
+      </div>
+    </div>
+  );
+};
+
+// Add portfolio accordion component
+const PortfolioAccordion = ({ portfolios, expandedPortfolios, togglePortfolio }: PortfolioAccordionProps) => {
+  return (
+    <div className="space-y-4">
+      {portfolios.map((portfolio) => (
+        <div key={portfolio.id} className="border rounded-lg overflow-hidden">
+          <motion.div
+            initial={false}
+            className="p-4 bg-gray-50 cursor-pointer"
+            onClick={() => togglePortfolio(portfolio.id)}
+          >
+            <div className="flex justify-between items-center">
+              <h2 className="text-lg font-medium">{portfolio.title}</h2>
+              <ChevronDownIcon className="w-5 h-5" />
+            </div>
+          </motion.div>
+          <AnimatePresence>
+            {expandedPortfolios.includes(portfolio.id) && (
+              <motion.div
+                initial={{ height: 0 }}
+                animate={{ height: "auto" }}
+                exit={{ height: 0 }}
+                transition={{ duration: 0.3 }}
+                className="overflow-hidden"
+              >
+                <div className="p-4 space-y-4">
+                  {portfolio.projects.map((project) => (
+                    <ProjectCard key={project.id} project={project} />
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      ))}
+    </div>
+  );
+};
+
 export default function OverviewPage() {
   const supabase = createClientComponentClient<Database>();
   const router = useRouter();
   const [showBrowseAgents, setShowBrowseAgents] = useState(false);
   const [selectedAgentId, setSelectedAgentId] = useState<number | null>(null);
-  const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
+  const [selectedDomain, setSelectedDomain] = useState<string | null>(null);
+  const [expandedPortfolios, setExpandedPortfolios] = useState<string[]>([]);
+
+  // Add domains query
+  const { data: domains, isLoading: domainsLoading } = useQuery({
+    queryKey: ['domains'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('Domain')
+        .select('*')
+        .order('Domain');
+      
+      if (error) throw error;
+      return data?.map(domain => ({
+        id: domain.id.toString(),
+        name: domain.Domain || ''
+      })) || [];
+    }
+  });
 
   // Query for user data
   const { data: user, isLoading: userLoading } = useQuery({
@@ -169,30 +292,51 @@ export default function OverviewPage() {
     enabled: !!user?.id
   });
 
-  // Handle agent selection
-  const handleAgentSelect = (agentId: number) => {
-    setSelectedAgentId(agentId);
+  // Add domain filter handler
+  const handleDomainChange = (domainId: string) => {
+    setSelectedDomain(domainId);
+    setSelectedAgentId(null);
   };
 
-  // Update filtered projects when projects or selectedAgentId changes
-  useEffect(() => {
-    if (!projects) return;
-    
-    if (selectedAgentId) {
-      const filtered = projects.filter(project => 
-        project.missions?.some(mission => 
-          mission._AgentToMission?.some(relation => 
-            relation.A === selectedAgentId
-          )
-        )
-      );
-      setFilteredProjects(filtered);
-    } else {
-      setFilteredProjects(projects);
-    }
-  }, [projects, selectedAgentId]);
+  // Add portfolio expansion handler
+  const togglePortfolio = (portfolioId: string) => {
+    setExpandedPortfolios(prev => 
+      prev.includes(portfolioId)
+        ? prev.filter(id => id !== portfolioId)
+        : [...prev, portfolioId]
+    );
+  };
 
-  if (userLoading || projectsLoading) {
+  // Filter and group projects
+  const { filteredProjects, portfolioGroups } = useMemo(() => {
+    if (!projects) return { filteredProjects: [], portfolioGroups: [] };
+    
+    // Filter projects based on domain
+    const filtered = projects.filter(project => 
+      !selectedDomain || project.domain?.id === selectedDomain
+    );
+
+    // Group filtered projects by portfolio
+    const groups = filtered.reduce((acc, project) => {
+      const portfolioId = project.portfolio_id || 'unassigned';
+      if (!acc[portfolioId]) {
+        acc[portfolioId] = {
+          id: portfolioId,
+          title: portfolioId === 'unassigned' ? 'Unassigned Projects' : 'Portfolio ' + portfolioId,
+          projects: []
+        };
+      }
+      acc[portfolioId].projects.push(project);
+      return acc;
+    }, {} as Record<string, { id: string; title: string; projects: Project[] }>);
+
+    return {
+      filteredProjects: filtered,
+      portfolioGroups: Object.values(groups)
+    };
+  }, [projects, selectedDomain]);
+
+  if (userLoading || projectsLoading || domainsLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
         <Button variant="text" loading className="text-brown-700">
@@ -219,58 +363,32 @@ export default function OverviewPage() {
   }
 
   return (
-    <div className="p-4">
-      <NavigationMenu />
-      <motion.div
-        className="flex justify-between items-center mb-4"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-      >
-        <h1 className="text-3xl font-bold">AI Product Dashboard</h1>
-        <div className="flex items-center gap-4">
-          {selectedAgentId && (
-            <Button
-              color="gray"
-              size="sm"
-              onClick={() => setSelectedAgentId(null)}
-            >
-              Clear Filter
-            </Button>
-          )}
-          <button
-            onClick={() => setShowBrowseAgents(!showBrowseAgents)}
-            className="flex items-center px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
-          >
-            <span className="mr-2">Browse AI Agents</span>
-            <ChevronDownIcon
-              className={`h-5 w-5 transition-transform ${
-                showBrowseAgents ? "transform rotate-180" : ""
-              }`}
-            />
-          </button>
-        </div>
-      </motion.div>
+    <div className="container mx-auto p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">AI Product Dashboard</h1>
+        <Button onClick={() => setShowBrowseAgents(true)}>
+          Browse AI Agents
+        </Button>
+      </div>
 
-      <AnimatePresence>
-        {showBrowseAgents && user && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="mb-4 overflow-hidden"
-          >
-            <BrowseAIAgents 
-              userId={user.id} 
-              onAgentSelect={handleAgentSelect}
-              selectedAgentId={selectedAgentId}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <DomainFilter
+        domains={domains || []}
+        selectedDomain={selectedDomain}
+        onDomainChange={handleDomainChange}
+      />
 
-      <PortfolioDashboard projects={filteredProjects} />
+      <PortfolioAccordion 
+        portfolios={portfolioGroups} 
+        expandedPortfolios={expandedPortfolios}
+        togglePortfolio={togglePortfolio}
+      />
+
+      {showBrowseAgents && (
+        <BrowseAIAgents
+          onClose={() => setShowBrowseAgents(false)}
+          selectedDomain={selectedDomain}
+        />
+      )}
     </div>
   );
 }

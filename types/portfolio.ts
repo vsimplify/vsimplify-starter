@@ -100,6 +100,7 @@ export type Project = {
   };
   metrics?: MetricsData;
   progress?: number;
+  portfolio_id?: string;
 };
 
 // Portfolio types

@@ -400,3 +400,242 @@ Run:
    );
 /*After applying these policies, try accessing the overview page again. The error should be resolved. If you're still having issues, check the browser console for the logged information about the user ID and project query results to help diagnose any remaining problems.
 Let me know if you need help interpreting the logs or if you're still experiencing issues after applying these policies.*/
+-- First, get the maximum existing mission ID
+DO $$ 
+DECLARE
+    max_mission_id INTEGER;
+BEGIN
+    SELECT COALESCE(MAX(id), 0) INTO max_mission_id FROM "Mission";
+
+    -- Add emoji column if it doesn't exist
+    ALTER TABLE "Mission" 
+    ADD COLUMN IF NOT EXISTS "emoji" TEXT DEFAULT '🔄';
+
+    -- Update existing missions with random data
+    WITH "mission_updates" AS (
+        SELECT 
+            m."id",
+            CASE floor(random() * 5)
+                WHEN 0 THEN '🚀 Launch Feature'
+                WHEN 1 THEN '🔧 System Update'
+                WHEN 2 THEN '📊 Data Analysis'
+                WHEN 3 THEN '🤖 AI Training'
+                ELSE '💡 Innovation Task'
+            END || ' ' || m."id"::text as "name",
+            'SEQUENTIAL'::"MissionProcess" as "process",
+            floor(random() * 1000)::integer as "inTokens",
+            floor(random() * 1000)::integer as "outTokens",
+            CASE floor(random() * 5)
+                WHEN 0 THEN '🚀'
+                WHEN 1 THEN '🔧'
+                WHEN 2 THEN '📊'
+                WHEN 3 THEN '🤖'
+                ELSE '💡'
+            END as "emoji"
+        FROM "Mission" m
+        WHERE m."id" IN (SELECT "id" FROM "Mission" ORDER BY RANDOM() LIMIT 10)
+    )
+    UPDATE "Mission" m
+    SET 
+        "name" = mu."name",
+        "process" = mu."process",
+        "inTokens" = mu."inTokens",
+        "outTokens" = mu."outTokens",
+        "emoji" = mu."emoji",
+        "updatedAt" = NOW()
+    FROM "mission_updates" mu
+    WHERE m."id" = mu."id";
+
+    -- Add new missions with incremented IDs
+    INSERT INTO "Mission" (
+        "id",
+        "name",
+        "process",
+        "project_id",
+        "inTokens",
+        "outTokens",
+        "abandonedForTokens",
+        "verbose",
+        "emoji",
+        "email",
+        "createdAt",
+        "updatedAt",
+        "user_id",
+        "domainId",
+        "result",
+        "taskResult",
+        "tasks"
+    )
+    SELECT 
+        max_mission_id + ROW_NUMBER() OVER () as "id",
+        CASE floor(random() * 10)
+            WHEN 0 THEN '🚀 Feature Development'
+            WHEN 1 THEN '🔧 System Maintenance'
+            WHEN 2 THEN '📊 Data Analysis'
+            WHEN 3 THEN '🤖 AI Model Training'
+            WHEN 4 THEN '💡 Innovation Research'
+            WHEN 5 THEN '🎯 Performance Optimization'
+            WHEN 6 THEN '🔍 Code Review'
+            WHEN 7 THEN '🛠️ Infrastructure Update'
+            WHEN 8 THEN '📱 UI Enhancement'
+            ELSE '🔒 Security Audit'
+        END || ' ' || i::text,
+        'SEQUENTIAL'::"MissionProcess",
+        p."id",
+        floor(random() * 1000)::integer,
+        floor(random() * 1000)::integer,
+        false,
+        true,
+        CASE floor(random() * 10)
+            WHEN 0 THEN '🚀'
+            WHEN 1 THEN '🔧'
+            WHEN 2 THEN '📊'
+            WHEN 3 THEN '🤖'
+            WHEN 4 THEN '💡'
+            WHEN 5 THEN '🎯'
+            WHEN 6 THEN '🔍'
+            WHEN 7 THEN '🛠️'
+            WHEN 8 THEN '📱'
+            ELSE '🔒'
+        END,
+        'test@example.com',
+        NOW() - (random() * interval '30 days'),
+        NOW(),
+        p."user_id",
+        p."domainId",
+        NULL,
+        NULL,
+        ARRAY[jsonb_build_object(
+            'name', 'Initial Task',
+            'description', 'Setup initial configuration',
+            'async_execution', true,
+            'expected_output', 'Basic setup completed'
+        )]::JSONB[]
+    FROM 
+        "Project" p,
+        generate_series(1, floor(random() * 3 + 2)::int) i
+    WHERE p."id" IN (
+        SELECT "id" FROM "Project" 
+        WHERE "id" NOT IN (SELECT DISTINCT "project_id" FROM "Mission")
+        ORDER BY RANDOM() LIMIT 5
+    );
+
+    -- Update project progress based on mission completion
+    WITH "project_progress" AS (
+        SELECT 
+            "project_id",
+            ROUND(
+                (COUNT(CASE WHEN "abandonedForTokens" = false THEN 1 END)::numeric / 
+                NULLIF(COUNT(*)::numeric, 0) * 100)
+            )::integer as progress
+        FROM "Mission"
+        GROUP BY "project_id"
+    )
+    UPDATE "Project" p
+    SET "progress" = pp.progress
+    FROM "project_progress" pp
+    WHERE p."id" = pp."project_id";
+
+END $$;
+---
+-- First, get the maximum existing mission ID
+WITH max_mission AS (
+  SELECT COALESCE(MAX(id), 0) as max_id FROM "Mission"
+),
+-- Add random activities with meaningful names
+new_missions AS (
+  SELECT 
+    (max_id + ROW_NUMBER() OVER ()) as id,
+    CASE floor(random() * 10)
+      WHEN 0 THEN '🚀 Feature Development'
+      WHEN 1 THEN '🔧 System Maintenance'
+      WHEN 2 THEN '📊 Data Analysis'
+      WHEN 3 THEN '🤖 AI Model Training'
+      WHEN 4 THEN '💡 Innovation Research'
+      WHEN 5 THEN '🎯 Performance Optimization'
+      WHEN 6 THEN '🔍 Code Review'
+      WHEN 7 THEN '🛠️ Infrastructure Update'
+      WHEN 8 THEN '📱 UI Enhancement'
+      ELSE '🔒 Security Audit'
+    END || ' ' || i::text as name,
+    'SEQUENTIAL'::"MissionProcess" as process,
+    p."id" as project_id,
+    floor(random() * 1000)::integer as "inTokens",
+    floor(random() * 1000)::integer as "outTokens",
+    false as "abandonedForTokens",
+    true as "verbose",
+    CASE floor(random() * 10)
+      WHEN 0 THEN '🚀'
+      WHEN 1 THEN '🔧'
+      WHEN 2 THEN '📊'
+      WHEN 3 THEN '🤖'
+      WHEN 4 THEN '💡'
+      WHEN 5 THEN '🎯'
+      WHEN 6 THEN '🔍'
+      WHEN 7 THEN '🛠️'
+      WHEN 8 THEN '📱'
+      ELSE '🔒'
+    END as emoji,
+    'test' || floor(random() * 1000) || '@example.com' as email,
+    NOW() - (random() * interval '30 days') as "createdAt",
+    NOW() as "updatedAt",
+    p."user_id",
+    p."domainId"
+  FROM 
+    max_mission,
+    "Project" p,
+    generate_series(1, floor(random() * 3 + 2)::int) i
+  WHERE p."id" IN (
+    SELECT "id" FROM "Project" 
+    WHERE "id" NOT IN (SELECT DISTINCT "project_id" FROM "Mission" WHERE "project_id" IS NOT NULL)
+    ORDER BY RANDOM() LIMIT 5
+  )
+)
+INSERT INTO "Mission" (
+  "id",
+  "name",
+  "process",
+  "project_id",
+  "inTokens",
+  "outTokens",
+  "abandonedForTokens",
+  "verbose",
+  "emoji",
+  "email",
+  "createdAt",
+  "updatedAt",
+  "user_id",
+  "domainId"
+)
+SELECT 
+  id,
+  name,
+  process,
+  project_id,
+  "inTokens",
+  "outTokens",
+  "abandonedForTokens",
+  "verbose",
+  emoji,
+  email,
+  "createdAt",
+  "updatedAt",
+  user_id,
+  "domainId"
+FROM new_missions;
+
+-- Update project progress based on mission completion
+WITH project_task_stats AS (
+  SELECT 
+    "project_id",
+    ROUND(
+      (COUNT(CASE WHEN "abandonedForTokens" = false THEN 1 END)::numeric / 
+      NULLIF(COUNT(*)::numeric, 0) * 100)
+    )::integer as progress
+  FROM "Mission"
+  GROUP BY "project_id"
+)
+UPDATE "Project" p
+SET "progress" = pts.progress
+FROM project_task_stats pts
+WHERE p."id" = pts."project_id";
