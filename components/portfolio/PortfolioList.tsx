@@ -1,64 +1,71 @@
 'use client';
 
-import { useState } from "react";
-import { Portfolio } from "@/types/portfolio";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { DomainFilter, PortfolioItemCard } from "@/components/portfolio";
-import { getMetricsSummary } from "@/lib/metrics";
+import { useEffect, useState } from 'react'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { Portfolio } from '@/types/portfolio'
+import { Alert } from '@/components/ui/alert'
+import { Accordion } from '@/components/ui/accordion'
+import { Spinner } from '@/components/ui/spinner'
 
-interface PortfolioListProps {
-  portfolios: Portfolio[];
-  domains: Array<{
-    id: number;
-    Domain: string;
-    ForUse: string;
-    Audience: string;
-  }>;
-}
+export default function PortfolioList() {
+  const [portfolios, setPortfolios] = useState<Portfolio[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const supabase = createClientComponentClient()
 
-export function PortfolioList({ portfolios, domains }: PortfolioListProps) {
-  const [selectedDomain, setSelectedDomain] = useState<string | null>(null);
+  useEffect(() => {
+    const fetchPortfolios = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('portfolios')
+          .select('*')
+          .order('created_at', { ascending: false })
 
-  // Map database domains to the format expected by DomainFilter
-  const formattedDomains = domains.map(domain => ({
-    id: domain.id.toString(),
-    name: domain.Domain
-  }));
+        if (error) throw error
 
-  // Filter portfolios based on selected domain
-  const filteredPortfolios = selectedDomain
-    ? portfolios.filter(portfolio => portfolio.domainId === selectedDomain)
-    : portfolios;
+        setPortfolios(data || [])
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load portfolios')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchPortfolios()
+  }, [supabase])
+
+  if (loading) {
+    return <Spinner />
+  }
+
+  if (error) {
+    return (
+      <Alert variant="destructive">
+        <p>{error}</p>
+      </Alert>
+    )
+  }
+
+  if (portfolios.length === 0) {
+    return <p className="text-gray-500">No portfolios found.</p>
+  }
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">Portfolios</h2>
-        <Link href="/portfolio/create">
-          <Button>Create Portfolio</Button>
-        </Link>
-      </div>
-
-      <div className="mb-6">
-        <DomainFilter 
-          domains={formattedDomains}
-          selectedDomain={selectedDomain}
-          onDomainChange={setSelectedDomain}
-        />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredPortfolios.map((portfolio) => (
-          <PortfolioItemCard key={portfolio.id} portfolio={portfolio} />
-        ))}
-      </div>
-
-      {filteredPortfolios.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">No portfolios found</p>
+    <Accordion type="single" collapsible className="w-full">
+      {portfolios.map((portfolio) => (
+        <div key={portfolio.id} className="mb-4">
+          <h3 className="text-lg font-semibold">{portfolio.name}</h3>
+          <p className="text-gray-600">{portfolio.description}</p>
+          <div className="mt-2">
+            <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
+              {portfolio.focus_area}
+            </span>
+            <span className="inline-block bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded ml-2">
+              {portfolio.initiative}
+            </span>
+          </div>
         </div>
-      )}
-    </div>
-  );
+      ))}
+    </Accordion>
+  )
 }

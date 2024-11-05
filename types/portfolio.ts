@@ -106,16 +106,14 @@ export type Project = {
 // Portfolio types
 export type Portfolio = {
   id: string;
-  title: string;
+  name: string;
   description: string;
-  status: string;
-  projects: Project[];
+  focus_area: 'home' | 'work';
   created_at: string;
   updated_at: string;
   user_id: string;
-  domainId?: string;
-  progress?: number;
-  metrics?: MetricsData | null;
+  initiative: string;
+  status: 'active' | 'archived';
 };
 
 // Additional types for portfolio management
