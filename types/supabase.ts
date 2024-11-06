@@ -229,12 +229,13 @@ export type Database = {
           createdAt: string
           domainId: number
           email: string
+          emoji: string | null
           id: number
           inTokens: number
           name: string
           outTokens: number
           process: Database["public"]["Enums"]["MissionProcess"]
-          projectId: number
+          project_id: number
           result: string | null
           taskResult: string | null
           tasks: Json[] | null
@@ -247,12 +248,13 @@ export type Database = {
           createdAt?: string
           domainId?: number
           email: string
+          emoji?: string | null
           id?: number
           inTokens?: number
           name: string
           outTokens?: number
           process?: Database["public"]["Enums"]["MissionProcess"]
-          projectId?: number
+          project_id?: number
           result?: string | null
           taskResult?: string | null
           tasks?: Json[] | null
@@ -265,12 +267,13 @@ export type Database = {
           createdAt?: string
           domainId?: number
           email?: string
+          emoji?: string | null
           id?: number
           inTokens?: number
           name?: string
           outTokens?: number
           process?: Database["public"]["Enums"]["MissionProcess"]
-          projectId?: number
+          project_id?: number
           result?: string | null
           taskResult?: string | null
           tasks?: Json[] | null
@@ -287,8 +290,8 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "fk-project-mission"
-            columns: ["projectId"]
+            foreignKeyName: "Mission_project_id_fkey"
+            columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "Project"
             referencedColumns: ["id"]
@@ -325,7 +328,7 @@ export type Database = {
         }
         Relationships: []
       }
-      portfolios: {
+      Portfolio: {
         Row: {
           created_at: string
           description: string | null
@@ -360,13 +363,6 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "fk_portfolio_project"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "Project"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "portfolios_domainId_fkey"
             columns: ["domainId"]
@@ -425,6 +421,7 @@ export type Database = {
           nugget: string
           objective: string
           outcome: string
+          portfolio_id: string | null
           progress: number | null
           status: string | null
           title: string | null
@@ -442,6 +439,7 @@ export type Database = {
           nugget: string
           objective: string
           outcome: string
+          portfolio_id?: string | null
           progress?: number | null
           status?: string | null
           title?: string | null
@@ -459,6 +457,7 @@ export type Database = {
           nugget?: string
           objective?: string
           outcome?: string
+          portfolio_id?: string | null
           progress?: number | null
           status?: string | null
           title?: string | null
@@ -471,6 +470,13 @@ export type Database = {
             columns: ["domainId"]
             isOneToOne: false
             referencedRelation: "Domain"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "Project_portfolio_id_fkey"
+            columns: ["portfolio_id"]
+            isOneToOne: false
+            referencedRelation: "Portfolio"
             referencedColumns: ["id"]
           },
         ]
@@ -500,6 +506,66 @@ export type Database = {
             columns: ["modelId"]
             isOneToOne: false
             referencedRelation: "models"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      Task: {
+        Row: {
+          assignedAgentId: number | null
+          created_at: string | null
+          dependencies: string[] | null
+          description: string | null
+          id: string
+          metrics: Json | null
+          missionId: number | null
+          name: string
+          priority: string | null
+          status: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          assignedAgentId?: number | null
+          created_at?: string | null
+          dependencies?: string[] | null
+          description?: string | null
+          id?: string
+          metrics?: Json | null
+          missionId?: number | null
+          name: string
+          priority?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          assignedAgentId?: number | null
+          created_at?: string | null
+          dependencies?: string[] | null
+          description?: string | null
+          id?: string
+          metrics?: Json | null
+          missionId?: number | null
+          name?: string
+          priority?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "Task_assignedAgentId_fkey"
+            columns: ["assignedAgentId"]
+            isOneToOne: false
+            referencedRelation: "Agent"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "Task_missionId_fkey"
+            columns: ["missionId"]
+            isOneToOne: false
+            referencedRelation: "Mission"
             referencedColumns: ["id"]
           },
         ]
@@ -593,7 +659,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      migrate_mission_tasks: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: {
       AgentTool:
@@ -710,24 +779,3 @@ export type CompositeTypes<
   : PublicCompositeTypeNameOrOptions extends keyof PublicSchema["CompositeTypes"]
     ? PublicSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
-
-export interface MissionRow {
-  id: number;
-  name: string;
-  process: string;
-  projectId: number;
-  email: string;
-  inTokens: number;
-  outTokens: number;
-  abandonedForTokens: boolean;
-  verbose: boolean;
-  result: string | null;
-  user_id: string;
-  createdAt: string;
-  updatedAt: string;
-  domainId: number;
-  token_usage: number;
-  execution_time: number;
-  cost_per_execution: number;
-  taskResult: string | null;
-}

@@ -20,7 +20,7 @@ export default async function CreateProjectPage() {
   // Fetch all domains and portfolios for the dropdowns
   const [{ data: domains }, { data: portfolios }] = await Promise.all([
     supabase.from("Domain").select("*").order('id'),
-    supabase.from("portfolios").select("id, title").order('title')
+    supabase.from("Portfolio").select("id, title").order('title')
   ]);
 
   if (!domains || !portfolios) {

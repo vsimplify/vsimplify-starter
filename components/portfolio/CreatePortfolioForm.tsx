@@ -108,7 +108,7 @@ export default function CreatePortfolioForm({ domains, userId }: CreatePortfolio
       const wsjfScore = calculateWSJF(wsjf);
 
       const { data, error } = await supabase
-        .from('portfolios')
+        .from('Portfolio')
         .insert([{
           title,
           description,

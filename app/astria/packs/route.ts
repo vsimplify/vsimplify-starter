@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import axios from "axios";
-import { Database } from "@/types/supabase";
+import type { Database } from "@/types/supabase";
 import { cookies } from "next/headers";
 import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
 
