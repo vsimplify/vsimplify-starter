@@ -16,37 +16,72 @@ export default function PortfolioList() {
   useEffect(() => {
     const fetchPortfolios = async () => {
       try {
-        const { data: portfoliosData, error } = await supabase
+        console.log('Fetching portfolios...');
+        const { data: portfoliosData, error: supabaseError } = await supabase
           .from('portfolios')
           .select(`
-            *,
-            projects:Project(
-              *,
-              missions:Mission(*)
+            id,
+            title,
+            description,
+            status,
+            progress,
+            user_id,
+            created_at,
+            updated_at,
+            domainId,
+            focus_area,
+            initiative,
+            projects:Project (
+              id,
+              title,
+              description,
+              status,
+              progress,
+              missions:Mission (*)
             )
           `)
           .order('created_at', { ascending: false });
 
-        if (error) throw error;
+        if (supabaseError) {
+          console.error('Supabase error:', supabaseError);
+          throw new Error(`Failed to fetch portfolios: ${supabaseError.message}`);
+        }
+
+        if (!portfoliosData) {
+          console.error('No data returned from Supabase');
+          throw new Error('No portfolios data received');
+        }
+
+        console.log('Raw portfolios data:', portfoliosData);
 
         // Convert the raw data to Portfolio type
-        const convertedPortfolios = (portfoliosData || []).map(portfolio => 
-          convertToPortfolio(portfolio)
-        );
+        const convertedPortfolios = portfoliosData.map(portfolio => {
+          try {
+            return convertToPortfolio(portfolio);
+          } catch (error: unknown) {
+            const errorMessage = error instanceof Error 
+              ? error.message 
+              : 'Unknown error during portfolio conversion';
+            console.error('Error converting portfolio:', portfolio.id, error);
+            throw new Error(`Error converting portfolio ${portfolio.id}: ${errorMessage}`);
+          }
+        });
 
+        console.log('Converted portfolios:', convertedPortfolios);
         setPortfolios(convertedPortfolios);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load portfolios')
+        console.error('Error in fetchPortfolios:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load portfolios');
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchPortfolios()
-  }, [supabase])
+    fetchPortfolios();
+  }, [supabase]);
 
   if (loading) {
-    return <Spinner />
+    return <Spinner />;
   }
 
   if (error) {
@@ -54,12 +89,15 @@ export default function PortfolioList() {
       <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
         <strong className="font-bold">Error! </strong>
         <span className="block sm:inline">{error}</span>
+        <pre className="mt-2 text-sm whitespace-pre-wrap">
+          {error}
+        </pre>
       </div>
-    )
+    );
   }
 
   if (portfolios.length === 0) {
-    return <p className="text-gray-500">No portfolios found.</p>
+    return <p className="text-gray-500">No portfolios found.</p>;
   }
 
   return (
@@ -89,5 +127,5 @@ export default function PortfolioList() {
         </div>
       ))}
     </Accordion>
-  )
+  );
 }
