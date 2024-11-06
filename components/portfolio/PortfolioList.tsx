@@ -5,6 +5,7 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { Portfolio } from '@/types/portfolio'
 import { Accordion } from '@/components/ui/accordion'
 import { Spinner } from '@/components/ui/spinner'
+import { convertToPortfolio } from '@/types/portfolio'
 
 export default function PortfolioList() {
   const [portfolios, setPortfolios] = useState<Portfolio[]>([])
@@ -15,14 +16,25 @@ export default function PortfolioList() {
   useEffect(() => {
     const fetchPortfolios = async () => {
       try {
-        const { data, error } = await supabase
+        const { data: portfoliosData, error } = await supabase
           .from('portfolios')
-          .select('*')
-          .order('created_at', { ascending: false })
+          .select(`
+            *,
+            projects:Project(
+              *,
+              missions:Mission(*)
+            )
+          `)
+          .order('created_at', { ascending: false });
 
-        if (error) throw error
+        if (error) throw error;
 
-        setPortfolios(data || [])
+        // Convert the raw data to Portfolio type
+        const convertedPortfolios = (portfoliosData || []).map(portfolio => 
+          convertToPortfolio(portfolio)
+        );
+
+        setPortfolios(convertedPortfolios);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load portfolios')
       } finally {
@@ -64,6 +76,16 @@ export default function PortfolioList() {
               {portfolio.initiative}
             </span>
           </div>
+          {portfolio.projects && portfolio.projects.length > 0 && (
+            <div className="mt-4 space-y-2">
+              <h4 className="text-sm font-medium">Projects:</h4>
+              {portfolio.projects.map(project => (
+                <div key={project.id} className="pl-4 text-sm">
+                  • {project.title}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       ))}
     </Accordion>
