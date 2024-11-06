@@ -1,91 +1,69 @@
 'use client';
 
-import { useEffect, useState } from 'react'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import { Portfolio } from '@/types/portfolio'
+import React, { useState } from 'react';
+import { Portfolio } from '@/types/portfolio';
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { DomainFilter } from "@/components/portfolio/DomainFilter";
+import { PortfolioItemCard } from "@/components/portfolio/PortfolioItemCard";
+import { getMetricsSummary } from "@/lib/metrics";
 
-export default function PortfolioList() {
-  const [portfolios, setPortfolios] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const supabase = createClientComponentClient()
+interface PortfolioListProps {
+  portfolios: Portfolio[];
+  domains: {
+    id: number;
+    Domain: string;
+    ForUse: string;
+    Audience: string;
+  }[];
+}
 
-  useEffect(() => {
-    const fetchPortfolios = async () => {
-      try {
-        // First, log the user session
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-        if (sessionError) {
-          console.error('Session error:', sessionError)
-          throw new Error(`Authentication error: ${sessionError.message}`)
-        }
+export default function PortfolioList({ portfolios, domains }: PortfolioListProps) {
+  const [selectedDomain, setSelectedDomain] = useState<string>('');
+  
+  // Transform domains to match the Domain type
+  const formattedDomains = domains.map(domain => ({
+    id: domain.id.toString(),
+    name: domain.Domain,
+    forUse: domain.ForUse,
+    audience: domain.Audience
+  }));
 
-        if (!session?.user) {
-          console.log('No user session found')
-          throw new Error('No authenticated user found. Please log in.')
-        }
+  const handleDomainChange = (domainId: string | null) => {
+    setSelectedDomain(domainId || '');
+  };
 
-        console.log('User ID:', session.user.id)
-
-        // Simple query to check what's in the database
-        const { data, error: portfolioError } = await supabase
-          .from('portfolios')
-          .select('*')
-
-        if (portfolioError) {
-          console.error('Portfolio fetch error:', portfolioError)
-          throw new Error(`Database error: ${portfolioError.message}`)
-        }
-
-        console.log('Raw portfolio data:', data)
-        
-        if (!data) {
-          throw new Error('No data returned from database')
-        }
-
-        setPortfolios(data)
-
-      } catch (err) {
-        console.error('Error in fetchPortfolios:', err)
-        setError(err instanceof Error ? err.message : 'Unknown error occurred while loading portfolios')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchPortfolios()
-  }, [supabase])
-
-  if (loading) {
-    return <div className="p-4 text-blue-600">Loading portfolios...</div>
-  }
-
-  if (error) {
-    return (
-      <div className="p-4 bg-red-50 border border-red-200 rounded-md">
-        <h3 className="text-red-800 font-semibold">Error Loading Portfolios</h3>
-        <p className="text-red-600">{error}</p>
-        <pre className="mt-2 text-sm text-red-500 whitespace-pre-wrap">
-          {error}
-        </pre>
-      </div>
-    )
-  }
-
-  if (portfolios.length === 0) {
-    return (
-      <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-md">
-        <p className="text-yellow-700">No portfolios found. Create your first portfolio to get started!</p>
-      </div>
-    )
-  }
+  // Filter portfolios based on selected domain
+  const filteredPortfolios = selectedDomain
+    ? portfolios.filter(portfolio => portfolio.domainId?.toString() === selectedDomain)
+    : portfolios;
 
   return (
-    <div className="space-y-4">
-      <h2 className="text-xl font-semibold mb-4">Your Portfolios ({portfolios.length})</h2>
-      <pre className="bg-gray-50 p-4 rounded-md overflow-auto">
-        {JSON.stringify(portfolios, null, 2)}
-      </pre>
+    <div className="container mx-auto p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Portfolios</h1>
+        <Link href="/portfolio/create">
+          <Button>Create Portfolio</Button>
+        </Link>
+      </div>
+
+      <div className="mb-6">
+        <DomainFilter 
+          domains={formattedDomains}
+          selectedDomain={selectedDomain}
+          onDomainChange={handleDomainChange}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredPortfolios.map((portfolio) => (
+          <Link key={portfolio.id} href={`/portfolio/${portfolio.id}`}>
+            <PortfolioItemCard
+              portfolio={portfolio}
+            />
+          </Link>
+        ))}
+      </div>
     </div>
-  )
+  );
 }

@@ -1,6 +1,6 @@
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
-import PortfolioList from '@/components/portfolio/PortfolioList'
+import PortfolioList from '@/components/portfolio/xPortfolioList'
 
 type RawMission = {
   id: number;
