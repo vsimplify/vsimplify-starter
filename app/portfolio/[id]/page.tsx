@@ -2,6 +2,21 @@ import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 import PortfolioList from '@/components/portfolio/PortfolioList'
 
+type RawMission = {
+  id: number;
+  name: string | null;
+  process: string | null;
+  status: string | null;
+  project_id: number;
+  token_usage: number | null;
+  agent_missions: Array<{
+    agent: any;
+    status: string;
+    token_usage: number;
+    cost: number;
+  }> | null;
+};
+
 export default async function PortfolioPage() {
   const supabase = createServerComponentClient({ cookies })
 

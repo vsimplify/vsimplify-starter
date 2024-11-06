@@ -164,21 +164,10 @@ export const isProject = (item: any): item is Project => {
 
 // Conversion functions
 export const convertToProject = (
-  project: Database['public']['Tables']['Project']['Row'],
+  project: any,
   missions: Mission[] = []
 ): Project => {
-  const projectId = Number(project.id);
-  const projectMissions = missions.filter(mission => mission.projectId === projectId);
-  
-  const metrics: MetricsData = {
-    tokenUsage: projectMissions.reduce((sum, m) => sum + (m.tokenUsage || 0), 0),
-    costPerExecution: projectMissions.reduce((sum, m) => sum + (m.cost || 0), 0),
-    executionTime: projectMissions.reduce((sum, m) => sum + (m.metrics?.executionTime || 0), 0),
-    successRate: projectMissions.length 
-      ? projectMissions.filter(m => m.status === 'completed').length / projectMissions.length * 100 
-      : 0,
-    lastUpdated: new Date()
-  };
+  const projectMissions = missions.filter(mission => mission.projectId === project.id);
 
   return {
     id: project.id.toString(),
@@ -186,11 +175,15 @@ export const convertToProject = (
     description: project.description || '',
     status: project.status || '',
     missions: projectMissions,
-    domain: project.domainId ? {
-      id: project.domainId.toString(),
-      name: project.title || ''
-    } : undefined,
-    metrics
+    metrics: {
+      tokenUsage: projectMissions.reduce((sum, m) => sum + (m.tokenUsage || 0), 0),
+      costPerExecution: projectMissions.reduce((sum, m) => sum + (m.cost || 0), 0),
+      executionTime: projectMissions.reduce((sum, m) => sum + (m.metrics?.executionTime || 0), 0),
+      successRate: projectMissions.length 
+        ? projectMissions.filter(m => m.status === 'completed').length / projectMissions.length * 100 
+        : 0,
+      lastUpdated: new Date()
+    }
   };
 };
 

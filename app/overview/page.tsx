@@ -1,221 +1,46 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { Database } from '@/lib/database.types';
 import { useQuery } from '@tanstack/react-query';
-import PortfolioDashboard from "@/components/portfolio/PortfolioDashboard";
-import BrowseAIAgents from "@/components/BrowseAIAgents";
-import { ChevronDownIcon } from "@heroicons/react/24/solid";
-import { motion, AnimatePresence } from "framer-motion";
-import { Button } from "@material-tailwind/react";
-import NavigationMenu from '@/components/NavigationMenu';
-import { User } from '@supabase/supabase-js';
-import { Project, Mission, MetricsData } from '@/types/portfolio';
-import { useRouter } from 'next/navigation';
-import { convertToMission } from '@/types/mission';
 import { MetricsChart } from "@/components/portfolio/MetricsChart";
+import { PortfolioAccordion } from "@/components/portfolio";
+import { Button } from "@material-tailwind/react";
+import { useRouter } from 'next/navigation';
+import { convertToProject } from '@/types/portfolio';
+import { convertToMission } from '@/types/mission';
+import { Project, Portfolio } from '@/types/portfolio';
 
 export const dynamic = "force-dynamic";
 
-const getErrorDetails = (error: any) => {
-  if (error?.message) return error.message;
-  if (error?.error_description) return error.error_description;
-  if (typeof error === 'string') return error;
-  return JSON.stringify(error, null, 2);
-};
-
-type AgentToMission = Database['public']['Tables']['_AgentToMission']['Row'];
-type DBMission = Database['public']['Tables']['Mission']['Row'] & {
-  _AgentToMission: AgentToMission[];
-  token_usage?: number;
-  execution_time?: number;
-  cost_per_execution?: number;
-  name?: string;
-  process?: string;
-  created_at: string;
-  updated_at: string;
-  project_id: number;
-  mission_status?: 'pending' | 'in_progress' | 'completed' | 'failed';
-};
-
-const convertDBMissionToMission = (dbMission: DBMission): Mission => {
-  if (!dbMission) return null as unknown as Mission;
-  
-  return {
-    id: String(dbMission.id || ''),
-    title: dbMission.name || dbMission.process || '',
-    description: dbMission.process || '',
-    status: (dbMission.mission_status as Mission['status']) || 'pending',
-    createdAt: dbMission.created_at,
-    updatedAt: dbMission.updated_at,
-    tokenUsage: dbMission.token_usage || 0,
-    cost: dbMission.cost_per_execution || 0,
-    projectId: dbMission.project_id || 0,
-    tasks: [],
-    agents: [],
-    metrics: {
-      tokenUsage: dbMission.token_usage || 0,
-      executionTime: dbMission.execution_time || 0,
-      costPerExecution: dbMission.cost_per_execution || 0,
-      successRate: 0,
-      lastUpdated: new Date()
-    }
-  };
-};
-
-const convertToProject = (
-  project: Database['public']['Tables']['Project']['Row'],
-  missions: Mission[]
-): Project => {
-  if (!project?.id) return null as unknown as Project;
-  
-  const projectId = project.id;
-  const filteredMissions = missions.filter(mission => 
-    mission && mission.projectId === projectId
-  );
-
-  return {
-    id: String(projectId),
-    title: project.title || '',
-    description: project.description || '',
-    status: project.status || '',
-    missions: filteredMissions,
-    domain: project.domainId ? {
-      id: String(project.domainId),
-      name: project.title || ''
-    } : undefined
-  };
-};
-
-// Update the project card component
-const ProjectCard = ({ project }: { project: Project }) => {
-  return (
-    <div className="border rounded-lg p-4 hover:shadow-lg transition-all">
-      <h3 className="font-medium">{project.title}</h3>
-      <p className="text-sm text-muted-foreground">{project.description}</p>
-      <div className="mt-4">
-        <div className="flex justify-between text-sm mb-2">
-          <span>Activities: {project.missions.length}</span>
-          <span>Completed: {project.missions.filter(m => m.status === 'completed').length}</span>
-        </div>
-        <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-          <div
-            className="bg-blue-600 h-2.5 rounded-full transition-all"
-            style={{ width: `${project.progress || 0}%` }}
-          ></div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-type Domain = {
-  id: string;
-  name: string;
-};
-
-type DomainFilterProps = {
-  domains: Domain[];
-  selectedDomain: string | null;
-  onDomainChange: (domainId: string) => void;
-};
-
-type PortfolioGroup = {
-  id: string;
-  title: string;
-  projects: Project[];
-};
-
-type PortfolioAccordionProps = {
-  portfolios: PortfolioGroup[];
-  expandedPortfolios: string[];
-  togglePortfolio: (id: string) => void;
-};
-
-// Add domain filter component
-const DomainFilter = ({ domains, selectedDomain, onDomainChange }: DomainFilterProps) => {
-  return (
-    <div className="mb-6 space-y-4">
-      <div className="flex flex-col space-y-2">
-        <label className="text-sm font-medium">Domain</label>
-        <select 
-          className="form-select"
-          value={selectedDomain || ""}
-          onChange={(e) => onDomainChange(e.target.value)}
-        >
-          <option value="">All Domains</option>
-          {domains.map(domain => (
-            <option key={domain.id} value={domain.id}>{domain.name}</option>
-          ))}
-        </select>
-      </div>
-    </div>
-  );
-};
-
-// Add portfolio accordion component
-const PortfolioAccordion = ({ portfolios, expandedPortfolios, togglePortfolio }: PortfolioAccordionProps) => {
-  return (
-    <div className="space-y-4">
-      {portfolios.map((portfolio) => (
-        <div key={portfolio.id} className="border rounded-lg overflow-hidden">
-          <motion.div
-            initial={false}
-            className="p-4 bg-gray-50 cursor-pointer"
-            onClick={() => togglePortfolio(portfolio.id)}
-          >
-            <div className="flex justify-between items-center">
-              <h2 className="text-lg font-medium">{portfolio.title}</h2>
-              <ChevronDownIcon className="w-5 h-5" />
-            </div>
-          </motion.div>
-          <AnimatePresence>
-            {expandedPortfolios.includes(portfolio.id) && (
-              <motion.div
-                initial={{ height: 0 }}
-                animate={{ height: "auto" }}
-                exit={{ height: 0 }}
-                transition={{ duration: 0.3 }}
-                className="overflow-hidden"
-              >
-                <div className="p-4 space-y-4">
-                  {portfolio.projects.map((project) => (
-                    <ProjectCard key={project.id} project={project} />
-                  ))}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      ))}
-    </div>
-  );
-};
-
-type FilterState = {
-  domain: string;
-  forUse: string;
-  audience: string;
+type DomainData = {
+  domains: string[];
+  forUseByDomain: Record<string, string[]>;
+  audienceByForUse: Record<string, string[]>;
+  areaByAudience: Record<string, string[]>;
+  rawDomains: any[];
 };
 
 export default function OverviewPage() {
   const supabase = createClientComponentClient<Database>();
   const router = useRouter();
-  const [showBrowseAgents, setShowBrowseAgents] = useState(false);
-  const [selectedAgentId, setSelectedAgentId] = useState<number | null>(null);
   const [selectedDomain, setSelectedDomain] = useState<string | null>(null);
   const [selectedForUse, setSelectedForUse] = useState<string | null>(null);
   const [selectedAudience, setSelectedAudience] = useState<string | null>(null);
+  const [selectedArea, setSelectedArea] = useState<string | null>(null);
   const [expandedPortfolios, setExpandedPortfolios] = useState<string[]>([]);
-  const [filters, setFilters] = useState<FilterState>({
-    domain: '',
-    forUse: '',
-    audience: ''
-  });
+  const [showBrowseAgents, setShowBrowseAgents] = useState(false);
 
-  // Add domains query with cascading filter data
-  const { data: domainData, isLoading: domainsLoading } = useQuery({
+  // Define togglePortfolio function
+  const togglePortfolio = (id: string) => {
+    setExpandedPortfolios(prev => 
+      prev.includes(id) ? prev.filter(pid => pid !== id) : [...prev, id]
+    );
+  };
+
+  // Fetch domain data
+  const { data: domainData, isLoading: domainsLoading } = useQuery<DomainData>({
     queryKey: ['domains'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -225,10 +50,10 @@ export default function OverviewPage() {
       
       if (error) throw error;
 
-      // Get unique values for each filter level
       const domains = new Set<string>();
       const forUseByDomain = new Map<string, Set<string>>();
       const audienceByForUse = new Map<string, Set<string>>();
+      const areaByAudience = new Map<string, Set<string>>();
 
       data?.forEach(item => {
         domains.add(item.Domain || '');
@@ -246,6 +71,13 @@ export default function OverviewPage() {
           }
           audienceByForUse.get(item.ForUse)?.add(item.Audience);
         }
+
+        if (item.Audience && item.Area) {
+          if (!areaByAudience.has(item.Audience)) {
+            areaByAudience.set(item.Audience, new Set());
+          }
+          areaByAudience.get(item.Audience)?.add(item.Area);
+        }
       });
 
       return {
@@ -256,174 +88,92 @@ export default function OverviewPage() {
         audienceByForUse: Object.fromEntries(
           Array.from(audienceByForUse.entries()).map(([k, v]) => [k, Array.from(v)])
         ),
+        areaByAudience: Object.fromEntries(
+          Array.from(areaByAudience.entries()).map(([k, v]) => [k, Array.from(v)])
+        ),
         rawDomains: data || []
       };
     }
   });
 
-  // Query for user data
-  const { data: user, isLoading: userLoading } = useQuery({
-    queryKey: ['user'],
-    queryFn: async (): Promise<User | null> => {
-      const { data: { user }, error } = await supabase.auth.getUser();
-      if (error) {
-        console.error('Auth error:', error);
-        router.push('/login');
-        return null;
-      }
-      return user;
+  // Fetch projects and missions
+  const { data: projectsData } = useQuery({
+    queryKey: ['projects'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('Project')
+        .select('*, missions:Mission(*)');
+      
+      if (error) throw error;
+      return data || [];
     }
   });
 
-  // Query for projects data with agent relationships
-  const { data: projects, isLoading: projectsLoading, error } = useQuery({
-    queryKey: ["projects", user?.id, selectedAgentId],
-    queryFn: async () => {
-      if (!user?.id) return [];
-      
-      try {
-        // First fetch projects
-        const { data: projectData, error: projectError } = await supabase
-          .from("Project")
-          .select("*")
-          .eq("user_id", user.id)
-          .throwOnError();
-
-        if (projectError) throw projectError;
-        if (!projectData) return [];
-
-        // Fetch missions for these projects
-        const { data: missionData, error: missionError } = await supabase
-          .from("Mission")
-          .select(`
-            *,
-            _AgentToMission (
-              A,
-              B
-            )
-          `)
-          .in(
-            "project_id",
-            projectData.map((project) => project.id)
-          );
-
-        if (missionError) throw missionError;
-
-        // If an agent is selected, filter missions by agent
-        const filteredMissions = selectedAgentId 
-          ? (missionData as DBMission[])?.filter(mission => 
-              mission._AgentToMission?.some(relation => relation.A === selectedAgentId)
-            )
-          : missionData as DBMission[];
-
-        // Convert DBMission to Mission type with null checks
-        const convertedMissions = (filteredMissions || [])
-          .filter(Boolean)
-          .map(convertDBMissionToMission)
-          .filter(Boolean);
-
-        // Map projects with their filtered missions
-        return projectData
-          .filter(Boolean)
-          .map(project => convertToProject(project, convertedMissions))
-          .filter(Boolean);
-
-      } catch (error) {
-        console.error('Data fetch error:', error);
-        throw error;
-      }
-    },
-    enabled: !!user?.id
-  });
-
-  // Filter handlers
-  const handleForUseChange = (forUse: string) => {
-    setSelectedForUse(forUse);
-    setSelectedAudience(null);
-  };
-
-  const handleAudienceChange = (audience: string) => {
-    setSelectedAudience(audience);
-  };
-
-  // Filter and group projects
-  const { filteredProjects, portfolioGroups } = useMemo(() => {
-    if (!projects) return { filteredProjects: [], portfolioGroups: [] };
-    
-    // Filter projects based on domain filters
-    const filtered = projects.filter(project => {
+  // Filter projects based on selected filters
+  const filteredProjects = useMemo(() => {
+    if (!projectsData) return [];
+    return projectsData.map(project => convertToProject(
+      project, 
+      project.missions ? project.missions.map(convertToMission) : []
+    ))
+    .filter(project => {
       const domain = domainData?.rawDomains.find(d => d.id.toString() === project.domain?.id);
       if (!domain) return false;
 
       return (
-        (!filters.domain || domain.Domain === filters.domain) &&
-        (!filters.forUse || domain.ForUse === filters.forUse) &&
-        (!filters.audience || domain.Audience === filters.audience)
+        (!selectedDomain || domain.Domain === selectedDomain) &&
+        (!selectedForUse || domain.ForUse === selectedForUse) &&
+        (!selectedAudience || domain.Audience === selectedAudience) &&
+        (!selectedArea || domain.Area === selectedArea)
       );
     });
+  }, [projectsData, domainData, selectedDomain, selectedForUse, selectedAudience, selectedArea]);
 
-    // Group by portfolio
-    const groups = filtered.reduce((acc, project) => {
+  // Group projects into portfolios
+  const portfolioGroups = useMemo(() => {
+    const groups: Record<string, Portfolio> = {};
+
+    filteredProjects.forEach(project => {
       const portfolioId = project.portfolio_id || 'unassigned';
-      if (!acc[portfolioId]) {
-        acc[portfolioId] = {
+      if (!groups[portfolioId]) {
+        groups[portfolioId] = {
           id: portfolioId,
-          title: portfolioId === 'unassigned' ? 'Unassigned Projects' : 'Portfolio ' + portfolioId,
+          title: portfolioId === 'unassigned' ? 'Unassigned Projects' : `Portfolio ${portfolioId}`,
+          description: '',
+          created_at: new Date().toISOString(),
+          user_id: 'unknown',
+          status: 'active',
           projects: []
         };
       }
-      acc[portfolioId].projects.push(project);
-      return acc;
-    }, {} as Record<string, PortfolioGroup>);
+      groups[portfolioId].projects?.push(project);
+    });
 
-    return {
-      filteredProjects: filtered,
-      portfolioGroups: Object.values(groups)
-    };
-  }, [projects, filters, domainData?.rawDomains]);
+    return Object.values(groups);
+  }, [filteredProjects]);
 
-  // Add domain filter handler
-  const handleDomainChange = (domainId: string) => {
-    setSelectedDomain(domainId);
-    setSelectedAgentId(null);
+  // Filter handlers
+  const handleDomainChange = (domain: string) => {
+    setSelectedDomain(domain);
     setSelectedForUse(null);
     setSelectedAudience(null);
+    setSelectedArea(null);
   };
 
-  // Add portfolio expansion handler
-  const togglePortfolio = (portfolioId: string) => {
-    setExpandedPortfolios(prev => 
-      prev.includes(portfolioId)
-        ? prev.filter(id => id !== portfolioId)
-        : [...prev, portfolioId]
-    );
+  const handleForUseChange = (forUse: string) => {
+    setSelectedForUse(forUse);
+    setSelectedAudience(null);
+    setSelectedArea(null);
   };
 
-  if (userLoading || projectsLoading || domainsLoading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <Button variant="text" loading className="text-brown-700">
-          Loading
-        </Button>
-      </div>
-    );
-  }
+  const handleAudienceChange = (audience: string) => {
+    setSelectedAudience(audience);
+    setSelectedArea(null);
+  };
 
-  if (error) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="text-red-500 max-w-md p-4">
-          <p className="font-bold">Failed to load projects.</p>
-          <p className="text-sm mt-2">{getErrorDetails(error)}</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    router.push('/login');
-    return null;
-  }
+  const handleAreaChange = (area: string) => {
+    setSelectedArea(area);
+  };
 
   return (
     <div className="container mx-auto p-6">
@@ -435,7 +185,7 @@ export default function OverviewPage() {
       </div>
 
       {/* Domain Filters */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-4 gap-4 mb-6">
         <div>
           <label className="text-sm font-medium">Domain</label>
           <select
@@ -483,6 +233,23 @@ export default function OverviewPage() {
             }
           </select>
         </div>
+
+        <div>
+          <label className="text-sm font-medium">Area</label>
+          <select
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+            value={selectedArea || ""}
+            onChange={(e) => handleAreaChange(e.target.value)}
+            disabled={!selectedAudience}
+          >
+            <option value="">All Areas</option>
+            {selectedAudience && 
+              domainData?.areaByAudience[selectedAudience]?.map(area => (
+                <option key={area} value={area}>{area}</option>
+              ))
+            }
+          </select>
+        </div>
       </div>
 
       {/* Project Metrics */}
@@ -496,6 +263,17 @@ export default function OverviewPage() {
         expandedPortfolios={expandedPortfolios}
         togglePortfolio={togglePortfolio}
       />
+
+      {/* Browse AI Agents Modal */}
+      {showBrowseAgents && (
+        <div className="modal">
+          <div className="modal-content">
+            <span className="close" onClick={() => setShowBrowseAgents(false)}>&times;</span>
+            <h2>Browse AI Agents</h2>
+            {/* Add your modal content here */}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

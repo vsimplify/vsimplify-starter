@@ -7,3 +7,4 @@ export { PortfolioItemCard } from './PortfolioItemCard';
 export { default as CreatePortfolioForm } from './CreatePortfolioForm';
 export { default as PortfolioDetails } from './PortfolioDetails';
 export { MetricsChart } from './MetricsChart';
+export { PortfolioAccordion } from './PortfolioAccordion';
