@@ -28,16 +28,27 @@ export default async function PortfolioPage() {
   const { data: portfoliosData, error } = await supabase
     .from("portfolios")
     .select(`
+      // *,
+      // projects:Project(
+      //   *,
+      //   missions:Mission(*)
+      // )
       *,
       projects:Project(
         *,
-        missions:Mission(*)
+        missions:Mission(
+          *,
+          _AgentToMission(
+            A,
+            B
+          )
+        )
       )
     `);
 
   if (error) {
     console.error("Error fetching portfolios:", error);
-    return <div>Failed to load portfolios.</div>;
+    return <div>Failed to load portfolios.{error.message}</div>;
   }
 
   const portfolios = portfoliosData?.map(convertToPortfolio) || [];

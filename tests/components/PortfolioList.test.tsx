@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { PortfolioList } from '@/components/portfolio/PortfolioList';
+import { PortfolioList } from '@/components/portfolio/xPortfolioList';
 import { Portfolio } from '@/types/portfolio';
 
 const mockPortfolios: Portfolio[] = [
