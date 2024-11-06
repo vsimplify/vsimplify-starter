@@ -14,6 +14,7 @@ import { User } from '@supabase/supabase-js';
 import { Project, Mission, MetricsData } from '@/types/portfolio';
 import { useRouter } from 'next/navigation';
 import { convertToMission } from '@/types/mission';
+import { MetricsChart } from "@/components/portfolio/MetricsChart";
 
 export const dynamic = "force-dynamic";
 
@@ -204,6 +205,8 @@ export default function OverviewPage() {
   const [showBrowseAgents, setShowBrowseAgents] = useState(false);
   const [selectedAgentId, setSelectedAgentId] = useState<number | null>(null);
   const [selectedDomain, setSelectedDomain] = useState<string | null>(null);
+  const [selectedForUse, setSelectedForUse] = useState<string | null>(null);
+  const [selectedAudience, setSelectedAudience] = useState<string | null>(null);
   const [expandedPortfolios, setExpandedPortfolios] = useState<string[]>([]);
   const [filters, setFilters] = useState<FilterState>({
     domain: '',
@@ -334,27 +337,13 @@ export default function OverviewPage() {
   });
 
   // Filter handlers
-  const handleDomainChange = (domain: string) => {
-    setFilters(prev => ({
-      domain,
-      forUse: '',
-      audience: ''
-    }));
-  };
-
   const handleForUseChange = (forUse: string) => {
-    setFilters(prev => ({
-      ...prev,
-      forUse,
-      audience: ''
-    }));
+    setSelectedForUse(forUse);
+    setSelectedAudience(null);
   };
 
   const handleAudienceChange = (audience: string) => {
-    setFilters(prev => ({
-      ...prev,
-      audience
-    }));
+    setSelectedAudience(audience);
   };
 
   // Filter and group projects
@@ -397,6 +386,8 @@ export default function OverviewPage() {
   const handleDomainChange = (domainId: string) => {
     setSelectedDomain(domainId);
     setSelectedAgentId(null);
+    setSelectedForUse(null);
+    setSelectedAudience(null);
   };
 
   // Add portfolio expansion handler
@@ -449,7 +440,7 @@ export default function OverviewPage() {
           <label className="text-sm font-medium">Domain</label>
           <select
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-            value={filters.domain}
+            value={selectedDomain || ""}
             onChange={(e) => handleDomainChange(e.target.value)}
           >
             <option value="">All Domains</option>
@@ -463,13 +454,13 @@ export default function OverviewPage() {
           <label className="text-sm font-medium">For Use</label>
           <select
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-            value={filters.forUse}
+            value={selectedForUse || ""}
             onChange={(e) => handleForUseChange(e.target.value)}
-            disabled={!filters.domain}
+            disabled={!selectedDomain}
           >
             <option value="">All Uses</option>
-            {filters.domain && 
-              domainData?.forUseByDomain[filters.domain]?.map(forUse => (
+            {selectedDomain && 
+              domainData?.forUseByDomain[selectedDomain]?.map(forUse => (
                 <option key={forUse} value={forUse}>{forUse}</option>
               ))
             }
@@ -480,13 +471,13 @@ export default function OverviewPage() {
           <label className="text-sm font-medium">Audience</label>
           <select
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-            value={filters.audience}
+            value={selectedAudience || ""}
             onChange={(e) => handleAudienceChange(e.target.value)}
-            disabled={!filters.forUse}
+            disabled={!selectedForUse}
           >
             <option value="">All Audiences</option>
-            {filters.forUse && 
-              domainData?.audienceByForUse[filters.forUse]?.map(audience => (
+            {selectedForUse && 
+              domainData?.audienceByForUse[selectedForUse]?.map(audience => (
                 <option key={audience} value={audience}>{audience}</option>
               ))
             }
@@ -505,13 +496,6 @@ export default function OverviewPage() {
         expandedPortfolios={expandedPortfolios}
         togglePortfolio={togglePortfolio}
       />
-
-      {showBrowseAgents && (
-        <BrowseAIAgents
-          onClose={() => setShowBrowseAgents(false)}
-          selectedDomain={selectedDomain}
-        />
-      )}
     </div>
   );
 }

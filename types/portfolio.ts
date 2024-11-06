@@ -106,14 +106,18 @@ export type Project = {
 // Portfolio types
 export type Portfolio = {
   id: string;
-  name: string;
+  title: string;
   description: string;
-  focus_area: 'home' | 'work';
+  focus_area?: 'home' | 'work';
   created_at: string;
-  updated_at: string;
+  updated_at?: string;
   user_id: string;
-  initiative: string;
+  initiative?: string;
   status: 'active' | 'archived';
+  progress?: number;
+  domainId?: string | number;
+  projects?: Project[];
+  metrics?: MetricsData;
 };
 
 // Additional types for portfolio management
@@ -235,36 +239,20 @@ export const convertToMission = (data: any): Mission => {
 
 // Add type conversion helper
 export const convertToPortfolio = (data: any): Portfolio => {
-  // Calculate metrics from projects if they exist
-  const projectMetrics = data.project?.reduce((acc: MetricsData, proj: any) => {
-    if (!proj.metrics) return acc;
-    return {
-      tokenUsage: acc.tokenUsage + (proj.metrics.tokenUsage || 0),
-      costPerExecution: acc.costPerExecution + (proj.metrics.costPerExecution || 0),
-      executionTime: acc.executionTime + (proj.metrics.executionTime || 0),
-      successRate: acc.successRate + (proj.metrics.successRate || 0),
-      lastUpdated: new Date()
-    };
-  }, {
-    tokenUsage: 0,
-    costPerExecution: 0,
-    executionTime: 0,
-    successRate: 0,
-    lastUpdated: new Date()
-  });
-
   return {
     id: data.id,
-    title: data.title,
-    description: data.description,
-    status: data.status,
-    progress: data.progress,
+    title: data.title || data.name || '',
+    description: data.description || '',
+    status: data.status || 'active',
+    progress: data.progress || 0,
     user_id: data.user_id,
     created_at: data.created_at,
     updated_at: data.updated_at,
     domainId: data.domainId,
-    projects: data.project ? [convertToProject(data.project)] : [],
-    metrics: projectMetrics || null
+    projects: data.projects ? data.projects.map(convertToProject) : [],
+    metrics: data.metrics || null,
+    focus_area: data.focus_area,
+    initiative: data.initiative
   };
 };
 

@@ -1,22 +1,29 @@
 import { Portfolio } from '@/types/portfolio';
 
 export const getMetricsSummary = (portfolio: Portfolio) => {
+  const projects = portfolio.projects || [];
+  
   // Calculate metrics from projects if portfolio metrics don't exist
-  const totalTokenUsage = portfolio.projects.reduce((acc, project) => {
+  const totalTokenUsage = projects.reduce((acc, project) => {
     return acc + (project.metrics?.tokenUsage || 0);
   }, 0);
 
-  const totalCost = portfolio.projects.reduce((acc, project) => {
+  const totalCost = projects.reduce((acc, project) => {
     return acc + (project.metrics?.costPerExecution || 0);
   }, 0);
 
-  const successRate = portfolio.projects.reduce((acc, project) => {
-    return acc + (project.metrics?.successRate || 0);
-  }, 0) / (portfolio.projects.length || 1);
+  const totalExecutionTime = projects.reduce((acc, project) => {
+    return acc + (project.metrics?.executionTime || 0);
+  }, 0);
+
+  const successRate = projects.length > 0
+    ? (projects.filter(project => project.missions?.every(m => m.status === 'completed')).length / projects.length) * 100
+    : 0;
 
   return {
-    tokenUsage: totalTokenUsage.toLocaleString(),
-    cost: totalCost.toFixed(4),
-    successRate: `${(successRate * 100).toFixed(1)}%`,
+    totalTokenUsage,
+    totalCost,
+    totalExecutionTime,
+    successRate
   };
 }; 

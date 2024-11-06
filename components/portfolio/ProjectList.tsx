@@ -1,19 +1,9 @@
 'use client';
 
-import React, { useState } from "react";
 import { Project } from "@/types/portfolio";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Button } from "@/components/ui/button";
-import { Search, SortAsc, SortDesc, Filter } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
 
 type ProjectListProps = {
   projects: Project[];
@@ -21,13 +11,38 @@ type ProjectListProps = {
 };
 
 export function ProjectList({ projects, portfolioId }: ProjectListProps) {
+  if (!projects || projects.length === 0) {
+    return (
+      <div className="text-center py-8 text-gray-500">
+        No projects found in this portfolio.
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       {projects.map((project) => (
-        <div key={project.id} className="border rounded-lg p-4">
-          <h3 className="font-medium">{project.title}</h3>
-          <p className="text-sm text-muted-foreground mt-1">{project.description}</p>
-        </div>
+        <Card key={project.id} className="p-4">
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <h3 className="font-medium">{project.title}</h3>
+              <p className="text-sm text-muted-foreground">{project.description}</p>
+            </div>
+            <Badge>{project.status}</Badge>
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm">
+              <span>Progress</span>
+              <span>{project.progress || 0}%</span>
+            </div>
+            <Progress value={project.progress || 0} />
+          </div>
+
+          <div className="mt-4 text-sm text-muted-foreground">
+            {project.missions?.length || 0} Activities
+          </div>
+        </Card>
       ))}
     </div>
   );

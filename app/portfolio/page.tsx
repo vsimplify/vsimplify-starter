@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { PlusCircle } from "lucide-react";
+import { formatDistanceToNow } from 'date-fns';
 
 export const revalidate = 0;
 
@@ -42,114 +43,73 @@ export default async function PortfolioPage() {
   const portfolios = portfoliosData?.map(convertToPortfolio) || [];
 
   return (
-    <div className="container mx-auto p-6">
-      {/* Header Section */}
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold">Portfolios</h1>
-          <p className="text-muted-foreground mt-1">
-            Manage your projects and initiatives
-          </p>
-        </div>
-        <Link href="/portfolio/create">
-          <Button>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            New Portfolio
-          </Button>
-        </Link>
-      </div>
-
-      {/* Portfolio Grid */}
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-2xl font-bold mb-6">Portfolios</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {portfolios.map((portfolio) => (
-          <Link key={portfolio.id} href={`/portfolio/${portfolio.id}`}>
-            <Card className="hover:shadow-lg transition-all cursor-pointer h-full">
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle className="text-xl mb-2">{portfolio.title}</CardTitle>
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {portfolio.description}
-                    </p>
-                  </div>
-                  {portfolio.status && (
-                    <Badge variant={portfolio.status === 'active' ? 'default' : 'secondary'}>
-                      {portfolio.status}
-                    </Badge>
-                  )}
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {/* Progress Section */}
-                  {typeof portfolio.progress === 'number' && (
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Progress</span>
-                        <span className="font-medium">{portfolio.progress}%</span>
-                      </div>
-                      <Progress value={portfolio.progress} className="h-2" />
-                    </div>
-                  )}
+          <div key={portfolio.id} className="bg-white rounded-lg shadow-md p-6">
+            <div className="flex justify-between items-start">
+              <div>
+                <h2 className="text-xl font-semibold mb-2">{portfolio.title}</h2>
+                <p className="text-gray-600 mb-4">{portfolio.description}</p>
+              </div>
+              <Badge variant={portfolio.status === 'active' ? 'default' : 'secondary'}>
+                {portfolio.status}
+              </Badge>
+            </div>
 
-                  {/* Projects Summary */}
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-muted-foreground">Projects</span>
-                    <span className="font-medium">{portfolio.projects.length}</span>
-                  </div>
+            {/* Progress */}
+            <div className="mb-4">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm text-gray-600">Progress</span>
+                <span className="text-sm font-medium">{portfolio.progress || 0}%</span>
+              </div>
+              <Progress value={portfolio.progress || 0} />
+            </div>
 
-                  {/* Project Tags */}
-                  {portfolio.projects.length > 0 && (
-                    <div className="flex flex-wrap gap-2">
-                      {portfolio.projects.slice(0, 3).map((project) => (
-                        <Badge key={project.id} variant="outline" className="text-xs">
-                          {project.title}
-                        </Badge>
-                      ))}
-                      {portfolio.projects.length > 3 && (
-                        <Badge variant="outline" className="text-xs">
-                          +{portfolio.projects.length - 3} more
-                        </Badge>
-                      )}
-                    </div>
-                  )}
+            {/* Projects Count */}
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-muted-foreground">Projects</span>
+              <span className="font-medium">{portfolio.projects?.length || 0}</span>
+            </div>
 
-                  {/* Created Date */}
-                  <div className="text-xs text-muted-foreground">
-                    Created {new Date(portfolio.created_at).toLocaleDateString()}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
+            {/* Project Tags */}
+            {portfolio.projects && portfolio.projects.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-4">
+                {portfolio.projects.slice(0, 3).map((project) => (
+                  <Badge key={project.id} variant="outline" className="text-xs">
+                    {project.title}
+                  </Badge>
+                ))}
+                {portfolio.projects.length > 3 && (
+                  <Badge variant="outline" className="text-xs">
+                    +{portfolio.projects.length - 3} more
+                  </Badge>
+                )}
+              </div>
+            )}
+
+            {/* Domain and Initiative */}
+            <div className="mt-4 flex flex-wrap gap-2">
+              {portfolio.domainId && (
+                <Badge variant="secondary" className="text-xs">
+                  Domain: {portfolio.domainId}
+                </Badge>
+              )}
+              {portfolio.initiative && (
+                <Badge variant="secondary" className="text-xs">
+                  {portfolio.initiative}
+                </Badge>
+              )}
+            </div>
+
+            {/* Created Date */}
+            <div className="mt-4 text-xs text-gray-500">
+              Created {formatDistanceToNow(new Date(portfolio.created_at), { addSuffix: true })}
+            </div>
+          </div>
         ))}
-
-        {/* Add Portfolio Card */}
-        <Link href="/portfolio/create">
-          <Card className="hover:shadow-lg transition-all cursor-pointer h-full flex items-center justify-center border-dashed">
-            <CardContent className="flex flex-col items-center justify-center py-8">
-              <PlusCircle className="h-12 w-12 text-muted-foreground mb-4" />
-              <p className="text-muted-foreground font-medium">Create New Portfolio</p>
-            </CardContent>
-          </Card>
-        </Link>
       </div>
-
-      {/* Empty State */}
-      {portfolios.length === 0 && (
-        <div className="text-center py-12">
-          <h3 className="text-lg font-medium mb-2">No portfolios yet</h3>
-          <p className="text-muted-foreground mb-4">
-            Create your first portfolio to start managing your projects
-          </p>
-          <Link href="/portfolio/create">
-            <Button>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Create Portfolio
-            </Button>
-          </Link>
-        </div>
-      )}
     </div>
   );
 }

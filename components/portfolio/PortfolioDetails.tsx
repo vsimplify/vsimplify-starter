@@ -10,11 +10,13 @@ type PortfolioDetailsProps = {
 };
 
 export default function PortfolioDetails({ portfolio }: PortfolioDetailsProps) {
+  const projects = portfolio.projects || [];
+
   return (
     <div className="space-y-6">
       <PortfolioHeader portfolio={portfolio} />
       <PortfolioMetrics portfolio={portfolio} />
-      <ProjectList projects={portfolio.projects} portfolioId={portfolio.id} />
+      <ProjectList projects={projects} portfolioId={portfolio.id} />
     </div>
   );
 } 

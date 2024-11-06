@@ -13,17 +13,9 @@ import {
   ComposedChart,
   Bar
 } from "recharts";
-import { Card } from "@/components/ui/card";
 
 type MetricsChartProps = {
   projects: Project[];
-};
-
-type ChartData = {
-  name: string;
-  tokenUsage: number;
-  cost: number;
-  success: number;
 };
 
 export function MetricsChart({ projects }: MetricsChartProps) {
@@ -54,8 +46,6 @@ export function MetricsChart({ projects }: MetricsChartProps) {
             <YAxis yAxisId="right" orientation="right" />
             <Tooltip />
             <Legend />
-            
-            {/* Lines for Token Usage and Cost */}
             <Line
               yAxisId="left"
               type="monotone"
@@ -70,8 +60,6 @@ export function MetricsChart({ projects }: MetricsChartProps) {
               stroke="#82ca9d"
               name="Cost ($)"
             />
-            
-            {/* Bar for Success Rate */}
             <Bar
               yAxisId="right"
               dataKey="successRate"
