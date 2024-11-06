@@ -22,23 +22,11 @@ export default function PortfolioList() {
         const { data: creditsData, error: creditsError } = await supabase
           .from('credits')
           .select('*')
-          .single();
+          .limit(1);
 
-        // If no credits, create default credits
-        if (creditsError && creditsError.code === 'PGRST116') {
-          console.log('No credits found, creating default credits...');
-          const { error: createError } = await supabase
-            .from('credits')
-            .insert([
-              {
-                tokens_remaining: 1000, // Default token amount
-                plan: 'free'
-              }
-            ]);
-          
-          if (createError) {
-            console.error('Error creating default credits:', createError);
-          }
+        // If no credits found, don't try to create them - just log it
+        if (creditsError || !creditsData?.length) {
+          console.log('No credits found for user');
         }
 
         // Now fetch portfolios
