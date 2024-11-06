@@ -1,20 +1,10 @@
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { Database } from '@/types/supabase';
-import { convertToPortfolio } from '@/types/portfolio';
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { PlusCircle } from "lucide-react";
-import { formatDistanceToNow } from 'date-fns';
-
-export const revalidate = 0;
+import { Project } from '@/types/portfolio';
 
 export default async function PortfolioPage() {
-  const supabase = createServerComponentClient<Database>({ cookies });
+  const supabase = createServerComponentClient({ cookies });
 
   const {
     data: { user },
@@ -24,99 +14,88 @@ export default async function PortfolioPage() {
     redirect("/login");
   }
 
-  // Fetch portfolios with their projects and missions
-  const { data: portfoliosData, error } = await supabase
-    .from("portfolios")
+  // Fetch portfolios with their projects
+  const { data: portfolios, error } = await supabase
+    .from('portfolios')
     .select(`
       *,
-      projects:Project(
-        *,
-        missions:Mission(
-          *,
-          _AgentToMission(
-            A,
-            B
-          )
-        )
+      projects:Project (
+        id,
+        title,
+        description,
+        status,
+        progress
       )
-    `);
+    `)
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false });
 
   if (error) {
-    console.error("Error fetching portfolios:", error.message);
-    return <div>Failed to load portfolios: {error.message}</div>;
+    console.error("Error fetching portfolios:", error);
+    return <div>Error loading portfolios</div>;
   }
-
-  const portfolios = portfoliosData?.map(convertToPortfolio) || [];
-  console.log("portfoliosData=", portfoliosData);
-  console.log("portfolios=", portfolios);
 
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">Portfolios</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {portfolios.map((portfolio) => (
-          <div key={portfolio.id} className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex justify-between items-start">
+      <div className="grid gap-6">
+        {portfolios?.map((portfolio) => (
+          <div key={portfolio.id} className="bg-white rounded-lg shadow p-6">
+            <div className="flex justify-between items-start mb-4">
               <div>
-                <h2 className="text-xl font-semibold mb-2">{portfolio.title}</h2>
-                <p className="text-gray-600 mb-4">{portfolio.description}</p>
+                <h2 className="text-xl font-semibold">{portfolio.title}</h2>
+                <p className="text-gray-600 mt-1">{portfolio.description}</p>
               </div>
-              <Badge variant={portfolio.status === 'active' ? 'default' : 'secondary'}>
+              <span className={`px-2 py-1 rounded text-sm ${
+                portfolio.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+              }`}>
                 {portfolio.status}
-              </Badge>
+              </span>
             </div>
 
-            {/* Progress */}
-            <div className="mb-4">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm text-gray-600">Progress</span>
-                <span className="text-sm font-medium">{portfolio.progress || 0}%</span>
-              </div>
-              <Progress value={portfolio.progress || 0} />
-            </div>
-
-            {/* Projects Count */}
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-muted-foreground">Projects</span>
-              <span className="font-medium">{portfolio.projects?.length || 0}</span>
-            </div>
-
-            {/* Project Tags */}
-            {portfolio.projects && portfolio.projects.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-4">
-                {portfolio.projects.slice(0, 3).map((project) => (
-                  <Badge key={project.id} variant="outline" className="text-xs">
-                    {project.title}
-                  </Badge>
+            {/* Projects Section */}
+            <div className="mt-4">
+              <h3 className="font-medium mb-2">Projects ({portfolio.projects?.length || 0})</h3>
+              <div className="space-y-3">
+                {portfolio.projects?.map((project: Project) => (
+                  <div key={project.id} className="bg-gray-50 rounded p-3">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h4 className="font-medium">{project.title}</h4>
+                        <p className="text-sm text-gray-600">{project.description}</p>
+                      </div>
+                      <span className={`px-2 py-1 rounded text-xs ${
+                        project.status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
+                      }`}>
+                        {project.status}
+                      </span>
+                    </div>
+                    {project.progress !== null && (
+                      <div className="mt-2">
+                        <div className="flex justify-between text-xs mb-1">
+                          <span>Progress</span>
+                          <span>{project.progress}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div
+                            className="bg-blue-600 rounded-full h-2"
+                            style={{ width: `${project.progress}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 ))}
-                {portfolio.projects.length > 3 && (
-                  <Badge variant="outline" className="text-xs">
-                    +{portfolio.projects.length - 3} more
-                  </Badge>
+                {!portfolio.projects?.length && (
+                  <p className="text-gray-500 text-sm">No projects yet</p>
                 )}
               </div>
-            )}
-
-            {/* Domain and Initiative */}
-            <div className="mt-4 flex flex-wrap gap-2">
-              {portfolio.domainId && (
-                <Badge variant="secondary" className="text-xs">
-                  Domain: {portfolio.domainId}
-                </Badge>
-              )}
-              {portfolio.initiative && (
-                <Badge variant="secondary" className="text-xs">
-                  {portfolio.initiative}
-                </Badge>
-              )}
-            </div>
-
-            {/* Created Date */}
-            <div className="mt-4 text-xs text-gray-500">
-              Created {formatDistanceToNow(new Date(portfolio.created_at), { addSuffix: true })}
             </div>
           </div>
         ))}
+        {!portfolios?.length && (
+          <p className="text-gray-500 text-center">No portfolios found. Create your first portfolio to get started!</p>
+        )}
       </div>
     </div>
   );
