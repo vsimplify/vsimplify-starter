@@ -9,32 +9,28 @@ import { convertToPortfolio } from '@/types/portfolio';
 export const dynamic = 'force-dynamic';
 
 export default async function PortfolioPage() {
-  const supabase = createServerComponentClient<Database>({ cookies });
-
   try {
+    const supabase = createServerComponentClient<Database>({ cookies });
+
     // Check authentication
     const {
       data: { user },
+      error: authError
     } = await supabase.auth.getUser();
 
+    if (authError) {
+      console.error("Auth error:", authError);
+      throw new Error(`Authentication error: ${authError.message}`);
+    }
+
     if (!user) {
-      redirect("/login");
+      return redirect("/login");
     }
 
     // Fetch domains with all required fields
     const { data: domains, error: domainsError } = await supabase
       .from('Domain')
-      .select(`
-        id,
-        Domain,
-        ForUse,
-        Audience,
-        Area,
-        Agents,
-        Missions,
-        identifier,
-        agentAbsent
-      `)
+      .select('*')
       .order('Domain');
 
     if (domainsError) {
@@ -42,34 +38,13 @@ export default async function PortfolioPage() {
       throw new Error(`Failed to fetch domains: ${domainsError.message}`);
     }
 
-    // Fetch portfolios
+    // Fetch portfolios with related data
     const { data: portfoliosData, error: portfoliosError } = await supabase
       .from('portfolios')
       .select(`
-        id,
-        title,
-        description,
-        status,
-        progress,
-        domainId,
-        user_id,
-        created_at,
-        updated_at,
-        project_id,
+        *,
         projects:Project (
-          id,
-          title,
-          description,
-          status,
-          domainId,
-          email,
-          goal,
-          nugget,
-          objective,
-          outcome,
-          dueOn,
-          createdAt,
-          user_id,
+          *,
           missions:Mission (*)
         )
       `)
@@ -80,20 +55,43 @@ export default async function PortfolioPage() {
       throw new Error(`Failed to fetch portfolios: ${portfoliosError.message}`);
     }
 
-    // Format domains with default values for missing fields
-    const formattedDomains = (domains || []).map(domain => ({
+    console.log('Raw portfolios data:', portfoliosData); // Debug log
+
+    if (!portfoliosData) {
+      console.log('No portfolios found for user:', user.id);
+      return (
+        <div className="container mx-auto p-6">
+          <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
+            <h3 className="text-yellow-800 font-semibold">No Portfolios Found</h3>
+            <p className="text-yellow-600 mt-1">
+              Create your first portfolio to get started.
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    // Format domains with default values
+    const formattedDomains = domains?.map(domain => ({
       ...domain,
       Agents: domain.Agents || [],
       Area: domain.Area || null,
       agentAbsent: domain.agentAbsent || null,
       identifier: domain.identifier || 0,
       Missions: domain.Missions || []
-    }));
+    })) || [];
 
-    // Convert portfolios data to Portfolio type
-    const formattedPortfolios = (portfoliosData || []).map(portfolio => 
-      convertToPortfolio(portfolio)
-    );
+    // Convert portfolios data
+    const formattedPortfolios = portfoliosData.map(portfolio => {
+      try {
+        return convertToPortfolio(portfolio);
+      } catch (conversionError) {
+        console.error('Error converting portfolio:', portfolio.id, conversionError);
+        return null;
+      }
+    }).filter(Boolean);
+
+    console.log('Formatted portfolios:', formattedPortfolios); // Debug log
 
     return (
       <PortfolioDashboard 
@@ -112,8 +110,10 @@ export default async function PortfolioPage() {
           <p className="text-red-600 mt-1">
             {error instanceof Error ? error.message : 'An unexpected error occurred'}
           </p>
-          <pre className="mt-2 text-sm text-red-500 whitespace-pre-wrap">
-            {error instanceof Error ? error.stack : JSON.stringify(error, null, 2)}
+          <pre className="mt-2 text-sm text-red-500 whitespace-pre-wrap overflow-auto max-h-[200px]">
+            {error instanceof Error 
+              ? `${error.message}\n\n${error.stack}` 
+              : JSON.stringify(error, null, 2)}
           </pre>
         </div>
       </div>
