@@ -17,7 +17,32 @@ export default function PortfolioList() {
     const fetchPortfolios = async () => {
       try {
         console.log('Starting to fetch portfolios...');
-        const { data: portfoliosData, error: supabaseError } = await supabase
+        
+        // First check if user has credits
+        const { data: creditsData, error: creditsError } = await supabase
+          .from('credits')
+          .select('*')
+          .single();
+
+        // If no credits, create default credits
+        if (creditsError && creditsError.code === 'PGRST116') {
+          console.log('No credits found, creating default credits...');
+          const { error: createError } = await supabase
+            .from('credits')
+            .insert([
+              {
+                tokens_remaining: 1000, // Default token amount
+                plan: 'free'
+              }
+            ]);
+          
+          if (createError) {
+            console.error('Error creating default credits:', createError);
+          }
+        }
+
+        // Now fetch portfolios
+        const { data: portfoliosData, error: portfoliosError } = await supabase
           .from('portfolios')
           .select(`
             id,
@@ -41,9 +66,9 @@ export default function PortfolioList() {
             )
           `);
 
-        if (supabaseError) {
-          console.error('Supabase error:', supabaseError);
-          throw new Error(`Failed to fetch portfolios: ${supabaseError.message}`);
+        if (portfoliosError) {
+          console.error('Supabase error:', portfoliosError);
+          throw new Error(`Failed to fetch portfolios: ${portfoliosError.message}`);
         }
 
         console.log('Raw portfolios data:', portfoliosData);
@@ -94,7 +119,7 @@ export default function PortfolioList() {
   }
 
   if (portfolios.length === 0) {
-    return <p className="text-gray-500">No portfolios found.</p>;
+    return <p className="text-gray-500">No portfolios found. Create your first portfolio to get started!</p>;
   }
 
   return (
