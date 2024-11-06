@@ -28,11 +28,6 @@ export default async function PortfolioPage() {
   const { data: portfoliosData, error } = await supabase
     .from("portfolios")
     .select(`
-      // *,
-      // projects:Project(
-      //   *,
-      //   missions:Mission(*)
-      // )
       *,
       projects:Project(
         *,
@@ -48,13 +43,13 @@ export default async function PortfolioPage() {
 
   if (error) {
     console.error("Error fetching portfolios:", error.message);
-    alert("Error fetching portfolios:"+error.message);
-    return <div>Failed to load portfolios.error.message</div>;
+    return <div>Failed to load portfolios: {error.message}</div>;
   }
 
   const portfolios = portfoliosData?.map(convertToPortfolio) || [];
-  console.log("portfoliosData=",portfoliosData);
-  console.log("portfolios=",portfolios);
+  console.log("portfoliosData=", portfoliosData);
+  console.log("portfolios=", portfolios);
+
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">Portfolios</h1>
