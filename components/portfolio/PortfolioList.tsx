@@ -5,7 +5,6 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { Portfolio } from '@/types/portfolio'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Spinner } from '@/components/ui/spinner'
-import { convertToPortfolio } from '@/types/portfolio'
 
 export default function PortfolioList() {
   const [portfolios, setPortfolios] = useState<Portfolio[]>([])
@@ -16,71 +15,56 @@ export default function PortfolioList() {
   useEffect(() => {
     const fetchPortfolios = async () => {
       try {
-        console.log('Starting to fetch portfolios...');
-        
-        // Now fetch portfolios
-        const { data: portfoliosData, error: portfoliosError } = await supabase
+        // First, log the user session
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+        if (sessionError) {
+          console.error('Session error:', sessionError)
+          throw new Error('Authentication error')
+        }
+
+        if (!session?.user) {
+          console.log('No user session found')
+          setPortfolios([])
+          return
+        }
+
+        console.log('Fetching portfolios for user:', session.user.id)
+
+        // Basic query first to test
+        const { data, error: portfolioError } = await supabase
           .from('portfolios')
-          .select(`
-            id,
-            title,
-            description,
-            status,
-            progress,
-            user_id,
-            created_at,
-            updated_at,
-            domainId,
-            focus_area,
-            initiative,
-            projects:Project (
-              id,
-              title,
-              description,
-              status,
-              progress,
-              missions:Mission (*)
-            )
-          `);
+          .select('*')
+          .eq('user_id', session.user.id)
 
-        if (portfoliosError) {
-          console.error('Supabase error:', portfoliosError);
-          throw new Error(`Failed to fetch portfolios: ${portfoliosError.message}`);
+        if (portfolioError) {
+          console.error('Portfolio fetch error:', portfolioError)
+          throw portfolioError
         }
 
-        console.log('Raw portfolios data:', portfoliosData);
+        console.log('Raw portfolio data:', data)
 
-        if (!portfoliosData) {
-          console.log('No portfolios data returned');
-          setPortfolios([]);
-          return;
+        if (!data) {
+          console.log('No portfolios found')
+          setPortfolios([])
+          return
         }
 
-        // Convert the raw data to Portfolio type
-        const convertedPortfolios = portfoliosData.map(portfolio => {
-          try {
-            return convertToPortfolio(portfolio);
-          } catch (error) {
-            console.error('Error converting portfolio:', portfolio.id, error);
-            return null;
-          }
-        }).filter(Boolean) as Portfolio[];
+        // Set the raw data for now
+        setPortfolios(data)
 
-        console.log('Converted portfolios:', convertedPortfolios);
-        setPortfolios(convertedPortfolios);
       } catch (err) {
-        console.error('Error in fetchPortfolios:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load portfolios');
+        console.error('Error in fetchPortfolios:', err)
+        setError(err instanceof Error ? err.message : 'Failed to load portfolios')
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchPortfolios();
-  }, [supabase]);
+    fetchPortfolios()
+  }, [supabase])
 
   if (loading) {
-    return <Spinner />;
+    return <Spinner />
   }
 
   if (error) {
@@ -92,11 +76,11 @@ export default function PortfolioList() {
           {error}
         </pre>
       </div>
-    );
+    )
   }
 
   if (portfolios.length === 0) {
-    return <p className="text-gray-500">No portfolios found. Create your first portfolio to get started!</p>;
+    return <p className="text-gray-500">No portfolios found. Create your first portfolio to get started!</p>
   }
 
   return (
@@ -115,24 +99,16 @@ export default function PortfolioList() {
                 <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
                   {portfolio.focus_area}
                 </span>
-                <span className="inline-block bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded ml-2">
-                  {portfolio.initiative}
-                </span>
+                {portfolio.initiative && (
+                  <span className="inline-block bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded ml-2">
+                    {portfolio.initiative}
+                  </span>
+                )}
               </div>
-              {portfolio.projects && portfolio.projects.length > 0 && (
-                <div className="mt-4 space-y-2">
-                  <h4 className="text-sm font-medium">Projects:</h4>
-                  {portfolio.projects.map(project => (
-                    <div key={project.id} className="pl-4 text-sm">
-                      • {project.title}
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
           </AccordionContent>
         </AccordionItem>
       ))}
     </Accordion>
-  );
+  )
 }
