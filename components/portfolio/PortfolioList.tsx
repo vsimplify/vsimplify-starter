@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { Portfolio } from '@/types/portfolio'
-import { Accordion } from '@/components/ui/accordion'
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Spinner } from '@/components/ui/spinner'
 import { convertToPortfolio } from '@/types/portfolio'
 
@@ -18,17 +18,6 @@ export default function PortfolioList() {
       try {
         console.log('Starting to fetch portfolios...');
         
-        // First check if user has credits
-        const { data: creditsData, error: creditsError } = await supabase
-          .from('credits')
-          .select('*')
-          .limit(1);
-
-        // If no credits found, don't try to create them - just log it
-        if (creditsError || !creditsData?.length) {
-          console.log('No credits found for user');
-        }
-
         // Now fetch portfolios
         const { data: portfoliosData, error: portfoliosError } = await supabase
           .from('portfolios')
@@ -111,30 +100,38 @@ export default function PortfolioList() {
   }
 
   return (
-    <Accordion type="single" collapsible className="w-full">
+    <Accordion type="single" collapsible>
       {portfolios.map((portfolio) => (
-        <div key={portfolio.id} className="mb-4">
-          <h3 className="text-lg font-semibold">{portfolio.title}</h3>
-          <p className="text-gray-600">{portfolio.description}</p>
-          <div className="mt-2">
-            <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
-              {portfolio.focus_area}
-            </span>
-            <span className="inline-block bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded ml-2">
-              {portfolio.initiative}
-            </span>
-          </div>
-          {portfolio.projects && portfolio.projects.length > 0 && (
-            <div className="mt-4 space-y-2">
-              <h4 className="text-sm font-medium">Projects:</h4>
-              {portfolio.projects.map(project => (
-                <div key={project.id} className="pl-4 text-sm">
-                  • {project.title}
-                </div>
-              ))}
+        <AccordionItem key={portfolio.id} value={portfolio.id}>
+          <AccordionTrigger>
+            <div className="flex items-center space-x-2">
+              <span className="font-semibold">{portfolio.title}</span>
             </div>
-          )}
-        </div>
+          </AccordionTrigger>
+          <AccordionContent>
+            <div className="space-y-4 p-4">
+              <p className="text-gray-600">{portfolio.description}</p>
+              <div className="mt-2">
+                <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
+                  {portfolio.focus_area}
+                </span>
+                <span className="inline-block bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded ml-2">
+                  {portfolio.initiative}
+                </span>
+              </div>
+              {portfolio.projects && portfolio.projects.length > 0 && (
+                <div className="mt-4 space-y-2">
+                  <h4 className="text-sm font-medium">Projects:</h4>
+                  {portfolio.projects.map(project => (
+                    <div key={project.id} className="pl-4 text-sm">
+                      • {project.title}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
       ))}
     </Accordion>
   );
