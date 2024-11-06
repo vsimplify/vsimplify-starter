@@ -16,7 +16,7 @@ export default function PortfolioList() {
   useEffect(() => {
     const fetchPortfolios = async () => {
       try {
-        console.log('Fetching portfolios...');
+        console.log('Starting to fetch portfolios...');
         const { data: portfoliosData, error: supabaseError } = await supabase
           .from('portfolios')
           .select(`
@@ -39,33 +39,30 @@ export default function PortfolioList() {
               progress,
               missions:Mission (*)
             )
-          `)
-          .order('created_at', { ascending: false });
+          `);
 
         if (supabaseError) {
           console.error('Supabase error:', supabaseError);
           throw new Error(`Failed to fetch portfolios: ${supabaseError.message}`);
         }
 
-        if (!portfoliosData) {
-          console.error('No data returned from Supabase');
-          throw new Error('No portfolios data received');
-        }
-
         console.log('Raw portfolios data:', portfoliosData);
+
+        if (!portfoliosData) {
+          console.log('No portfolios data returned');
+          setPortfolios([]);
+          return;
+        }
 
         // Convert the raw data to Portfolio type
         const convertedPortfolios = portfoliosData.map(portfolio => {
           try {
             return convertToPortfolio(portfolio);
-          } catch (error: unknown) {
-            const errorMessage = error instanceof Error 
-              ? error.message 
-              : 'Unknown error during portfolio conversion';
+          } catch (error) {
             console.error('Error converting portfolio:', portfolio.id, error);
-            throw new Error(`Error converting portfolio ${portfolio.id}: ${errorMessage}`);
+            return null;
           }
-        });
+        }).filter(Boolean) as Portfolio[];
 
         console.log('Converted portfolios:', convertedPortfolios);
         setPortfolios(convertedPortfolios);
