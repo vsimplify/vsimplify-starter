@@ -107,15 +107,16 @@ export type Project = {
 export type Portfolio = {
   id: string;
   title: string;
-  description: string;
+  description: string | null;
   focus_area?: 'home' | 'work';
   created_at: string;
   updated_at?: string;
   user_id: string;
   initiative?: string;
-  status: 'active' | 'archived';
-  progress?: number;
-  domainId?: string | number;
+  status: string | null;
+  progress: number | null;
+  domainId: number | null;
+  project_id: number | null;
   projects?: Project[];
   metrics?: MetricsData;
 };
@@ -234,18 +235,19 @@ export const convertToMission = (data: any): Mission => {
 export const convertToPortfolio = (data: any): Portfolio => {
   return {
     id: data.id,
-    title: data.title || data.name || '',
-    description: data.description || '',
-    status: data.status || 'active',
-    progress: data.progress || 0,
+    title: data.title || '',
+    description: data.description || null,
+    status: data.status || null,
+    progress: data.progress || null,
     user_id: data.user_id,
     created_at: data.created_at,
-    updated_at: data.updated_at,
-    domainId: data.domainId,
+    updated_at: data.updated_at || null,
+    domainId: data.domainId || null,
+    project_id: data.project_id || null,
     projects: data.projects ? data.projects.map(convertToProject) : [],
     metrics: data.metrics || null,
-    focus_area: data.focus_area,
-    initiative: data.initiative
+    focus_area: data.focus_area || null,
+    initiative: data.initiative || null
   };
 };
 

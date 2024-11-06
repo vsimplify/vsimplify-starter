@@ -141,12 +141,23 @@ export default function OverviewPage() {
           title: portfolioId === 'unassigned' ? 'Unassigned Projects' : `Portfolio ${portfolioId}`,
           description: '',
           created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
           user_id: 'unknown',
           status: 'active',
+          progress: 0,
+          domainId: null,
+          project_id: null,
           projects: []
         };
       }
       groups[portfolioId].projects?.push(project);
+
+      // Update progress based on project status
+      if (groups[portfolioId].projects) {
+        const completedProjects = groups[portfolioId].projects.filter(p => p.status === 'completed').length;
+        const totalProjects = groups[portfolioId].projects.length;
+        groups[portfolioId].progress = totalProjects > 0 ? (completedProjects / totalProjects) * 100 : 0;
+      }
     });
 
     return Object.values(groups);

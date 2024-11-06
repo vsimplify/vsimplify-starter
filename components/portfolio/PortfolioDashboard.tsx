@@ -1,71 +1,56 @@
 'use client';
 
-import { Project } from "@/types/portfolio";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { MetricsChart } from "./MetricsChart";
+import { useState } from 'react';
+import { Database } from '@/types/supabase';
+import { Portfolio } from '@/types/portfolio';
 
-type PortfolioDashboardProps = {
-  projects: Project[];
+type Domain = Database['public']['Tables']['Domain']['Row'];
+
+export type PortfolioDashboardProps = {
+  initialDomains: Domain[];
+  initialPortfolios: Portfolio[];
+  userId: string;
 };
 
-export default function PortfolioDashboard({ projects }: PortfolioDashboardProps) {
-  // Calculate project progress based on completed missions
-  const calculateProgress = (project: Project): number => {
-    if (project.progress !== undefined) return project.progress;
-    if (!project.missions.length) return 0;
-    
-    const completedMissions = project.missions.filter(
-      mission => mission.status === 'completed'
-    ).length;
-    
-    return Math.round((completedMissions / project.missions.length) * 100);
-  };
+export default function PortfolioDashboard({ 
+  initialDomains, 
+  initialPortfolios, 
+  userId 
+}: PortfolioDashboardProps) {
+  const [selectedDomain, setSelectedDomain] = useState<string | null>(null);
+  const [selectedForUse, setSelectedForUse] = useState<string | null>(null);
+  const [selectedAudience, setSelectedAudience] = useState<string | null>(null);
+  const [selectedArea, setSelectedArea] = useState<string | null>(null);
 
   return (
-    <div className="space-y-6">
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {projects.map((project) => {
-          const progress = calculateProgress(project);
-          
-          return (
-            <Card key={project.id} className="p-4">
-              <div className="flex justify-between items-start mb-2">
-                <h3 className="font-medium">{project.title}</h3>
-                <Badge variant={project.status === 'active' ? 'default' : 'secondary'}>
-                  {project.status}
-                </Badge>
-              </div>
-              <p className="text-sm text-muted-foreground mb-4">
-                {project.description}
-              </p>
-              <div className="flex items-center gap-2">
-                <div className="flex-1 bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-                  <div
-                    className="bg-blue-600 h-2.5 rounded-full"
-                    style={{ width: `${progress}%` }}
-                  ></div>
-                </div>
-                <span className="text-sm">{progress}%</span>
-              </div>
-              <div className="mt-4 text-sm text-muted-foreground">
-                <div className="flex justify-between">
-                  <span>Missions: {project.missions.length}</span>
-                  <span>
-                    Completed: {project.missions.filter(m => m.status === 'completed').length}
-                  </span>
-                </div>
-              </div>
-            </Card>
-          );
-        })}
-      </div>
+    <div className="container mx-auto p-4 bg-gradient-to-br from-gray-900 to-gray-800 min-h-screen text-white">
+      <h1 className="text-4xl font-bold mb-8 text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">
+        AI Portfolio Dashboard
+      </h1>
       
-      {projects.length > 0 && (
-        <Card className="p-6">
-          <MetricsChart projects={projects} />
-        </Card>
-      )}
+      {/* Filter controls will go here */}
+      
+      {/* Portfolio cards will go here */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {initialPortfolios.map(portfolio => (
+          <div key={portfolio.id} className="bg-gray-800 border border-gray-700 rounded-lg p-6">
+            <h2 className="text-xl font-semibold mb-2">{portfolio.title}</h2>
+            <p className="text-gray-300">{portfolio.description}</p>
+            {portfolio.projects && portfolio.projects.length > 0 && (
+              <div className="mt-4">
+                <h3 className="text-sm font-medium text-gray-400">Projects</h3>
+                <ul className="mt-2 space-y-2">
+                  {portfolio.projects.map(project => (
+                    <li key={project.id} className="text-sm text-gray-300">
+                      {project.title}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
