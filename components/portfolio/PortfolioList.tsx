@@ -17,12 +17,12 @@ export default function PortfolioList() {
         const { data: { session }, error: sessionError } = await supabase.auth.getSession()
         if (sessionError) {
           console.error('Session error:', sessionError)
-          throw new Error('Authentication error')
+          throw new Error(`Authentication error: ${sessionError.message}`)
         }
 
         if (!session?.user) {
           console.log('No user session found')
-          return
+          throw new Error('No authenticated user found. Please log in.')
         }
 
         console.log('User ID:', session.user.id)
@@ -34,15 +34,20 @@ export default function PortfolioList() {
 
         if (portfolioError) {
           console.error('Portfolio fetch error:', portfolioError)
-          throw portfolioError
+          throw new Error(`Database error: ${portfolioError.message}`)
         }
 
         console.log('Raw portfolio data:', data)
-        setPortfolios(data || [])
+        
+        if (!data) {
+          throw new Error('No data returned from database')
+        }
+
+        setPortfolios(data)
 
       } catch (err) {
         console.error('Error in fetchPortfolios:', err)
-        setError(err instanceof Error ? err.message : 'Failed to load portfolios')
+        setError(err instanceof Error ? err.message : 'Unknown error occurred while loading portfolios')
       } finally {
         setLoading(false)
       }
@@ -52,16 +57,35 @@ export default function PortfolioList() {
   }, [supabase])
 
   if (loading) {
-    return <div>Loading portfolios...</div>
+    return <div className="p-4 text-blue-600">Loading portfolios...</div>
   }
 
   if (error) {
-    return <div>Error: {error}</div>
+    return (
+      <div className="p-4 bg-red-50 border border-red-200 rounded-md">
+        <h3 className="text-red-800 font-semibold">Error Loading Portfolios</h3>
+        <p className="text-red-600">{error}</p>
+        <pre className="mt-2 text-sm text-red-500 whitespace-pre-wrap">
+          {error}
+        </pre>
+      </div>
+    )
+  }
+
+  if (portfolios.length === 0) {
+    return (
+      <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-md">
+        <p className="text-yellow-700">No portfolios found. Create your first portfolio to get started!</p>
+      </div>
+    )
   }
 
   return (
-    <div>
-      <pre>{JSON.stringify(portfolios, null, 2)}</pre>
+    <div className="space-y-4">
+      <h2 className="text-xl font-semibold mb-4">Your Portfolios ({portfolios.length})</h2>
+      <pre className="bg-gray-50 p-4 rounded-md overflow-auto">
+        {JSON.stringify(portfolios, null, 2)}
+      </pre>
     </div>
   )
 }
