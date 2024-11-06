@@ -5,6 +5,7 @@ import { Database } from '@/types/supabase';
 import PortfolioDashboard from "@/components/portfolio/PortfolioDashboard";
 import { Json } from '@/types/supabase';
 import { convertToPortfolio } from '@/types/portfolio';
+import type { Portfolio } from '@/types/portfolio';
 
 export const dynamic = 'force-dynamic';
 
@@ -37,7 +38,7 @@ export default async function PortfolioPage() {
       .from('credits')
       .select('*')
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle();
 
     if (creditsError) {
       console.error("[Credits Error]:", creditsError);
@@ -50,6 +51,20 @@ export default async function PortfolioPage() {
       }
     } else {
       console.log("[Credits] Found:", creditsData);
+    }
+
+    if (!creditsData) {
+      console.log("[Credits] No credits found for user, creating default credits");
+      const { error: insertError } = await supabase
+        .from('credits')
+        .insert([{ user_id: user.id, tokens_remaining: 777 }]);
+
+      if (insertError) {
+        console.error("[Credits Insert Error]:", insertError);
+        // Handle insert error appropriately
+      } else {
+        console.log("[Credits] Default credits created");
+      }
     }
 
     // Fetch domains with all required fields
@@ -72,7 +87,10 @@ export default async function PortfolioPage() {
         *,
         projects:Project (
           *,
-          missions:Mission (*)
+          missions:Mission (
+            *,
+            tasks:Task (*)
+          )
         )
       `)
       .eq('user_id', user.id);
@@ -120,10 +138,13 @@ export default async function PortfolioPage() {
 
     console.log("[Portfolios] Formatted:", formattedPortfolios.length, "portfolios");
 
+    // Filter out null values from formattedPortfolios
+    const nonNullPortfolios = formattedPortfolios.filter((portfolio): portfolio is Portfolio => portfolio !== null);
+
     return (
       <PortfolioDashboard 
         initialDomains={formattedDomains}
-        initialPortfolios={formattedPortfolios}
+        initialPortfolios={nonNullPortfolios}
         userId={user.id}
       />
     );

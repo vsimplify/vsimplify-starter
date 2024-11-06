@@ -1,7 +1,8 @@
 "use client";
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 
 import { useState, useMemo } from "react";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { supabaseClient } from '@/lib/supabaseClient';
 import { Database } from '@/lib/database.types';
 import { useQuery } from '@tanstack/react-query';
 import { MetricsChart } from "@/components/portfolio/MetricsChart";

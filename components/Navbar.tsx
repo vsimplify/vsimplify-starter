@@ -1,8 +1,9 @@
 // vsimplify-starter/components/Navbar.tsx
 'use client'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 
 import { AvatarIcon } from "@radix-ui/react-icons";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { supabaseClient } from '@/lib/supabaseClient';
 import {
   DropdownMenu,
   DropdownMenuContent,

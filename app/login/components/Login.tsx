@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { Database } from "@/types/supabase";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { supabaseClient } from '@/lib/supabaseClient';
 import disposableDomains from "disposable-email-domains";
 import { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
@@ -21,6 +21,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 
 type Inputs = {
   email: string;
