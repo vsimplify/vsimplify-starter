@@ -1,5 +1,5 @@
--- Insert dummy portfolios
-INSERT INTO public.portfolios (
+-- Insert dummy Portfolio
+INSERT INTO public.Portfolio (
   user_id,
   title,
   description,
@@ -250,10 +250,10 @@ VALUES
 CREATE INDEX idx_project_user_id ON public."Project" (user_id);
 CREATE INDEX idx_mission_project_id ON public."Mission" ("projectId");
 CREATE INDEX idx_agent_domain_id ON public."Agent" ("domainId");
-CREATE INDEX idx_portfolio_domain_id ON public.portfolios ("domainId");
+CREATE INDEX idx_portfolio_domain_id ON public.Portfolio ("domainId");
 CREATE INDEX idx_project_domain_id ON public."Project" ("domainId");
 CREATE INDEX idx_agent_user_id ON public."Agent" (user_id);
-CREATE INDEX idx_portfolio_user_id ON public.portfolios (user_id);
+CREATE INDEX idx_portfolio_user_id ON public.Portfolio (user_id);
 
 -- Enable read access for authenticated users
 CREATE POLICY "Enable read access for authenticated users"
@@ -780,8 +780,8 @@ SET "progress" = pp.progress
 FROM "project_progress" pp
 WHERE p."id" = pp."project_id";
 --
--- First, update portfolios with project_id
-UPDATE "portfolios" SET
+-- First, update Portfolio with project_id
+UPDATE "Portfolio" SET
   "domainId" = CASE "title"
     WHEN 'Home Automation' THEN 103.02
     WHEN 'Fitness Tracker' THEN 2.02
@@ -810,10 +810,10 @@ SELECT
   pf."id" as "Portfolio ID",
   pf."title" as "Portfolio Title"
 FROM "Project" p
-LEFT JOIN "portfolios" pf ON p."portfolio_id" = pf."id"
+LEFT JOIN "Portfolio" pf ON p."portfolio_id" = pf."id"
 ORDER BY p."id";
 --
--- Update project titles to match their corresponding portfolios
+-- Update project titles to match their corresponding Portfolio
 UPDATE "Project" p
 SET "title" = CASE p."id"
     WHEN 1 THEN 'AI-driven Schedule with Task Automation'  -- AI Productivity Suite
@@ -848,5 +848,5 @@ SELECT
   pf."id" as "Portfolio ID",
   pf."title" as "Portfolio Title"
 FROM "Project" p
-LEFT JOIN "portfolios" pf ON p."portfolio_id" = pf."id"
+LEFT JOIN "Portfolio" pf ON p."portfolio_id" = pf."id"
 ORDER BY p."id";

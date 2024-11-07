@@ -3,7 +3,7 @@ import { Sample } from './sample';
 import { Json } from '@/types/supabase';
 
 // Existing types from database.types.ts
-type DBPortfolio = Database['public']['Tables']['portfolios']['Row'];
+type DBPortfolio = Database['public']['Tables']['Portfolio']['Row'];
 type DBProject = Database['public']['Tables']['Project']['Row'];
 type DBMission = Database['public']['Tables']['Mission']['Row'] & {
   _AgentToMission: AgentToMission[];

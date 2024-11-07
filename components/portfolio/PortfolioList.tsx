@@ -9,7 +9,7 @@ import { PortfolioItemCard } from "@/components/portfolio/PortfolioItemCard";
 import { getMetricsSummary } from "@/lib/metrics";
 
 interface PortfolioListProps {
-  portfolios: Portfolio[];
+  Portfolio: Portfolio[];
   domains: {
     id: number;
     Domain: string;
@@ -18,7 +18,7 @@ interface PortfolioListProps {
   }[];
 }
 
-export default function PortfolioList({ portfolios, domains }: PortfolioListProps) {
+export default function PortfolioList({ Portfolio, domains }: PortfolioListProps) {
   const [selectedDomain, setSelectedDomain] = useState<string>('');
   
   // Transform domains to match the Domain type
@@ -33,15 +33,15 @@ export default function PortfolioList({ portfolios, domains }: PortfolioListProp
     setSelectedDomain(domainId || '');
   };
 
-  // Filter portfolios based on selected domain
-  const filteredPortfolios = selectedDomain
-    ? portfolios.filter(portfolio => portfolio.domainId?.toString() === selectedDomain)
-    : portfolios;
+  // Filter Portfolio based on selected domain
+  const filteredPortfolio = selectedDomain
+    ? Portfolio.filter(portfolio => portfolio.domainId?.toString() === selectedDomain)
+    : Portfolio;
 
   return (
     <div className="container mx-auto p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Portfolios</h1>
+        <h1 className="text-2xl font-bold">Portfolio</h1>
         <Link href="/portfolio/create">
           <Button>Create Portfolio</Button>
         </Link>
@@ -56,7 +56,7 @@ export default function PortfolioList({ portfolios, domains }: PortfolioListProp
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredPortfolios.map((portfolio) => (
+        {filteredPortfolio.map((portfolio) => (
           <Link key={portfolio.id} href={`/portfolio/${portfolio.id}`}>
             <PortfolioItemCard
               portfolio={portfolio}

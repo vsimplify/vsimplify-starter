@@ -10,7 +10,3 @@ export const validatePortfolio = (data: any): data is Portfolio => {
     (!data.metrics || typeof data.metrics === 'object')
   );
 };
-
-export const validatePortfolios = (data: any[]): data is Portfolio[] => {
-  return Array.isArray(data) && data.every(validatePortfolio);
-}; 

@@ -5,7 +5,7 @@ Portfolio → Project → Activities (Missions) → Tasks (Kanban)
 
 ## 1. Portfolio List View
 **Access Path:** `/portfolio`
-- Shows all portfolios grouped by domain
+- Shows all Portfolio grouped by domain
 - Filtering options:
   - Focus Area (Work/Home)
   - Domain (Digital Services, Healthcare, etc.)

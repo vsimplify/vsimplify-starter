@@ -2,7 +2,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { PortfolioList } from '@/components/portfolio/xPortfolioList';
 import { Portfolio } from '@/types/portfolio';
 
-const mockPortfolios: Portfolio[] = [
+const mockPortfolio: Portfolio[] = [
   {
     id: '1',
     title: 'Game Development',
@@ -38,14 +38,14 @@ const mockPortfolios: Portfolio[] = [
 ];
 
 describe('PortfolioList Component', () => {
-  it('should render all portfolios initially', () => {
-    render(<PortfolioList portfolios={mockPortfolios} selectedDomainId="103.01" />);
+  it('should render all Portfolio initially', () => {
+    render(<PortfolioList Portfolio={mockPortfolio} selectedDomainId="103.01" />);
     expect(screen.getByText('Game Development')).toBeInTheDocument();
     expect(screen.getByText('Healthcare Suite')).toBeInTheDocument();
   });
 
   it('should filter by status', async () => {
-    render(<PortfolioList portfolios={mockPortfolios} selectedDomainId="103.01" />);
+    render(<PortfolioList Portfolio={mockPortfolio} selectedDomainId="103.01" />);
     
     // Select completed status
     const statusFilter = screen.getByPlaceholderText('Filter by Status');
@@ -58,7 +58,7 @@ describe('PortfolioList Component', () => {
   });
 
   it('should filter by progress', async () => {
-    render(<PortfolioList portfolios={mockPortfolios} selectedDomainId="103.01" />);
+    render(<PortfolioList Portfolio={mockPortfolio} selectedDomainId="103.01" />);
     
     // Select high progress
     const progressFilter = screen.getByPlaceholderText('Filter by Progress');
@@ -70,8 +70,8 @@ describe('PortfolioList Component', () => {
     });
   });
 
-  it('should sort portfolios', async () => {
-    render(<PortfolioList portfolios={mockPortfolios} selectedDomainId="103.01" />);
+  it('should sort Portfolio', async () => {
+    render(<PortfolioList Portfolio={mockPortfolio} selectedDomainId="103.01" />);
     
     // Sort by progress
     const sortBy = screen.getByPlaceholderText('Sort by');

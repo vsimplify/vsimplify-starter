@@ -105,7 +105,7 @@ export default function Navbar() {
           </Link>
           <Link href="/portfolio">
             <Button variant={"ghost"} className="text-white hover:text-yellow-300">
-              Portfolios
+              Portfolio
             </Button>
           </Link>
           <Link href="/projects">

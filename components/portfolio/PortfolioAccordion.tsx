@@ -4,15 +4,15 @@ import { Portfolio } from "@/types/portfolio";
 import { Accordion } from "@/components/ui/accordion";
 
 type PortfolioAccordionProps = {
-  portfolios: Portfolio[];
-  expandedPortfolios: string[];
+  Portfolio: Portfolio[];
+  expandedPortfolio: string[];
   togglePortfolio: (id: string) => void;
 };
 
-export function PortfolioAccordion({ portfolios, expandedPortfolios, togglePortfolio }: PortfolioAccordionProps) {
+export function PortfolioAccordion({ Portfolio, expandedPortfolio, togglePortfolio }: PortfolioAccordionProps) {
   return (
     <Accordion type="single" collapsible className="w-full">
-      {portfolios.map((portfolio) => (
+      {Portfolio.map((portfolio) => (
         <div key={portfolio.id} className="mb-4">
           <h3 className="text-lg font-semibold">{portfolio.title}</h3>
           <p className="text-gray-600">{portfolio.description}</p>

@@ -57,14 +57,14 @@ interface CreateProjectFormProps {
     Domain: string;
     ForUse: string;
   }[];
-  portfolios: {
+  Portfolio: {
     id: string;
     title: string;
   }[];
   userId: string;
 }
 
-export default function CreateProjectForm({ domains, portfolios, userId }: CreateProjectFormProps) {
+export default function CreateProjectForm({ domains, Portfolio, userId }: CreateProjectFormProps) {
   const router = useRouter();
   const supabase = createClientComponentClient<Database>();
   const [isLoading, setIsLoading] = useState(false);
@@ -139,8 +139,8 @@ export default function CreateProjectForm({ domains, portfolios, userId }: Creat
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    <SelectLabel>Portfolios</SelectLabel>
-                    {portfolios.map((portfolio) => (
+                    <SelectLabel>Portfolio</SelectLabel>
+                    {Portfolio.map((portfolio) => (
                       <SelectItem
                         key={portfolio.id}
                         value={portfolio.id}

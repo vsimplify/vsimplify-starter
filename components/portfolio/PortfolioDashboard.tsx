@@ -8,13 +8,13 @@ type Domain = Database['public']['Tables']['Domain']['Row'];
 
 export type PortfolioDashboardProps = {
   initialDomains: Domain[];
-  initialPortfolios: Portfolio[];
+  initialPortfolio: Portfolio[];
   userId: string;
 };
 
 export default function PortfolioDashboard({ 
   initialDomains, 
-  initialPortfolios, 
+  initialPortfolio, 
   userId 
 }: PortfolioDashboardProps) {
   const [selectedDomain, setSelectedDomain] = useState<string | null>(null);
@@ -32,7 +32,7 @@ export default function PortfolioDashboard({
       
       {/* Portfolio cards will go here */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {initialPortfolios.map(portfolio => (
+        {initialPortfolio.map(portfolio => (
           <div key={portfolio.id} className="bg-gray-800 border border-gray-700 rounded-lg p-6">
             <h2 className="text-xl font-semibold mb-2">{portfolio.title}</h2>
             <p className="text-gray-300">{portfolio.description}</p>

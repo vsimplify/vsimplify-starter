@@ -17,13 +17,13 @@ export default async function CreateProjectPage() {
     redirect("/login");
   }
 
-  // Fetch all domains and portfolios for the dropdowns
-  const [{ data: domains }, { data: portfolios }] = await Promise.all([
+  // Fetch all domains and Portfolio for the dropdowns
+  const [{ data: domains }, { data: Portfolio }] = await Promise.all([
     supabase.from("Domain").select("*").order('id'),
     supabase.from("Portfolio").select("id, title").order('title')
   ]);
 
-  if (!domains || !portfolios) {
+  if (!domains || !Portfolio) {
     return <div>Failed to load required data.</div>;
   }
 
@@ -32,7 +32,7 @@ export default async function CreateProjectPage() {
       <h1 className="text-2xl font-bold mb-6">Create Project</h1>
       <CreateProjectForm 
         domains={domains} 
-        portfolios={portfolios}
+        Portfolio={Portfolio}
         userId={user.id} 
       />
     </div>

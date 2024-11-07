@@ -325,7 +325,7 @@ export type Database = {
         }
         Relationships: []
       }
-      portfolios: {
+      Portfolio: {
         Row: {
           created_at: string
           description: string | null
@@ -361,14 +361,14 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "portfolios_domainId_fkey"
+            foreignKeyName: "Portfolio_domainId_fkey"
             columns: ["domainId"]
             isOneToOne: false
             referencedRelation: "Domain"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "portfolios_project_id_fkey"
+            foreignKeyName: "Portfolio_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "Project"

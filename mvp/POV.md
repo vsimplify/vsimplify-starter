@@ -198,9 +198,9 @@ _Enhanced image mapping requirements:_
      - Update agent properties
      - Delete agents with confirmation
    - **Portfolio Management UI:**
-     - Create portfolios with domain filtering
+     - Create Portfolio with domain filtering
      - Update portfolio details
-     - Delete portfolios with cascade options
+     - Delete Portfolio with cascade options
    - **Project Management UI:**
      - Create projects within selected portfolio
      - Update project details

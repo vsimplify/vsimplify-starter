@@ -30,12 +30,12 @@ export default function OverviewPage() {
   const [selectedForUse, setSelectedForUse] = useState<string | null>(null);
   const [selectedAudience, setSelectedAudience] = useState<string | null>(null);
   const [selectedArea, setSelectedArea] = useState<string | null>(null);
-  const [expandedPortfolios, setExpandedPortfolios] = useState<string[]>([]);
+  const [expandedPortfolio, setExpandedPortfolio] = useState<string[]>([]);
   const [showBrowseAgents, setShowBrowseAgents] = useState(false);
 
   // Define togglePortfolio function
   const togglePortfolio = (id: string) => {
-    setExpandedPortfolios(prev => 
+    setExpandedPortfolio(prev => 
       prev.includes(id) ? prev.filter(pid => pid !== id) : [...prev, id]
     );
   };
@@ -130,7 +130,7 @@ export default function OverviewPage() {
     });
   }, [projectsData, domainData, selectedDomain, selectedForUse, selectedAudience, selectedArea]);
 
-  // Group projects into portfolios
+  // Group projects into Portfolio
   const portfolioGroups = useMemo(() => {
     const groups: Record<string, Portfolio> = {};
 
@@ -271,8 +271,8 @@ export default function OverviewPage() {
 
       {/* Portfolio Groups */}
       <PortfolioAccordion 
-        portfolios={portfolioGroups}
-        expandedPortfolios={expandedPortfolios}
+        Portfolio={portfolioGroups}
+        expandedPortfolio={expandedPortfolio}
         togglePortfolio={togglePortfolio}
       />
 

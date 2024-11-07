@@ -5,13 +5,13 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { Portfolio } from '@/types/portfolio'
 
 export default function PortfolioList() {
-  const [portfolios, setPortfolios] = useState<any[]>([])
+  const [Portfolio, setPortfolio] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const supabase = createClientComponentClient()
 
   useEffect(() => {
-    const fetchPortfolios = async () => {
+    const fetchPortfolio = async () => {
       try {
         // First, log the user session
         const { data: { session }, error: sessionError } = await supabase.auth.getSession()
@@ -29,7 +29,7 @@ export default function PortfolioList() {
 
         // Simple query to check what's in the database
         const { data, error: portfolioError } = await supabase
-          .from('portfolios')
+          .from('Portfolio')
           .select('*')
 
         if (portfolioError) {
@@ -43,27 +43,27 @@ export default function PortfolioList() {
           throw new Error('No data returned from database')
         }
 
-        setPortfolios(data)
+        setPortfolio(data)
 
       } catch (err) {
-        console.error('Error in fetchPortfolios:', err)
-        setError(err instanceof Error ? err.message : 'Unknown error occurred while loading portfolios')
+        console.error('Error in fetchPortfolio:', err)
+        setError(err instanceof Error ? err.message : 'Unknown error occurred while loading Portfolio')
       } finally {
         setLoading(false)
       }
     }
 
-    fetchPortfolios()
+    fetchPortfolio()
   }, [supabase])
 
   if (loading) {
-    return <div className="p-4 text-blue-600">Loading portfolios...</div>
+    return <div className="p-4 text-blue-600">Loading Portfolio...</div>
   }
 
   if (error) {
     return (
       <div className="p-4 bg-red-50 border border-red-200 rounded-md">
-        <h3 className="text-red-800 font-semibold">Error Loading Portfolios</h3>
+        <h3 className="text-red-800 font-semibold">Error Loading Portfolio</h3>
         <p className="text-red-600">{error}</p>
         <pre className="mt-2 text-sm text-red-500 whitespace-pre-wrap">
           {error}
@@ -72,19 +72,19 @@ export default function PortfolioList() {
     )
   }
 
-  if (portfolios.length === 0) {
+  if (Portfolio.length === 0) {
     return (
       <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-md">
-        <p className="text-yellow-700">No portfolios found. Create your first portfolio to get started!</p>
+        <p className="text-yellow-700">No Portfolio found. Create your first portfolio to get started!</p>
       </div>
     )
   }
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-semibold mb-4">Your Portfolios ({portfolios.length})</h2>
+      <h2 className="text-xl font-semibold mb-4">Your Portfolio ({Portfolio.length})</h2>
       <pre className="bg-gray-50 p-4 rounded-md overflow-auto">
-        {JSON.stringify(portfolios, null, 2)}
+        {JSON.stringify(Portfolio, null, 2)}
       </pre>
     </div>
   )
