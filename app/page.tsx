@@ -1,61 +1,29 @@
-import { Suspense } from 'react';
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import Dashboard from '@/components/dashboard/Dashboard';
-import Image from 'next/image';
+
+import Home from "@/components/home/home-page";
+import PlatformOverview from "@/components/home/platform-overview";
 
 export const dynamic = "force-dynamic";
 
 export default async function Index() {
   const supabase = createServerComponentClient({ cookies });
 
-  try {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-    if (user) {
-      return redirect("/overview");
-    }
-  } catch (error) {
-    console.error('Error fetching user:', error);
-    // Continue rendering the page even if user fetch fails
+  if (user) {
+    return redirect("/overview");
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="bg-primary p-4">
-        <div className="container mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <Image
-              src="/QuickForAnswer_Logo.svg"
-              alt="QuickForAnswer Logo"
-              width={40}
-              height={40}
-              className="w-10 h-10"
-            />
-            <span className="text-white text-xl font-bold">QuickForAnswer</span>
-          </div>
-          <Image
-            src="/vsitLogo.png"
-            alt="VSIT Logo"
-            width={40}
-            height={40}
-            className="w-10 h-10"
-          />
-        </div>
-      </header>
-      
-      <main className="container mx-auto px-4 py-8">
-        <Suspense fallback={
-          <div className="flex items-center justify-center min-h-[60vh]">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-          </div>
-        }>
-          <Dashboard />
-        </Suspense>
-      </main>
+    <div className="flex flex-col items-center bg-background text-text">
+      <div className="flex flex-col lg:flex-row items-center gap-4 p-4 max-w-6xl w-full">
+        <Home />
+      </div>
+      <PlatformOverview />
     </div>
   );
 }
