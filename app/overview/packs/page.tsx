@@ -1,4 +1,4 @@
-"use client";
+"use client"
 import { useState, useEffect } from "react";
 import { CascadingFilter, FilterOption } from "@/components/ui/CascadingFilter";
 import Image from "next/image";
@@ -71,17 +71,22 @@ const PackPage = () => {
       ? agentImages.filter((image) => image.domain === selectedDomain)
       : agentImages;
     setFilteredImages(filtered);
+    setCurrentIndex(0); // Reset index when filters change
   }, [selectedDomain, agentImages]);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: NodeJS.Timeout | null = null;
+    
     if (isPlaying && filteredImages.length > 0) {
       interval = setInterval(() => {
         setCurrentIndex((prevIndex) => (prevIndex + 1) % filteredImages.length);
       }, 3000);
     }
-    return () => clearInterval(interval);
-  }, [isPlaying, filteredImages]);
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isPlaying, filteredImages.length]);
 
   const handleDomainChange = (domain: string | null) => {
     setSelectedDomain(domain);
@@ -102,9 +107,13 @@ const PackPage = () => {
 
   return (
     <div className="w-full max-w-2xl mx-auto p-4">
-      <div className="mb-4">
-        <h1 className="text-2xl font-bold mb-2">AI Agent Packs</h1>
-        <p className="text-gray-600">Environment: {CONFIG.environment}</p>
+      <div className="mb-6 text-center">
+        <h1 className="text-3xl font-bold mb-3">AI Agent Packs</h1>
+        <p className="text-gray-600 max-w-xl mx-auto">
+          Discover our powerful AI Agents designed to assist you in executing your activities efficiently. 
+          These specialized agents serve as intelligent resources, offering expertise across various domains 
+          to help you achieve your goals.
+        </p>
       </div>
       
       <CascadingFilter
@@ -113,10 +122,10 @@ const PackPage = () => {
         getDomainOptions={getDomainOptions}
         getAreaOptions={getAreaOptions}
         onFilterChange={handleDomainChange}
-        className="mb-4"
+        className="mb-6"
       />
       
-      <div className="relative mt-4">
+      <div className="relative mt-4 bg-gray-50 rounded-xl shadow-lg overflow-hidden">
         {filteredImages.length > 0 ? (
           <>
             <div className="relative aspect-video">
@@ -125,34 +134,62 @@ const PackPage = () => {
                 alt={filteredImages[currentIndex].title}
                 layout="fill"
                 objectFit="contain"
-                className="rounded-lg"
+                className="rounded-t-xl"
                 priority
               />
             </div>
-            <div className="absolute bottom-0 left-0 right-0 flex justify-between items-center p-2 bg-black bg-opacity-50 rounded-b-lg">
-              <Button variant="outline" onClick={handlePrev}>Previous</Button>
-              <Button variant="outline" onClick={togglePlayPause}>
+            <div className="absolute bottom-0 left-0 right-0 flex justify-between items-center p-4 bg-gradient-to-t from-black/70 to-transparent">
+              <Button 
+                variant="default"
+                onClick={handlePrev}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6"
+              >
+                Previous
+              </Button>
+              <Button 
+                variant="default"
+                onClick={togglePlayPause}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 mx-2"
+              >
                 {isPlaying ? "Pause" : "Play"}
               </Button>
-              <Button variant="outline" onClick={handleNext}>Next</Button>
+              <Button 
+                variant="default"
+                onClick={handleNext}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6"
+              >
+                Next
+              </Button>
             </div>
-            <div className="mt-4">
-              <h2 className="text-xl font-semibold">{filteredImages[currentIndex].title}</h2>
-              <p className="text-gray-600">{filteredImages[currentIndex].domain}</p>
+            <div className="p-4 bg-white rounded-b-xl">
+              <h2 className="text-xl font-semibold text-gray-800">
+                {filteredImages[currentIndex].title}
+              </h2>
+              <p className="text-blue-600 font-medium">
+                {filteredImages[currentIndex].domain}
+              </p>
             </div>
-            <div className="flex justify-center mt-2">
+            <div className="flex justify-center py-3 bg-white border-t border-gray-100">
               {filteredImages.map((_, index) => (
-                <span
+                <button
                   key={index}
-                  className={`h-2 w-2 rounded-full mx-1 ${
-                    index === currentIndex ? "bg-blue-500" : "bg-gray-300"
+                  onClick={() => setCurrentIndex(index)}
+                  className={`h-2.5 w-2.5 rounded-full mx-1 transition-all duration-300 ${
+                    index === currentIndex 
+                      ? "bg-blue-600 w-4" 
+                      : "bg-gray-300 hover:bg-gray-400"
                   }`}
                 />
               ))}
             </div>
           </>
         ) : (
-          <p className="text-center py-8">No images available for the selected domain.</p>
+          <div className="flex flex-col items-center justify-center py-12 px-4">
+            <p className="text-lg text-gray-600 text-center">
+              No AI agents available for the selected domain.
+              Please adjust your filters to explore other domains.
+            </p>
+          </div>
         )}
       </div>
     </div>
