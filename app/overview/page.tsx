@@ -6,7 +6,7 @@ import { Database } from '@/lib/database.types';
 import { useQuery } from '@tanstack/react-query';
 import { MetricsChart } from "@/components/portfolio/MetricsChart";
 import { PortfolioAccordion } from "@/components/portfolio";
-import { Button } from "@material-tailwind/react";
+import { Button, ButtonProps } from "@/components/ui/button";
 import { useRouter } from 'next/navigation';
 import { convertToProject } from '@/types/portfolio';
 import { convertToMission } from '@/types/mission';
@@ -179,7 +179,11 @@ export default function OverviewPage() {
     <div className="container mx-auto p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">AI Product Dashboard</h1>
-        <Button onClick={() => setShowBrowseAgents(true)}>
+        <Button
+          onClick={() => setShowBrowseAgents(true)}
+          type="button"
+          className="your-custom-class"
+        >
           Browse AI Agents
         </Button>
       </div>
