@@ -2,6 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Basic responsive styles */
+@media (max-width: 640px) {
+  /* Styles for small screens */
+}
+
+@media (min-width: 641px) and (max-width: 768px) {
+  /* Styles for medium screens */
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  /* Styles for large screens */
+}
+
+@media (min-width: 1025px) {
+  /* Styles for extra large screens */
+}
 @layer base {
   :root {
     --background: 0 0% 100%;

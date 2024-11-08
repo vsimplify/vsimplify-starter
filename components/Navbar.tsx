@@ -107,12 +107,12 @@ export default function Navbar() {
               Portfolios
             </Button>
           </Link>
-          <Link href="/projects">
+          <Link href="/project">
             <Button variant={"ghost"} className="text-white hover:text-yellow-300">
               Projects
             </Button>
           </Link>
-          <Link href="/activities">
+          <Link href="/activity">
             <Button variant={"ghost"} className="text-white hover:text-yellow-300">
               Activities
             </Button>
@@ -120,7 +120,7 @@ export default function Navbar() {
           {packsIsEnabled && (
             <Link href="/overview/packs">
               <Button variant={"ghost"} className="text-white hover:text-yellow-300">
-                Packs
+                AI Agents
               </Button>
             </Link>
           )}
