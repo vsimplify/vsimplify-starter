@@ -15,8 +15,11 @@ import { Button } from "./ui/button";
 import React, { useState, useRef, useEffect } from "react";
 import { Database } from "@/types/supabase";
 import ClientSideCredits from "./realtime/ClientSideCredits";
-import { User, LogIn, UserPlus } from "lucide-react";
+import { User, LogIn, UserPlus, X, Menu } from "lucide-react";
+import Image from "next/image";
+const packsIsEnabled = process.env.NEXT_PUBLIC_TUNE_TYPE === "packs";
 
+export const revalidate = 0;
 export const dynamic = "force-dynamic";
 
 const stripeIsConfigured = process.env.NEXT_PUBLIC_STRIPE_IS_ENABLED === "true";
@@ -56,24 +59,93 @@ export default function Navbar() {
 
     fetchUser();
   }, [supabase]);
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setShowUserMenu(false);
+      }
+    };
 
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
   const toggleMenu = () => {
     setIsMenuOpen((prev) => !prev);
   };
 
   return (
-    <nav className="flex items-center justify-between p-4 bg-gray-800">
+    <nav className="flex justify-between w-full px-4 sm:px-6 lg:px-10 py-4 items-center border-b bg-gradient-to-r text-white shadow-md p-4 bg-gray-800">
+    {/*  from-indigo-600 to-blue-500 <nav className="flex items-center justify-between p-4 bg-gray-800"> */}
       <div className="flex items-center">
+        <Link href="/">
+          <div className="flex items-center">
+            <Image
+              src="/QuickForAnswer_Logo.svg"
+              alt="QuickForAnswer Logo"
+              width={40}
+              height={40}
+              className="mr-2"
+              priority
+            />
+            <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold tracking-tight flex items-center">
+              Quick<span className="text-white">ForAnswer</span> <sup className="text-yellow-300">α</sup>
+            </h2>
+          </div>
+        </Link>
         <button onClick={toggleMenu} className="text-white lg:hidden">
-          {isMenuOpen ? "Close Menu" : "Open Menu"}
+          {isMenuOpen ? (
+            <X className="h-6 w-6" aria-label="Close Menu" />
+          ) : (
+            <Menu className="h-6 w-6" aria-label="Open Menu" />
+          )}
         </button>
         <div className={`lg:flex ${isMenuOpen ? "block" : "hidden"} transition-all duration-300`}>
-          <Link href="/" className="text-white px-4">Home</Link>
+          {/* <Link href="/" className="text-white px-4">Home</Link>
           <Link href="/about" className="text-white px-4">About</Link>
-          <Link href="/services" className="text-white px-4">Services</Link>
+          <Link href="/services" className="text-white px-4">Services</Link> */}
           {/* Add more links as needed */}
+          {/* Navigation Links */}
+      {user && (
+        <div className="hidden lg:flex flex-row gap-4 ml-10">
+          <Link href="/overview">
+            <Button variant={"ghost"} className="text-white hover:text-yellow-300">
+              Home
+            </Button>
+          </Link>
+          <Link href="/portfolio">
+            <Button variant={"ghost"} className="text-white hover:text-yellow-300">
+              Portfolios
+            </Button>
+          </Link>
+          <Link href="/project">
+            <Button variant={"ghost"} className="text-white hover:text-yellow-300">
+              Projects
+            </Button>
+          </Link>
+          <Link href="/activity">
+            <Button variant={"ghost"} className="text-white hover:text-yellow-300">
+              Activities
+            </Button>
+          </Link>
+          {packsIsEnabled && (
+            <Link href="/overview/packs">
+              <Button variant={"ghost"} className="text-white hover:text-yellow-300">
+                AI Agents
+              </Button>
+            </Link>
+          )}
+          {stripeIsConfigured && (
+            <Link href="/get-credits">
+              <Button variant={"ghost"} className="text-white hover:text-yellow-300">
+                Get Credits
+              </Button>
+            </Link>
+          )}
         </div>
-      </div>
+)}
+          </div>
 
       {/* User Authentication */}
       <div className="flex gap-4 lg:ml-auto">
@@ -130,6 +202,7 @@ export default function Navbar() {
             </DropdownMenu>
           </div>
         )}
+      </div>
       </div>
     </nav>
   );
