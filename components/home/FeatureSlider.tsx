@@ -51,56 +51,29 @@ const FeatureSlider: React.FC = () => {
   const slideVariants = {
     enter: {
       opacity: 0,
-      scale: 0.9,
-      y: 20
+      scale: 0.95,
     },
     center: {
       opacity: 1,
       scale: 1,
-      y: 0,
       transition: {
-        duration: 0.5,
-        type: "spring",
-        stiffness: 300,
-        damping: 25
+        duration: 0.4,
+        ease: "easeOut"
       }
     },
     exit: {
       opacity: 0,
-      scale: 0.9,
-      y: -20,
+      scale: 0.95,
       transition: {
-        duration: 0.3
-      }
-    }
-  };
-
-  const containerVariants = {
-    compact: {
-      height: "calc(100vh - 16rem)",
-      transition: {
-        type: "spring",
-        stiffness: 400,
-        damping: 30
-      }
-    },
-    expanded: {
-      height: "calc(100vh - 6rem)",
-      transition: {
-        type: "spring",
-        stiffness: 400,
-        damping: 30
+        duration: 0.3,
+        ease: "easeIn"
       }
     }
   };
 
   return (
-    <motion.div 
-      className="relative w-full bg-gray-900 overflow-hidden rounded-lg mx-auto my-4"
-      variants={containerVariants}
-      initial="compact"
-      animate={isExpanded ? "expanded" : "compact"}
-    >
+    <div className="relative w-full h-full bg-gray-900 overflow-hidden rounded-lg">
+      {/* Main Content Container */}
       <div className="relative w-full h-full">
         <AnimatePresence initial={false} mode="wait">
           {FEATURES.map((feature, index) => (
@@ -113,19 +86,22 @@ const FeatureSlider: React.FC = () => {
                 exit="exit"
                 className="absolute inset-0 flex flex-col"
               >
-                <div className="relative flex-1 overflow-hidden rounded-t-lg">
-                  <Image
-                    src={feature.image}
-                    alt={feature.title}
-                    fill
-                    objectFit="contain"
-                    className="transition-transform duration-300 ease-in-out"
-                    priority={index === 0}
-                  />
+                {/* Image Container */}
+                <div className="relative flex-1 overflow-hidden">
+                  <div className={`absolute inset-0 transition-transform duration-300 ease-in-out ${isExpanded ? 'scale-100' : 'scale-95'}`}>
+                    <Image
+                      src={feature.image}
+                      alt={feature.title}
+                      fill
+                      className={`transition-all duration-300 ${isExpanded ? 'object-contain' : 'object-cover'}`}
+                      priority={index === 0}
+                    />
+                  </div>
                 </div>
 
+                {/* Text Overlay */}
                 <motion.div 
-                  className="bg-gradient-to-t from-gray-900 via-gray-900/90 to-transparent p-4 sm:p-6"
+                  className="relative z-10 bg-gradient-to-t from-gray-900 via-gray-900/90 to-transparent p-4 sm:p-6"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
@@ -142,64 +118,63 @@ const FeatureSlider: React.FC = () => {
           ))}
         </AnimatePresence>
 
-        {/* Floating Controls */}
-        <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
+        {/* Expand/Collapse Button */}
+        <motion.button
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="absolute top-4 right-4 z-30 p-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg backdrop-blur-sm bg-opacity-80"
+          aria-label={isExpanded ? "Minimize" : "Maximize"}
+        >
+          {isExpanded ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
+        </motion.button>
+
+        {/* Side Navigation Controls */}
+        <div className="absolute inset-y-0 left-0 z-20 flex items-center">
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="p-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg"
-            aria-label={isExpanded ? "Minimize" : "Maximize"}
+            onClick={prevSlide}
+            className="ml-4 p-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg backdrop-blur-sm bg-opacity-80"
+            aria-label="Previous slide"
           >
-            {isExpanded ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
+            <ChevronLeft size={20} />
           </motion.button>
         </div>
 
-        {/* Bottom Controls Bar */}
-        <motion.div 
-          className="absolute bottom-0 inset-x-0 z-10 p-4 flex justify-between items-center bg-gradient-to-t from-gray-900 to-transparent"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <div className="flex items-center gap-3">
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={prevSlide}
-              className="p-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white"
-              aria-label="Previous slide"
-            >
-              <ChevronLeft size={20} />
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={togglePause}
-              className="p-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white"
-              aria-label="Toggle pause"
-            >
-              {isPaused ? <Play size={20} /> : <Pause size={20} />}
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={nextSlide}
-              className="p-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white"
-              aria-label="Next slide"
-            >
-              <ChevronRight size={20} />
-            </motion.button>
-          </div>
+        <div className="absolute inset-y-0 right-0 z-20 flex items-center">
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={nextSlide}
+            className="mr-4 p-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg backdrop-blur-sm bg-opacity-80"
+            aria-label="Next slide"
+          >
+            <ChevronRight size={20} />
+          </motion.button>
+        </div>
+
+        {/* Bottom Controls */}
+        <div className="absolute bottom-0 inset-x-0 z-20 p-4 flex justify-center items-center space-x-4">
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={togglePause}
+            className="p-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg backdrop-blur-sm bg-opacity-80"
+            aria-label="Toggle pause"
+          >
+            {isPaused ? <Play size={20} /> : <Pause size={20} />}
+          </motion.button>
 
           <motion.div 
-            className="bg-blue-600 px-3 py-1 rounded-full text-white text-sm font-medium"
+            className="bg-blue-600 px-3 py-1 rounded-full text-white text-sm font-medium shadow-lg backdrop-blur-sm bg-opacity-80"
             whileHover={{ scale: 1.05 }}
           >
             {currentSlide + 1} / {FEATURES.length}
           </motion.div>
-        </motion.div>
+        </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 

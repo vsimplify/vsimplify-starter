@@ -148,7 +148,7 @@ export default function Navbar() {
           </div>
 
       {/* User Authentication */}
-      <div className="flex gap-4 lg:ml-auto">
+      <div className="flex gap-4 lg:ml-auto absolute right-0 top-7 pr-4 items-center">
         {!user && (
           <div className="relative">
             <button

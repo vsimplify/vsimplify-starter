@@ -81,7 +81,6 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-gray-900 text-white">
       <div className="container mx-auto px-4 py-6 flex flex-col h-screen">
-
         <motion.p 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -126,15 +125,21 @@ export default function HomePage() {
                 transition={{ duration: 0.5 }}
                 className="w-full h-full relative"
               >
-                <Image
-                  src={DATA[currentSlide].image}
-                  alt={`Slide ${currentSlide + 1}`}
-                  width={1920}
-                  height={1080}
-                  style={{ objectFit: 'cover' }}
-                  className="w-full h-full"
-                  priority
-                />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Image
+                    src={DATA[currentSlide].image}
+                    alt={`Slide ${currentSlide + 1}`}
+                    width={1920}
+                    height={1080}
+                    style={{ 
+                      objectFit: 'contain',
+                      maxWidth: '100%',
+                      maxHeight: '100%'
+                    }}
+                    className="w-auto h-auto"
+                    priority
+                  />
+                </div>
                 <div className="absolute inset-0 flex items-center justify-between p-4">
                   <button
                     onClick={prevSlide}
