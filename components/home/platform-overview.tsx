@@ -9,6 +9,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { ArrowRight, ChevronRight, Folder, Github, Linkedin, File, Twitter, ArrowUp, Menu, X, User, LogIn, UserPlus } from 'lucide-react';
+import { supabase } from '../../lib/supabaseClient'; // Adjust the import path as necessary
 
 // ... Start Type definitions and sample data
 // Type definitions
@@ -124,9 +125,24 @@ export default function PlatformOverview() {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Submitted email:', email);
+    // Get the current date
+    const submittedDate = new Date().toISOString();
+
+    // Insert the email and submitted date into the interest list table
+    const { data, error } = await supabase
+      .from('interest_list') // Ensure this table exists in your Supabase database
+      .insert([{ email, submitted_date: submittedDate }]);
+
+    if (error) {
+      console.error('Error inserting data:', error);
+    } else {
+      console.log('Submitted email:', email);
+      console.log('Data inserted:', data);
+      // Optionally, reset the email input
+      setEmail('');
+    }
   };
 
   const onDragEnd = (result: any) => {

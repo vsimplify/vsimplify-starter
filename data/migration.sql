@@ -850,3 +850,30 @@ SELECT
 FROM "Project" p
 LEFT JOIN "portfolios" pf ON p."portfolio_id" = pf."id"
 ORDER BY p."id";
+
+--- NOTIFY FOUNDER
+CREATE TABLE interest_list (
+    id SERIAL PRIMARY KEY,
+    email TEXT NOT NULL,
+    submitted_date TIMESTAMP NOT NULL
+);
+
+CREATE TRIGGER interest_list_insert
+AFTER INSERT ON interest_list
+FOR EACH ROW
+EXECUTE FUNCTION notify_founder();
+
+   CREATE OR REPLACE FUNCTION notify_founder()
+   RETURNS TRIGGER AS $$
+   DECLARE
+       response json;
+   BEGIN
+       -- Call the Edge Function
+       PERFORM http_post(
+           'https://eriwfbnzqljrmjywfxoa.supabase.co/functions/v1/notify-founder', -- Replace with your function URL
+           json_build_object('email', NEW.email, 'submitted_date', NEW.submitted_date)::text
+       );
+
+       RETURN NEW;
+   END;
+   $$ LANGUAGE plpgsql;
