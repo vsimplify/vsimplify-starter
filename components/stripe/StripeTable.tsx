@@ -29,34 +29,50 @@ const StripeDonationForm = ({ user }: Props) => {
     setError('');
 
     try {
+      console.log('Creating checkout session...');
       const response = await fetch('/api/stripe/create-checkout', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          amount: parseInt(quantity),
+          amount: quantity,
           userId: user.id,
           userEmail: user.email,
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create checkout session');
+        const errorData = await response.json();
+        console.error('Checkout session creation failed:', errorData);
+        throw new Error(errorData.error || 'Failed to create checkout session');
       }
 
-      const { sessionId } = await response.json();
+      const data = await response.json();
+      console.log('Checkout session created:', data);
       
-      const stripe = (window as any).Stripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
+      if (!data.sessionId) {
+        throw new Error('No session ID returned from server');
+      }
+
+      const stripePublicKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+      if (!stripePublicKey) {
+        throw new Error('Stripe publishable key is not configured');
+      }
+
+      const stripe = (window as any).Stripe(stripePublicKey);
       
-      const { error } = await stripe.redirectToCheckout({
-        sessionId,
+      console.log('Redirecting to checkout...');
+      const { error: stripeError } = await stripe.redirectToCheckout({
+        sessionId: data.sessionId,
       });
 
-      if (error) {
-        setError(error.message);
+      if (stripeError) {
+        console.error('Stripe redirect error:', stripeError);
+        setError(stripeError.message);
       }
     } catch (err) {
+      console.error('Checkout error:', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
