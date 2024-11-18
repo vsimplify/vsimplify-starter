@@ -1,6 +1,7 @@
 'use client'
 import { User } from '@supabase/supabase-js';
 import React, { useEffect, useState } from 'react';
+import { loadStripe } from '@stripe/stripe-js';
 
 type Props = {
   user: User;
@@ -14,14 +15,7 @@ const StripePricingTable = ({ user, mode = 'support' }: Props) => {
 
   useEffect(() => {
     // Load Stripe.js
-    const script = document.createElement('script');
-    script.src = "https://js.stripe.com/v3/";
-    script.async = true;
-    document.body.appendChild(script);
-
-    return () => {
-      document.body.removeChild(script);
-    }
+    loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -50,32 +44,24 @@ const StripePricingTable = ({ user, mode = 'support' }: Props) => {
         throw new Error(errorData.error || 'Failed to create checkout session');
       }
 
-      const data = await response.json();
-      console.log('Checkout session created:', data);
-      
-      if (!data.sessionId) {
-        throw new Error('No session ID returned from server');
+      const { sessionId } = await response.json();
+      console.log('Checkout session created:', sessionId);
+
+      const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+      if (!stripe) {
+        throw new Error('Failed to load Stripe');
       }
 
-      const stripePublicKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
-      if (!stripePublicKey) {
-        throw new Error('Stripe publishable key is not configured');
-      }
-
-      const stripe = (window as any).Stripe(stripePublicKey);
-      
       console.log('Redirecting to checkout...');
-      const { error: stripeError } = await stripe.redirectToCheckout({
-        sessionId: data.sessionId,
-      });
+      const { error: stripeError } = await stripe.redirectToCheckout({ sessionId });
 
       if (stripeError) {
         console.error('Stripe redirect error:', stripeError);
-        setError(stripeError.message);
+        throw stripeError;
       }
     } catch (err) {
       console.error('Checkout error:', err);
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setError(err instanceof Error ? err.message : 'An error occurred during checkout');
     } finally {
       setLoading(false);
     }
