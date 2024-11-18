@@ -83,7 +83,7 @@ export default function Login({ host }: { host: string | null }) {
       <div className="text-center">
         <h1 className="text-3xl font-bold mb-2">Welcome Back</h1>
         <p className="text-sm text-neutral-600 dark:text-neutral-400">
-          Sign in to continue to your account using Google only at this time.
+          Sign in to continue to your account.
         </p>
       </div>
 
@@ -128,7 +128,7 @@ export default function Login({ host }: { host: string | null }) {
               >
                 <AiOutlineGoogle className="h-5 w-5" /> Google
               </Button>
-              <Button
+              {/* <Button
                 variant="outline"
                 onClick={() => handleSocialLogin('github')}
                 className="flex items-center justify-center gap-2"
@@ -148,7 +148,7 @@ export default function Login({ host }: { host: string | null }) {
                 className="flex items-center justify-center gap-2"
               >
                 <AiFillFacebook className="h-5 w-5" /> Facebook
-              </Button>
+              </Button> */}
             </div>
           </AccordionContent>
         </AccordionItem>
