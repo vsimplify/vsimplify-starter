@@ -4,9 +4,10 @@ import React, { useEffect, useState } from 'react';
 
 type Props = {
   user: User;
+  mode?: 'credits' | 'support';
 }
 
-const StripeDonationForm = ({ user }: Props) => {
+const StripePricingTable = ({ user, mode = 'support' }: Props) => {
   const [quantity, setQuantity] = useState('1');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -39,6 +40,7 @@ const StripeDonationForm = ({ user }: Props) => {
           amount: quantity,
           userId: user.id,
           userEmail: user.email,
+          mode: mode,
         }),
       });
 
@@ -79,19 +81,26 @@ const StripeDonationForm = ({ user }: Props) => {
     }
   };
 
+  const getTitle = () => mode === 'credits' ? 'Get Credits' : 'Support Our Project';
+  const getDescription = () => mode === 'credits' 
+    ? 'Purchase credits to continue using our services. Each credit allows you to make one request.'
+    : 'Your support helps us continue developing and improving our services. Thank you for your generosity!';
+  const getButtonText = () => mode === 'credits' ? 'Get Credits' : 'Support Now';
+  const getLabel = () => mode === 'credits' ? 'Number of Credits' : 'Support Amount';
+
   return (
     <div className="flex flex-1 flex-col w-full max-w-md mx-auto p-6">
       <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Support Our Project</h2>
+        <h2 className="text-2xl font-bold text-gray-900">{getTitle()}</h2>
         <p className="mt-2 text-gray-600">
-          Your support helps us continue developing and improving our services. Thank you for your generosity!
+          {getDescription()}
         </p>
       </div>
       
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label htmlFor="quantity" className="block text-sm font-medium text-gray-700">
-            Support Amount
+            {getLabel()}
           </label>
           <div className="mt-1">
             <input
@@ -118,11 +127,11 @@ const StripeDonationForm = ({ user }: Props) => {
             loading || !quantity || parseInt(quantity) < 1 ? 'opacity-50 cursor-not-allowed' : ''
           }`}
         >
-          {loading ? 'Processing...' : 'Support Now'}
+          {loading ? 'Processing...' : getButtonText()}
         </button>
       </form>
     </div>
   );
 }
 
-export default StripeDonationForm;
+export default StripePricingTable;

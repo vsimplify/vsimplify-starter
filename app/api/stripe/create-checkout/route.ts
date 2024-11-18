@@ -3,6 +3,7 @@ import Stripe from "stripe";
 
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 const supportUsPriceId = process.env.STRIPE_PRICE_ID_SUPPORT_US;
+const creditsPriceId = process.env.STRIPE_PRICE_ID_CREDITS;
 
 if (!stripeSecretKey) {
   throw new Error("Missing STRIPE_SECRET_KEY");
@@ -10,6 +11,10 @@ if (!stripeSecretKey) {
 
 if (!supportUsPriceId) {
   throw new Error("Missing STRIPE_PRICE_ID_SUPPORT_US");
+}
+
+if (!creditsPriceId) {
+  throw new Error("Missing STRIPE_PRICE_ID_CREDITS");
 }
 
 const stripe = new Stripe(stripeSecretKey, {
@@ -20,7 +25,7 @@ const stripe = new Stripe(stripeSecretKey, {
 export async function POST(req: Request) {
   try {
     console.log("Creating checkout session...");
-    const { amount, userId, userEmail } = await req.json();
+    const { amount, userId, userEmail, mode } = await req.json();
 
     if (!amount || !userId || !userEmail) {
       console.error("Missing required fields:", { amount, userId, userEmail });
@@ -30,28 +35,33 @@ export async function POST(req: Request) {
       );
     }
 
+    const isCreditsMode = mode === 'credits';
+    const priceId = isCreditsMode ? creditsPriceId : supportUsPriceId;
+    const returnPath = isCreditsMode ? 'get-credits' : 'support-us';
+
     console.log("Creating Stripe checkout session with params:", {
       amount,
       userId,
       userEmail,
-      supportUsPriceId,
+      priceId,
+      mode,
     });
 
-    // Create a checkout session for donation
+    // Create checkout session based on mode
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: [
         {
-          price: supportUsPriceId,
+          price: priceId,
           quantity: parseInt(amount),
         },
       ],
       mode: "payment",
-      success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/support-us?success=true`,
-      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/support-us?success=false`,
+      success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/${returnPath}?success=true`,
+      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/${returnPath}?success=false`,
       client_reference_id: userId,
       customer_email: userEmail,
-      submit_type: 'donate', // This changes the text on the submit button to "Donate"
+      submit_type: isCreditsMode ? 'pay' : 'donate', // Use 'pay' for credits, 'donate' for support
     });
 
     console.log("Checkout session created:", session.id);
