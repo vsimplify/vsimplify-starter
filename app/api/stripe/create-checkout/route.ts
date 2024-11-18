@@ -22,6 +22,14 @@ const stripe = new Stripe(stripeSecretKey, {
   typescript: true,
 });
 
+// Helper function to get the site URL based on environment
+const getSiteUrl = () => {
+  if (process.env.NODE_ENV === 'production') {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  return process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+};
+
 export async function POST(req: Request) {
   try {
     console.log("Creating checkout session...");
@@ -38,6 +46,9 @@ export async function POST(req: Request) {
     const isCreditsMode = mode === 'credits';
     const priceId = isCreditsMode ? creditsPriceId : supportUsPriceId;
     const returnPath = isCreditsMode ? 'get-credits' : 'support-us';
+
+    const siteUrl = getSiteUrl();
+    console.log("Using site URL:", siteUrl);
 
     console.log("Creating Stripe checkout session with params:", {
       amount,
@@ -57,8 +68,8 @@ export async function POST(req: Request) {
         },
       ],
       mode: "payment",
-      success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/${returnPath}?success=true`,
-      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/${returnPath}?success=false`,
+      success_url: `${siteUrl}/${returnPath}?success=true`,
+      cancel_url: `${siteUrl}/${returnPath}?success=false`,
       client_reference_id: userId,
       customer_email: userEmail,
       submit_type: isCreditsMode ? 'pay' : 'donate', // Use 'pay' for credits, 'donate' for support
