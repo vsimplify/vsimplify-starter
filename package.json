@@ -125,6 +125,7 @@
     "js-yaml": "^4.1.0",
     "js-yaml-loader": "^1.2.2",
     "json-loader": "^0.5.7",
+    "next-cli": "^1.0.0",
     "raw-loader": "^4.0.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"

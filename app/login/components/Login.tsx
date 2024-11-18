@@ -83,7 +83,7 @@ export default function Login({ host }: { host: string | null }) {
       <div className="text-center">
         <h1 className="text-3xl font-bold mb-2">Welcome Back</h1>
         <p className="text-sm text-neutral-600 dark:text-neutral-400">
-          Sign in to continue to your account
+          Sign in to continue to your account using Google only at this time.
         </p>
       </div>
 
