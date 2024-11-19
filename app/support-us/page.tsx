@@ -1,22 +1,23 @@
+// /app/support-us/page.tsx
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import StripePricingTable from "@/components/stripe/StripeTable";
+import DonationForm from './DonationForm';
 
 export const dynamic = "force-dynamic";
 
-export default async function Index() {
+export default async function SupportUsPage() {
   const supabase = createServerComponentClient({ cookies });
-
+  
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
+  
   if (!user) {
-    return redirect("/login");
+    redirect("/login");
   }
 
   return (
-    <StripePricingTable user={user} />
+    <DonationForm user={user} />
   );
 }

@@ -1,137 +1,98 @@
+// /app/api/stripe/webhook/route.ts
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import Stripe from "stripe";
 
 export const dynamic = "force-dynamic";
 
-const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
-const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
-const supportUsPriceId = process.env.STRIPE_PRICE_ID_SUPPORT_US as string;
-
-if (!stripeSecretKey) {
+if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error("Missing STRIPE_SECRET_KEY");
 }
 
-const stripe = new Stripe(stripeSecretKey, {
-  apiVersion: "2023-08-16",
-  typescript: true,
+if (!process.env.STRIPE_WEBHOOK_SECRET) {
+  throw new Error("Missing STRIPE_WEBHOOK_SECRET");
+}
+
+if (!process.env.STRIPE_PRICE_ID_SUPPORT_US) {
+  throw new Error("Missing STRIPE_PRICE_ID_SUPPORT_US");
+}
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: "2023-10-16",
 });
 
-// Helper function to convert stream to string
 async function streamToString(stream: ReadableStream): Promise<string> {
   const reader = stream.getReader();
   const decoder = new TextDecoder();
   let result = '';
-
+  
   while (true) {
     const { done, value } = await reader.read();
     if (done) break;
     result += decoder.decode(value);
   }
-
+  
   return result;
 }
 
 export async function POST(request: Request) {
   try {
-    console.log("Webhook received");
-    const headersObj = headers();
-    const sig = headersObj.get("stripe-signature");
+    const headersList = headers();
+    const signature = headersList.get("stripe-signature");
 
-    if (!sig) {
-      console.error("Missing stripe-signature");
+    if (!signature) {
       return NextResponse.json(
-        {
-          message: `Missing stripe-signature`,
-        },
-        { status: 400 }
-      );
-    }
-
-    if (!endpointSecret) {
-      console.error("Missing STRIPE_WEBHOOK_SECRET");
-      return NextResponse.json(
-        {
-          message: `Missing webhook secret`,
-        },
+        { message: "Missing stripe-signature" },
         { status: 400 }
       );
     }
 
     if (!request.body) {
-      console.error("Missing request body");
       return NextResponse.json(
-        {
-          message: `Missing body`,
-        },
+        { message: "Missing request body" },
         { status: 400 }
       );
     }
 
     const rawBody = await streamToString(request.body);
-    console.log("Raw body received");
+    let event: Stripe.Event;
 
-    let event;
     try {
-      event = stripe.webhooks.constructEvent(rawBody, sig, endpointSecret);
-      console.log("Webhook verified, event type:", event.type);
+      event = stripe.webhooks.constructEvent(
+        rawBody,
+        signature,
+        process.env.STRIPE_WEBHOOK_SECRET
+      );
     } catch (err) {
       const error = err as Error;
-      console.error("Error verifying webhook signature:", error.message);
       return NextResponse.json(
-        {
-          message: `Webhook Error: ${error?.message}`,
-        },
+        { message: `Webhook signature verification failed: ${error.message}` },
         { status: 400 }
       );
     }
 
-    // Handle the event
-    switch (event.type) {
-      case "checkout.session.completed":
-        const checkoutSessionCompleted = event.data
-          .object as Stripe.Checkout.Session;
-        console.log("Processing completed checkout session:", checkoutSessionCompleted.id);
-        
-        // Verify this is a donation payment
-        const lineItems = await stripe.checkout.sessions.listLineItems(
-          checkoutSessionCompleted.id
-        );
-        const priceId = lineItems.data[0].price?.id;
+    if (event.type === "checkout.session.completed") {
+      const session = event.data.object as Stripe.Checkout.Session;
+      
+      // Verify this is a donation payment
+      const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
+      const priceId = lineItems.data[0].price?.id;
 
-        if (priceId !== supportUsPriceId) {
-          console.error("Unhandled price ID:", priceId);
-          return NextResponse.json(
-            {
-              message: "Unhandled price ID",
-            },
-            { status: 400 }
-          );
-        }
-
-        console.log("Donation payment processed successfully");
-        return NextResponse.json(
-          {
-            message: "success",
-          },
-          { status: 200 }
-        );
-
-      default:
-        console.log("Unhandled event type:", event.type);
-        return NextResponse.json(
-          {
-            message: `Unhandled event type ${event.type}`,
-          },
-          { status: 400 }
-        );
+      if (priceId === process.env.STRIPE_PRICE_ID_SUPPORT_US) {
+        // Handle successful donation
+        // Add your business logic here (e.g., update database, send email)
+        return NextResponse.json({ message: "Donation processed successfully" });
+      }
     }
-  } catch (error) {
-    console.error("Unexpected error in webhook handler:", error);
+
     return NextResponse.json(
-      {
-        message: "Internal server error",
-      },
+      { message: `Unhandled event type: ${event.type}` },
+      { status: 400 }
+    );
+  } catch (error) {
+    console.error("Webhook error:", error);
+    return NextResponse.json(
+      { message: "Internal server error" },
       { status: 500 }
     );
   }
