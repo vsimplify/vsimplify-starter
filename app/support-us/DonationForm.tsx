@@ -65,7 +65,7 @@ export default function DonationForm({ user }: DonationFormProps) {
       <h1 className="text-2xl font-bold mb-6">Support Our Project</h1>
       
       <div className="space-y-4">
-        <div> Follow #forAnswer on LinkedIn & Register to get notified of new updates 
+        <div> Follow #forAnswer on LinkedIn 
           <a
             href="https://www.linkedin.com/feed/hashtag/?keywords=foranswer"
             target="_blank"
