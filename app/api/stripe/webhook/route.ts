@@ -5,20 +5,26 @@ import Stripe from "stripe";
 
 export const dynamic = "force-dynamic";
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error("Missing STRIPE_SECRET_KEY");
+const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+const supportUsPriceId = process.env.STRIPE_PRICE_ID_SUPPORT_US;
+
+// Early validation of required environment variables
+if (!stripeSecretKey || !webhookSecret || !supportUsPriceId) {
+  throw new Error(
+    `Missing environment variables: ${[
+      !stripeSecretKey && "STRIPE_SECRET_KEY",
+      !webhookSecret && "STRIPE_WEBHOOK_SECRET",
+      !supportUsPriceId && "STRIPE_PRICE_ID_SUPPORT_US",
+    ]
+      .filter(Boolean)
+      .join(", ")}`
+  );
 }
 
-if (!process.env.STRIPE_WEBHOOK_SECRET) {
-  throw new Error("Missing STRIPE_WEBHOOK_SECRET");
-}
-
-if (!process.env.STRIPE_PRICE_ID_SUPPORT_US) {
-  throw new Error("Missing STRIPE_PRICE_ID_SUPPORT_US");
-}
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2023-10-16",
+const stripe = new Stripe(stripeSecretKey, {
+  apiVersion: "2023-08-16",
+  typescript: true,
 });
 
 async function streamToString(stream: ReadableStream): Promise<string> {
@@ -37,36 +43,37 @@ async function streamToString(stream: ReadableStream): Promise<string> {
 
 export async function POST(request: Request) {
   try {
-    const headersList = headers();
-    const signature = headersList.get("stripe-signature");
+    const signature = headers().get("stripe-signature");
 
     if (!signature) {
       return NextResponse.json(
-        { message: "Missing stripe-signature" },
+        { error: "Missing stripe-signature" },
         { status: 400 }
       );
     }
 
     if (!request.body) {
       return NextResponse.json(
-        { message: "Missing request body" },
+        { error: "Missing request body" },
         { status: 400 }
       );
     }
 
     const rawBody = await streamToString(request.body);
+    
     let event: Stripe.Event;
-
+    
     try {
+      // webhookSecret is guaranteed to be string due to early validation
       event = stripe.webhooks.constructEvent(
         rawBody,
         signature,
-        process.env.STRIPE_WEBHOOK_SECRET
+        webhookSecret as string // Safe assertion due to early validation
       );
     } catch (err) {
       const error = err as Error;
       return NextResponse.json(
-        { message: `Webhook signature verification failed: ${error.message}` },
+        { error: `Webhook signature verification failed: ${error.message}` },
         { status: 400 }
       );
     }
@@ -74,14 +81,12 @@ export async function POST(request: Request) {
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;
       
-      // Verify this is a donation payment
       const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
       const priceId = lineItems.data[0].price?.id;
 
-      if (priceId === process.env.STRIPE_PRICE_ID_SUPPORT_US) {
-        // Handle successful donation
-        // Add your business logic here (e.g., update database, send email)
-        return NextResponse.json({ message: "Donation processed successfully" });
+      if (priceId === supportUsPriceId) {
+        // Add your business logic here
+        return NextResponse.json({ message: "Payment processed successfully" });
       }
     }
 
@@ -92,7 +97,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Webhook error:", error);
     return NextResponse.json(
-      { message: "Internal server error" },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }

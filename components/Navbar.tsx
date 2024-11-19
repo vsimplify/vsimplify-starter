@@ -137,9 +137,9 @@ export default function Navbar() {
             </Link>
           )}
           {stripeIsConfigured && (
-            <Link href="/get-credits">
+            <Link href="/support-us">
               <Button variant={"ghost"} className="text-white hover:text-yellow-300">
-                Get Credits
+                Support Us
               </Button>
             </Link>
           )}
