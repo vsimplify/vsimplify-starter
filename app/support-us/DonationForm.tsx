@@ -65,8 +65,17 @@ export default function DonationForm({ user }: DonationFormProps) {
       <h1 className="text-2xl font-bold mb-6">Support Our Project</h1>
       
       <div className="space-y-4">
-        <div>
-          <label htmlFor="amount" className="block text-sm font-medium text-gray-700">
+        <div> Follow #forAnswer on LinkedIn & Register to get notified of new updates
+          <a
+            href="https://www.linkedin.com/feed/hashtag/?keywords=foranswer/"
+            target="_blank"
+            rel="noreferrer"
+            className="text-blue-600 hover:text-blue-700"
+          >
+            LinkedIn
+          </a>
+        </div>
+          {/* <label htmlFor="amount" className="block text-sm font-medium text-gray-700">
             Donation Amount (units)
           </label>
           <input
@@ -77,7 +86,7 @@ export default function DonationForm({ user }: DonationFormProps) {
             onChange={(e) => setAmount(Math.max(1, parseInt(e.target.value) || 1))}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             disabled={isLoading}
-          />
+          /> */}
         </div>
 
         {error && (
@@ -86,14 +95,14 @@ export default function DonationForm({ user }: DonationFormProps) {
           </div>
         )}
 
-        <button
+{/*         <button
           onClick={handleDonate}
           disabled={isLoading || amount < 1}
           className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? 'Processing...' : `Donate $${amount}`}
         </button>
-      </div>
+      </div> */}
     </div>
   );
 }
