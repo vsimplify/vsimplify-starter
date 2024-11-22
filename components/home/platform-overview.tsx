@@ -336,8 +336,11 @@ export default function PlatformOverview() {
           </div>
           <div className="relative z-10 max-w-4xl mx-auto px-4">
             <h1 className="text-5xl font-bold mb-6">Achieve more with AI-Powered Portfolio Management</h1>
-            <p className="text-xl mb-8">Discover how AI and our cloud solutions can help you meet the challenges of a changing world.</p>
-            <form onSubmit={handleSubmit} className="flex flex-col md:flex-row justify-center items-center space-y-4 md:space-y-0 md:space-x-4">
+            <p className="text-xl mb-8">Discover how AI and our cloud solutions can help you meet the challenges of a changing world.
+              <br />
+              <span className="text-blue-600">Please register using your social login, to be notified about the progress, as we prepared to Launch. The forAnswer Platform</span> , a cloud-based solution to help you use AI to drive managing your Projects and Tasks to completion.
+            </p>
+            {/* <form onSubmit={handleSubmit} className="flex flex-col md:flex-row justify-center items-center space-y-4 md:space-y-0 md:space-x-4">
               <Input
                 type="email"
                 placeholder="Enter your email"
@@ -348,7 +351,7 @@ export default function PlatformOverview() {
               <Button type="submit" className="bg-blue-600 text-white px-8 py-3 rounded-md text-lg font-semibold hover:bg-blue-700 transition duration-300">
                 Get Started <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
-            </form>
+            </form> */}
           </div>
         </section>
 
