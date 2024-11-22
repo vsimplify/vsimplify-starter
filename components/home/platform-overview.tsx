@@ -338,7 +338,7 @@ export default function PlatformOverview() {
             <h1 className="text-5xl font-bold mb-6">Achieve more with AI-Powered Portfolio Management</h1>
             <p className="text-xl mb-8">Discover how AI and our cloud solutions can help you meet the challenges of a changing world.
               <br />
-              <span className="text-blue-600">Please register using your social login, to be notified about the progress, as we prepared to Launch. The forAnswer Platform</span> , a cloud-based solution to help you use AI to drive managing your Projects and Tasks to completion.
+              <span className="text-blue-600">Please register using your social login, to be notified about the progress, as we prepare to Launch. The forAnswer Platform</span> , a cloud-based solution to help you use AI to drive managing your Projects and Tasks to completion.
             </p>
             {/* <form onSubmit={handleSubmit} className="flex flex-col md:flex-row justify-center items-center space-y-4 md:space-y-0 md:space-x-4">
               <Input
